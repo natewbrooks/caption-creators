@@ -4,6 +4,7 @@ import { getSocket, getUserToken } from '@/server/socketManager';
 import { useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { FaPencil, FaCheck, FaCopy } from 'react-icons/fa6';
+import { LuUnplug } from 'react-icons/lu';
 
 export default function GamePage() {
 	const { id: lobbyId } = useParams();
@@ -14,6 +15,7 @@ export default function GamePage() {
 	const userToken = getUserToken();
 	const [editingName, setEditingName] = useState(false);
 	const [showLinkCopied, setShowLinkCopied] = useState(false);
+	const [disconnectingUsers, setDisconnectingUsers] = useState({});
 
 	useEffect(() => {
 		const socketInstance = getSocket();
@@ -62,10 +64,47 @@ export default function GamePage() {
 				window.addEventListener('load', handleReload);
 			}
 
+			let intervalIds = {}; // To store interval IDs for clearing them later
+
+			socketInstance.on('disconnectTimerStarted', ({ userToken, duration }) => {
+				clearInterval(intervalIds[userToken]); // Clear existing interval if any
+
+				// Immediately set the initial duration
+				setDisconnectingUsers((prev) => ({ ...prev, [userToken]: duration }));
+
+				// Start a new countdown interval for this user
+				intervalIds[userToken] = setInterval(() => {
+					setDisconnectingUsers((prev) => {
+						const currentTime = prev[userToken];
+						if (currentTime <= 1) {
+							clearInterval(intervalIds[userToken]); // Stop the interval
+							const { [userToken]: _, ...rest } = prev; // Remove this userToken from the state
+							return rest;
+						}
+						return { ...prev, [userToken]: currentTime - 1 }; // Decrement the timer
+					});
+				}, 1000);
+
+				setTimeout(() => {
+					clearInterval(intervalIds[userToken]); // Ensure interval is cleared when time runs out
+				}, duration * 1000);
+			});
+
+			socketInstance.on('disconnectTimerEnded', (userToken) => {
+				clearInterval(intervalIds[userToken]); // Clear the interval when the timer ends
+				setDisconnectingUsers((prev) => {
+					const { [userToken]: _, ...rest } = prev;
+					return rest; // Remove the userToken from state
+				});
+			});
+
 			// Cleanup function removes event listener when component unmounts
 			return () => {
 				window.removeEventListener('beforeunload', handleUnload);
 				window.removeEventListener('load', handleReload);
+				Object.values(intervalIds).forEach(clearInterval);
+				socketInstance.off('disconnectTimerStarted');
+				socketInstance.off('disconnectTimerEnded');
 			};
 		}
 	}, [socket, userToken]);
@@ -131,6 +170,16 @@ export default function GamePage() {
 							className={`py-2 ${
 								index % 2 === 0 ? 'bg-white/10' : ''
 							} relative w-full font-manga text-2xl flex space-x-2 justify-center text-center items-center`}>
+							{disconnectingUsers[player.userToken] !== undefined && (
+								<div
+									className={`h-fit absolute right-4 items-center justify-center flex -space-x-1`}>
+									<LuUnplug
+										size={18}
+										className={`relative bottom-[0.15rem] h-full text-red-300`}
+									/>
+									<span className={`w-[50px] h-fit`}>{disconnectingUsers[player.userToken]}s</span>
+								</div>
+							)}
 							<div className='relative w-fit flex justify-center items-center'>
 								<span className='select-none absolute bottom-0 -left-9 font-sunny text-[16px] text-green-300'>
 									{players[index].userToken === userToken ? '  (YOU)' : ''}
@@ -155,6 +204,7 @@ export default function GamePage() {
 										{player.name}
 									</span>
 								)}
+
 								{players[index].userToken === userToken && (
 									<div className='select-none outline-none absolute bottom-2 -right-5 flex items-center justify-center'>
 										{editingName ? (

@@ -36,9 +36,8 @@ app.prepare().then(() => {
 		socket.on('leave_lobby', () => leaveLobby(socket, io));
 
 		socket.on('reload', (userToken) => {
-			console.log(`Reload event received for userToken: ${userToken}`);
+			// On reload add the player to disconnect queue to make them eligible for disconnect
 			disconnectQueue.push(userToken);
-			console.log(`Current disconnectQueue: ${JSON.stringify(disconnectQueue)}`);
 		});
 
 		socket.on('disconnect', () => {
@@ -47,12 +46,24 @@ app.prepare().then(() => {
 			// If there was a page reload, the disconnecting user would have been added to the disconnect queue.
 			if (disconnectingUser && disconnectQueue.includes(disconnectingUser)) {
 				console.log('Start timeout for session');
+				// Emit to all clients in the lobby that the disconnect timer has started for this user
+				let lobbyId = findLobbyId(disconnectingUser);
+				if (lobbyId) {
+					io.to(lobbyId).emit('disconnectTimerStarted', {
+						userToken: disconnectingUser,
+						duration: 10,
+					});
+				}
+
 				setTimeout(() => {
 					// If the user has reconnected before the timeout finishes, then it won't trigger a disconnect
 					if (!disconnectQueue.includes(disconnectingUser)) {
 						console.log(disconnectingUser + ' user session restored!');
 					} else {
 						leaveLobby(socket, io);
+						if (lobbyId) {
+							io.to(lobbyId).emit('disconnectTimerEnded', disconnectingUser);
+						}
 					}
 				}, 10000); // Adjust the timeout duration as needed
 			} else {
@@ -76,6 +87,9 @@ app.prepare().then(() => {
 					console.log(
 						`User ${userToken} reconnected and joined lobby ${lobbyId} with new socket ID ${socket.id}`
 					);
+					if (lobbyId) {
+						io.to(lobbyId).emit('disconnectTimerEnded', userToken);
+					}
 
 					// Send an update to all members of the lobby about the reconnection
 					updateLobby(lobbyId, io);
