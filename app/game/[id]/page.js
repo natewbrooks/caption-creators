@@ -41,6 +41,35 @@ export default function GamePage() {
 		}
 	}, [lobbyId, userToken]);
 
+	useEffect(() => {
+		const socketInstance = getSocket();
+		setSocket(socketInstance);
+
+		if (socketInstance) {
+			function handleUnload() {
+				socketInstance.emit('reload', userToken);
+			}
+			function handleReload() {
+				socketInstance.emit('restore_session', userToken);
+			}
+
+			window.addEventListener('beforeunload', handleUnload);
+			// Check if the document is already loaded
+			if (document.readyState === 'complete') {
+				handleReload(); // If the document is already loaded, call handleReload immediately
+			} else {
+				// Otherwise, listen for the load event
+				window.addEventListener('load', handleReload);
+			}
+
+			// Cleanup function removes event listener when component unmounts
+			return () => {
+				window.removeEventListener('beforeunload', handleUnload);
+				window.removeEventListener('load', handleReload);
+			};
+		}
+	}, [socket, userToken]);
+
 	const handlePlayerNameSubmit = () => {
 		if (playerName.trim()) {
 			setPlayerName(playerName);
