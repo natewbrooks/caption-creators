@@ -1,7 +1,8 @@
 # Caption Creators
+
 Developed by team **Burnt Toast**
 
-Nate Brooks, Gabriel Huber, Connor O’Grady, David Borisevich, and Dominick Winningham 
+Nate Brooks, Gabriel Huber, Connor O’Grady, David Borisevich, and Dominick Winningham
 
 <br>
 
@@ -16,6 +17,7 @@ cd '/your/repo/filepath/here'
 ```
 
 Second, run the following command to install the projects dependencies locally.
+
 ```bash
 npm install
 ```
