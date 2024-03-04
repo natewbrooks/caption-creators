@@ -5,8 +5,8 @@ import { useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { FaPencil, FaCheck, FaCopy } from 'react-icons/fa6';
 
-const GamePage = () => {
-	const lobbyId = useParams().id;
+export default function GamePage() {
+	const { id: lobbyId } = useParams();
 	const [isHost, setIsHost] = useState(false);
 	const [players, setPlayers] = useState([]);
 	const [playerName, setPlayerName] = useState('');
@@ -25,15 +25,11 @@ const GamePage = () => {
 
 			socketInstance.on('lobby_details', ({ members, hostUserToken }) => {
 				setPlayers(members);
-
-				// Check if the userToken matches the hostUserToken to determine if the current player is the host
 				setIsHost(userToken === hostUserToken);
 			});
 
 			socketInstance.on('update_lobby', ({ members, hostUserToken }) => {
 				setPlayers(members);
-
-				// Check if the userToken matches the hostUserToken to determine if the current player is the host
 				setIsHost(userToken === hostUserToken);
 			});
 
@@ -43,11 +39,10 @@ const GamePage = () => {
 				socketInstance.off('update_lobby');
 			};
 		}
-	}, [lobbyId, socket, userToken]);
+	}, [lobbyId, userToken]);
 
 	const handlePlayerNameSubmit = () => {
 		if (playerName.trim()) {
-			// Update the local state immediately
 			setPlayerName(playerName);
 			setPlayers((prevPlayers) =>
 				prevPlayers.map((player) => {
@@ -58,7 +53,6 @@ const GamePage = () => {
 				})
 			);
 
-			// Signal the update_player_name event
 			socket.emit('update_player_name', { lobbyId, userToken, playerName });
 		}
 	};
@@ -66,14 +60,12 @@ const GamePage = () => {
 	const handleLobbyIdCopy = () => {
 		navigator.clipboard.writeText(lobbyId).then(
 			() => {
-				// Clipboard successfully set
 				setShowLinkCopied(true);
 				setTimeout(() => {
 					setShowLinkCopied(false);
 				}, 3000);
 			},
 			() => {
-				// Clipboard write failed
 				console.error('Failed to copy lobby ID to clipboard.');
 			}
 		);
@@ -101,15 +93,17 @@ const GamePage = () => {
 				</h2>
 			</div>
 			<div
-				className={`flex flex-col h-full w-full items-center justify-center bg-blue-300/10 p-4 rounded-md`}>
+				className={`flex flex-col h-full w-full items-center justify-center bg-blue-300/10 pt-4 rounded-md`}>
 				<h2 className={`font-sunny text-3xl text-blue-300 mb-2`}>PLAYER LIST</h2>
-				<ul className={`list-disc space-y-2`}>
+				<ul className='w-full list-disc space-y-2'>
 					{players?.map((player, index) => (
 						<li
 							key={index}
-							className={`relative w-full font-manga text-2xl flex space-x-2 justify-center text-center  items-end`}>
-							<div className={`flex flex-col justify-center items-center leading-none`}>
-								<span className={`font-sunny text-[14px] text-green-300`}>
+							className={`py-2 ${
+								index % 2 === 0 ? 'bg-white/10' : ''
+							} relative w-full font-manga text-2xl flex space-x-2 justify-center text-center items-center`}>
+							<div className='relative w-fit flex justify-center items-center'>
+								<span className='select-none absolute bottom-0 -left-9 font-sunny text-[16px] text-green-300'>
 									{players[index].userToken === userToken ? '  (YOU)' : ''}
 								</span>
 								{players[index].userToken === userToken && editingName ? (
@@ -117,44 +111,49 @@ const GamePage = () => {
 										type='text'
 										value={playerName}
 										onChange={(e) => setPlayerName(e.target.value)}
-										placeholder={player.name}
-										maxLength={16}
-										className='text-center font-manga bg-blue-300/10 rounded-md text-white placeholder:text-white/50'
-									/>
-								) : (
-									<>{player.name}</>
-								)}
-							</div>
-
-							{players[index].userToken === userToken && (
-								<div className={`absolute -right-5`}>
-									{editingName ? (
-										<FaCheck
-											onClick={() => {
+										onKeyDown={(e) => {
+											if (e.key === 'Enter') {
 												handlePlayerNameSubmit();
 												setEditingName(false);
-											}}
-											tabIndex={0}
-											size={12}
-											className={`mb-2 cursor-pointer sm:hover:opacity-50 sm:active:scale-95`}
-										/>
-									) : (
-										<FaPencil
-											onClick={() => {
-												setEditingName(true);
-											}}
-											size={12}
-											className={`mb-2 cursor-pointer sm:hover:opacity-50 sm:active:scale-95`}
-										/>
-									)}
-								</div>
-							)}
+											}
+										}}
+										placeholder={player.name}
+										maxLength={16}
+										className='w-[172px] h-[30px] text-center font-manga bg-blue-300/10 rounded-md text-white placeholder:text-white/50'
+									/>
+								) : (
+									<span className='w-[172px] h-[30px] flex items-center justify-center'>
+										{player.name}
+									</span>
+								)}
+								{players[index].userToken === userToken && (
+									<div className='select-none outline-none absolute bottom-2 -right-5 flex items-center justify-center'>
+										{editingName ? (
+											<FaCheck
+												onClick={() => {
+													handlePlayerNameSubmit();
+													setEditingName(false);
+												}}
+												tabIndex={0}
+												size={14}
+												className='cursor-pointer sm:hover:opacity-50 sm:active:scale-95'
+											/>
+										) : (
+											<FaPencil
+												onClick={() => {
+													setEditingName(true);
+												}}
+												size={14}
+												className='cursor-pointer sm:hover:opacity-50 sm:active:scale-95'
+											/>
+										)}
+									</div>
+								)}
+							</div>
 						</li>
 					))}
 				</ul>
 			</div>
 		</div>
 	);
-};
-
-export default GamePage;
+}
