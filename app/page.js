@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSocket, getUserToken } from '@/server/socketManager';
 import { MdVideoLibrary } from 'react-icons/md';
+import { FaArrowRight } from 'react-icons/fa6';
 
 export default function Home() {
 	const [lobbyId, setLobbyId] = useState('');
@@ -55,7 +56,7 @@ export default function Home() {
 						className={`hidden md:block mb-2`}
 					/>
 				</div>
-				<span className={`font-sunny text-lg text-blue-300 text-center`}>
+				<span className={`font-manga text-lg text-blue-300 text-center`}>
 					Nate Brooks, Gabriel Huber, Connor O’Grady, David Borisevich, and Dominick Winningham
 				</span>
 			</div>
@@ -64,23 +65,29 @@ export default function Home() {
 				<>
 					<button
 						onClick={handleCreateLobby}
-						className='bg-white/10 p-4 font-sunny text-6xl rounded-md text-white sm:hover:opacity-50 sm:active:scale-95'>
-						Host a lobby
+						className='bg-white/10 p-4 font-sunny text-5xl rounded-md text-white sm:hover:opacity-50 sm:active:scale-95'>
+						HOST LOBBY
 					</button>
 					<div className='flex flex-col w-full items-center bg-white/10 rounded-md px-2 py-4'>
-						<label className='text-start text-6xl font-sunny'>Join lobby</label>
-						<input
-							type='text'
-							value={lobbyId}
-							onChange={(e) => setLobbyId(e.target.value)}
-							placeholder='Lobby ID'
-							className='font-manga text-white text-2xl text-center bg-white/10 p-3 rounded-md placeholder:text-white/50'
-						/>
-						<div className='w-full pt-4 justify-center'>
+						<label className='text-start text-5xl font-sunny pb-2'>JOIN LOBBY</label>
+						<div className={`flex space-x-1`}>
+							<input
+								type='text'
+								value={lobbyId}
+								maxLength={7}
+								onChange={(e) => setLobbyId(e.target.value.replace(/\s/g, ''))} // NO SPACES ALLOWED
+								onKeyDown={(e) => {
+									if (e.key === 'Enter') {
+										handleJoinLobby();
+									}
+								}}
+								placeholder='Lobby ID'
+								className='font-manga text-white text-xl text-center bg-white/10 w-full py-1 rounded-md placeholder:text-white/50'
+							/>
 							<button
 								onClick={handleJoinLobby}
-								className='bg-green-300 select-none outline-none px-2 py-1 w-1/3 rounded-md font-sunny text-xl text-black/70 sm:hover:opacity-50 sm:active:scale-95'>
-								SUBMIT
+								className='bg-blue-300 select-none outline-none px-2 rounded-md font-sunny text-xl text-black sm:hover:opacity-50 sm:active:scale-95'>
+								<FaArrowRight size={18} />
 							</button>
 						</div>
 						{error && <span className='pt-2 font-manga text-xl text-red-400'>Error - {error}</span>}
