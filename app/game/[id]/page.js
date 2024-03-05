@@ -8,7 +8,6 @@ import { LuUnplug } from 'react-icons/lu';
 
 export default function GamePage() {
 	const { id: lobbyId } = useParams();
-	const [isHost, setIsHost] = useState(false);
 	const [players, setPlayers] = useState([]);
 	const [playerName, setPlayerName] = useState('');
 	const [socket, setSocket] = useState(null);
@@ -16,6 +15,7 @@ export default function GamePage() {
 	const [editingName, setEditingName] = useState(false);
 	const [showLinkCopied, setShowLinkCopied] = useState(false);
 	const [disconnectingUsers, setDisconnectingUsers] = useState({});
+	const [hostUserToken, setHostUserToken] = useState(null);
 
 	useEffect(() => {
 		const socketInstance = getSocket();
@@ -27,12 +27,12 @@ export default function GamePage() {
 
 			socketInstance.on('lobby_details', ({ members, hostUserToken }) => {
 				setPlayers(members);
-				setIsHost(userToken === hostUserToken);
+				setHostUserToken(hostUserToken);
 			});
 
 			socketInstance.on('update_lobby', ({ members, hostUserToken }) => {
 				setPlayers(members);
-				setIsHost(userToken === hostUserToken);
+				setHostUserToken(hostUserToken);
 			});
 
 			// Cleanup function removes event listeners
@@ -147,22 +147,20 @@ export default function GamePage() {
 			<div className={`w-full justify-start mb-4`}>
 				<BackButton />
 			</div>
-			<div className={`flex flex-col space-y-1 mb-4 leading-none justify-center text-center`}>
+			<div className={`flex flex-col space-y-1 mb-8 leading-none justify-center text-center`}>
 				<div className={`relative`}>
-					<h1 className='font-sunny text-4xl'>Lobby ID: {lobbyId}</h1>
+					<h1 className='font-sunny text-3xl select-none'>Lobby ID: </h1>
+					<h1 className='font-manga text-5xl'> {lobbyId}</h1>
 					<FaCopy
 						onClick={handleLobbyIdCopy}
 						size={18}
-						className={`text-white/50 absolute -right-8 top-2 cursor-pointer sm:hover:opacity-50 sm:active:scale-95`}
+						className={`text-white/50 absolute -right-8 bottom-4 cursor-pointer sm:hover:opacity-50 sm:active:scale-95`}
 					/>
 				</div>
-				<h2 className={`font-manga text-xl ${isHost ? 'text-green-300' : 'text-red-300'}`}>
-					HOST: {isHost ? 'TRUE' : 'FALSE'}
-				</h2>
 			</div>
 			<div
 				className={`flex flex-col h-full w-full items-center justify-center bg-blue-300/10 pt-4 rounded-md`}>
-				<h2 className={`font-sunny text-3xl text-blue-300 mb-2`}>PLAYER LIST</h2>
+				<h2 className={`font-sunny text-3xl text-blue-300 mb-2 select-none`}>PLAYER LIST</h2>
 				<ul className='w-full list-disc space-y-2'>
 					{players?.map((player, index) => (
 						<li
@@ -181,8 +179,19 @@ export default function GamePage() {
 								</div>
 							)}
 							<div className='relative w-fit flex justify-center items-center'>
-								<span className='select-none absolute bottom-0 -left-9 font-sunny text-[16px] text-green-300'>
-									{players[index].userToken === userToken ? '  (YOU)' : ''}
+								<span
+									className={`${
+										players[index].userToken === hostUserToken
+											? 'text-green-300'
+											: players[index].userToken === userToken
+											? 'text-white/20'
+											: ''
+									} select-none absolute bottom-0 -left-10 font-sunny text-[16px]`}>
+									{players[index].userToken === hostUserToken
+										? '  (HOST)'
+										: players[index].userToken === userToken
+										? '  (YOU)'
+										: ''}
 								</span>
 								{players[index].userToken === userToken && editingName ? (
 									<input
