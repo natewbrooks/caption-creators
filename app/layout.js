@@ -1,5 +1,6 @@
 import Head from 'next/head';
 import './globals.css';
+import { UserAuthProvider } from './contexts/UserAuthContext';
 
 export const metadata = {
 	title: 'Caption Creators',
@@ -22,7 +23,9 @@ export default function RootLayout({ children }) {
 					href='/favicon/favicon.png'
 				/>
 			</Head>
-			<body className={`mx-10 my-4 overflow-hidden`}>{children}</body>
+			<body className={`mx-10 my-4 overflow-hidden`}>
+				<UserAuthProvider>{children} </UserAuthProvider>
+			</body>
 		</html>
 	);
 }

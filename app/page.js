@@ -4,12 +4,15 @@ import { useRouter } from 'next/navigation';
 import { getSocket, getUserToken } from '@/server/socketManager';
 import { MdVideoLibrary } from 'react-icons/md';
 import { FaArrowRight } from 'react-icons/fa6';
+import UserDisplay from './components/login/userDisplay';
+import { useAuth } from './contexts/UserAuthContext';
 
 export default function Home() {
 	const [lobbyId, setLobbyId] = useState('');
 	const [error, setError] = useState('');
 	const router = useRouter();
 	const userToken = getUserToken();
+	const { currentUser } = useAuth();
 
 	useEffect(() => {
 		const socket = getSocket();
@@ -30,17 +33,23 @@ export default function Home() {
 
 	const handleCreateLobby = () => {
 		// Create the lobby, store the hosts userToken
-		getSocket().emit('create_lobby', { hostUserToken: userToken });
+		getSocket().emit('create_lobby', {
+			hostUserToken: userToken,
+			playerName: currentUser ? currentUser.displayName : 'Host',
+		});
 	};
 
 	const handleJoinLobby = () => {
 		// Send user information to server to join lobby if the player inputted a lobby that exists
 		if (lobbyId) {
+			console.log('currentUser at lobby join:', currentUser);
+
 			getSocket().emit('join_lobby', {
 				lobbyId,
-				playerName: 'Anonymous',
+				playerName: currentUser ? currentUser.displayName : 'Anonymous',
 				userToken: userToken,
 			});
+
 			getSocket().on('lobby_joined', () => {
 				router.push(`/game/${lobbyId}`);
 			});
@@ -48,6 +57,7 @@ export default function Home() {
 	};
 	return (
 		<main className='w-full h-full flex flex-col justify-between items-center'>
+			<UserDisplay onClickEnabled={true} />
 			<div className='relative flex flex-col items-center leading-none mt-10 mb-24'>
 				<div className={`flex space-x-6 items-center justify-center text-center`}>
 					<h1 className={`font-sunny text-8xl`}>Caption Creators</h1>
@@ -74,7 +84,7 @@ export default function Home() {
 							<input
 								type='text'
 								value={lobbyId}
-								maxLength={7}
+								maxLength={4} // Set to the length of sever lobby id (nanoid) length
 								onChange={(e) => setLobbyId(e.target.value.replace(/\s/g, ''))} // NO SPACES ALLOWED
 								onKeyDown={(e) => {
 									if (e.key === 'Enter') {
@@ -82,7 +92,7 @@ export default function Home() {
 									}
 								}}
 								placeholder='Lobby ID'
-								className='font-manga text-white text-xl text-center bg-white/10 w-full py-1 rounded-md placeholder:text-white/50'
+								className='outline-none font-manga text-white text-xl text-center bg-white/10 w-full py-1 rounded-md placeholder:text-white/50'
 							/>
 							<button
 								onClick={handleJoinLobby}

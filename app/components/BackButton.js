@@ -10,7 +10,9 @@ const BackButton = () => {
 		getSocket().emit('leave_lobby');
 
 		// Navigate back
-		router.back();
+		// router.back();
+
+		router.push('/');
 	};
 
 	return (
