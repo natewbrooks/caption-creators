@@ -60,12 +60,13 @@ export default function ProfilePage() {
 							</div> */}
 						</div>
 
-						<div className={`select-none w-full flex space-x-2 justify-center sm:justify-end`}>
+						<div
+							className={`text-center select-none w-full flex space-x-2 justify-center sm:justify-end`}>
 							<div
 								onClick={handleUpdateProfile}
 								className={`w-fit flex justify-center items-center`}>
 								<div
-									className={`flex justify-center items-center text-black font-sunny text-xl bg-white px-2 rounded-md cursor-pointer sm:hover:opacity-50 sm:active:scale-95`}>
+									className={`leading-none py-2 flex justify-center items-center text-black font-sunny text-xl bg-white px-2 rounded-md cursor-pointer sm:hover:opacity-50 sm:active:scale-95`}>
 									<div className={`mr-1`}>
 										<FaEdit size={20} />
 									</div>
@@ -79,7 +80,7 @@ export default function ProfilePage() {
 								}}
 								className={`w-fit flex justify-center items-center`}>
 								<div
-									className={`flex justify-center items-center text-black font-sunny text-xl bg-red-300 px-2 rounded-md cursor-pointer sm:hover:opacity-50 sm:active:scale-95`}>
+									className={`leading-none py-2 flex justify-center items-center text-black font-sunny text-xl bg-red-300 px-2 rounded-md cursor-pointer sm:hover:opacity-50 sm:active:scale-95`}>
 									<div className={`mr-1`}>
 										<ImExit size={20} />
 									</div>
