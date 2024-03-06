@@ -4,7 +4,7 @@ const next = require('next');
 const { customAlphabet } = require('nanoid');
 const { join } = require('path');
 const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'; // No hyphens or underscores (default has them)
-const nanoid = customAlphabet(alphabet, 7);
+const nanoid = customAlphabet(alphabet, 4);
 
 const port = process.env.PORT || 3000;
 const dev = process.env.NODE_ENV !== 'production';
@@ -137,9 +137,12 @@ function findLobbyId(userToken) {
 
 // Creates a new lobby with a unique ID and adds the host as the first member.
 function createLobby(socket, hostUserToken, io) {
-	/* Generate unique lobby ID with 7 digits (no underscores or hyphens),
-	"~11 days or 266K IDs needed, in order to have a 1% probability of at least one collision." (https://zelark.github.io/nano-id-cc/) */
-	const lobbyId = nanoid();
+	/* Generate unique lobby ID with 4 digits (no underscores or hyphens), 62! possible combinations */
+	let lobbyId = nanoid();
+	// If the lobbyId is already in use create a new one until it isn't already used
+	while (lobbies[lobbyId]) {
+		lobbyId = nanoid();
+	}
 
 	lobbies[lobbyId] = {
 		hostUserToken: hostUserToken, // Store the host's user token.
