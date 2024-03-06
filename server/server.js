@@ -27,7 +27,7 @@ app.prepare().then(() => {
 	io.on('connection', (socket) => {
 		console.log('New user connected to server');
 
-		socket.on('create_lobby', ({ hostUserToken }) => createLobby(socket, hostUserToken, io));
+		socket.on('create_lobby', (data) => createLobby(socket, data, io));
 		socket.on('join_lobby', (data) => joinLobby(socket, data, io));
 		socket.on('update_player_name', (data) =>
 			updatePlayerName(data.lobbyId, data.userToken, data.playerName, io)
@@ -136,7 +136,7 @@ function findLobbyId(userToken) {
 }
 
 // Creates a new lobby with a unique ID and adds the host as the first member.
-function createLobby(socket, hostUserToken, io) {
+function createLobby(socket, { hostUserToken, playerName }, io) {
 	/* Generate unique lobby ID with 4 digits (no underscores or hyphens), 62! possible combinations */
 	let lobbyId = nanoid();
 	// If the lobbyId is already in use create a new one until it isn't already used
@@ -146,7 +146,7 @@ function createLobby(socket, hostUserToken, io) {
 
 	lobbies[lobbyId] = {
 		hostUserToken: hostUserToken, // Store the host's user token.
-		members: [{ id: socket.id, name: 'Host', isHost: true, userToken: hostUserToken }],
+		members: [{ id: socket.id, name: playerName, isHost: true, userToken: hostUserToken }],
 	};
 	socket.join(lobbyId); // Add the host's socket to the lobby room.
 	updateLobby(lobbyId, io); // Update all clients with the new lobby details.

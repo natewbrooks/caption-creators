@@ -1,5 +1,6 @@
 'use client';
 import BackButton from '@/app/components/BackButton';
+import UserDisplay from '@/app/components/login/userDisplay';
 import { getSocket, getUserToken } from '@/server/socketManager';
 import { useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
@@ -48,13 +49,6 @@ export default function GamePage() {
 		setSocket(socketInstance);
 
 		if (socketInstance) {
-			function handleUnload() {
-				socketInstance.emit('reload', userToken);
-			}
-			function handleReload() {
-				socketInstance.emit('restore_session', userToken);
-			}
-
 			window.addEventListener('beforeunload', handleUnload);
 			// Check if the document is already loaded
 			if (document.readyState === 'complete') {
@@ -109,6 +103,15 @@ export default function GamePage() {
 		}
 	}, [socket, userToken]);
 
+	function handleUnload() {
+		const socketInstance = getSocket();
+		socketInstance.emit('reload', userToken);
+	}
+	function handleReload() {
+		const socketInstance = getSocket();
+		socketInstance.emit('restore_session', userToken);
+	}
+
 	const handlePlayerNameSubmit = () => {
 		if (playerName.trim()) {
 			setPlayerName(playerName);
@@ -144,8 +147,9 @@ export default function GamePage() {
 			{showLinkCopied && (
 				<span className={`absolute top-5 font-sunny text-lg text-red-300`}>LOBBY ID COPIED!</span>
 			)}
-			<div className={`w-full justify-start mb-4`}>
+			<div className={`flex w-full justify-between mb-4`}>
 				<BackButton />
+				<UserDisplay onClickEnabled={false} />
 			</div>
 			<div className={`flex flex-col space-y-1 mb-8 leading-none justify-center text-center`}>
 				<div className={`relative`}>
@@ -206,7 +210,7 @@ export default function GamePage() {
 										}}
 										placeholder={player.name}
 										maxLength={16}
-										className='w-[172px] h-[30px] text-center font-manga bg-blue-300/10 rounded-md text-white placeholder:text-white/50'
+										className='w-[172px] h-[30px] outline-none text-center font-manga bg-blue-300/10 rounded-md text-white placeholder:text-white/50'
 									/>
 								) : (
 									<span className='w-[172px] h-[30px] flex items-center justify-center'>
