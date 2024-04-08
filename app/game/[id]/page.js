@@ -128,6 +128,10 @@ export default function GamePage() {
 		}
 	};
 
+	const handleGameStart = () => {
+		socket.emit('start_game', lobbyId);
+	};
+
 	const handleLobbyIdCopy = () => {
 		navigator.clipboard.writeText(lobbyId).then(
 			() => {
@@ -147,7 +151,7 @@ export default function GamePage() {
 			{showLinkCopied && (
 				<span className={`absolute top-5 font-sunny text-lg text-red-300`}>LOBBY ID COPIED!</span>
 			)}
-			<div className={`flex w-full justify-between mb-4`}>
+			<div className={`flex w-full justify-between mb-10`}>
 				<BackButton />
 				<UserDisplay onClickEnabled={false} />
 			</div>
@@ -246,6 +250,17 @@ export default function GamePage() {
 					))}
 				</ul>
 			</div>
+			{userToken === hostUserToken ? (
+				<div className={`flex justify-center w-full items-center mt-4`}>
+					<div
+						onClick={() => handleGameStart()}
+						className={`font-sunny text-3xl text-green-300 cursor-pointer sm:hover:opacity-50 sm:active:scale-95`}>
+						START GAME
+					</div>
+				</div>
+			) : (
+				''
+			)}
 		</div>
 	);
 }
