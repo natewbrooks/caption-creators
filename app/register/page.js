@@ -30,7 +30,8 @@ export default function RegisterPage() {
 			<BackButton />
 
 			<div className='relative w-full h-full flex justify-center items-center'>
-				<div className={`w-[400px] h-fit bg-dark p-4 rounded-md`}>
+				<div
+					className={`w-[400px] h-fit bg-dark p-4 rounded-md outline outline-2 outline-darkAccent`}>
 					<h1 className={`text-5xl text-center font-sunny pb-2 border-b-2 border-darkAccent`}>
 						REGISTER ACCOUNT
 					</h1>
