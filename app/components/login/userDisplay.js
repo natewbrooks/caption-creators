@@ -26,7 +26,7 @@ export default function UserDisplay({ onClickEnabled }) {
 				{currentUser ? (
 					<p className={`font-manga text-xl`}>{currentUser.displayName}</p>
 				) : (
-					<span className={`font-manga text-xl cursor-pointer`}>LOGIN</span>
+					<span className={`translate-y-[0.15rem] font-manga text-xl cursor-pointer`}>LOGIN</span>
 				)}
 			</div>
 		</>

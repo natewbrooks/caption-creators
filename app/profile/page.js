@@ -34,9 +34,15 @@ export default function ProfilePage() {
 			<div className='w-full h-full flex flex-col justify-center items-center'>
 				{currentUser ? (
 					<div className={`flex flex-col w-full h-full px-4 sm:px-20 py-4`}>
-						<h1 className={`text-5xl font-sunny text-center`}>PROFILE</h1>
+						<div className={`w-full flex justify-center text-center`}>
+							<h1
+								data-text='PROFILE'
+								className={`w-fit text-5xl font-sunny text-center`}>
+								PROFILE
+							</h1>
+						</div>
 
-						<div className={`flex flex-col w-full h-full text-white py-8`}>
+						<div className={`flex flex-col w-full h-fit text-white py-8`}>
 							<div className={`font-sunny text-2xl`}>
 								<span className={`text-blue-300`}>USERNAME:</span>
 								{editingProfile ? (
