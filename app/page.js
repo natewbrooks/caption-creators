@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSocket, getUserToken } from '@/server/socketManager';
 import { MdVideoLibrary } from 'react-icons/md';
-import { FaArrowRight } from 'react-icons/fa6';
+import { FaArrowRight, FaTrophy } from 'react-icons/fa6';
 import UserDisplay from './components/login/userDisplay';
 import { useAuth } from './contexts/UserAuthContext';
 
@@ -57,7 +57,20 @@ export default function Home() {
 	};
 	return (
 		<main className='w-full h-full flex flex-col justify-between items-center'>
-			<UserDisplay onClickEnabled={true} />
+			<div className='flex flex-col justify-center items-center  sm:flex-row  w-full sm:justify-between'>
+				<div
+					onClick={() => {
+						router.push('/leaderboard');
+					}}
+					className={`flex space-x-2 items-center cursor-pointer sm:hover:opacity-50 sm:active:scale-95`}>
+					<FaTrophy
+						size={18}
+						className={`text-yellow-500 -translate-y-[0.15rem]`}
+					/>
+					<span className={`font-manga text-xl`}>LEADERBOARD</span>
+				</div>
+				<UserDisplay onClickEnabled={true} />
+			</div>
 			<div className='relative flex flex-col items-center leading-none mt-10 mb-24'>
 				<div className={`flex space-x-6 items-center justify-center text-center`}>
 					<h1 className={`font-sunny text-8xl`}>Caption Creators</h1>
