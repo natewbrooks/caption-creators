@@ -30,8 +30,8 @@ export default function RegisterPage() {
 			<BackButton />
 
 			<div className='relative w-full h-full flex justify-center items-center'>
-				<div className={`w-[400px] h-fit bg-white/10 p-4 rounded-md translate-y-[30%]`}>
-					<h1 className={`text-5xl text-center font-sunny pb-2 border-b-2 border-white/10`}>
+				<div className={`w-[400px] h-fit bg-dark p-4 rounded-md`}>
+					<h1 className={`text-5xl text-center font-sunny pb-2 border-b-2 border-darkAccent`}>
 						REGISTER ACCOUNT
 					</h1>
 					<form
@@ -48,7 +48,7 @@ export default function RegisterPage() {
 									value={username}
 									onChange={(e) => setUsername(e.target.value)}
 									placeholder=''
-									className={`font-manga px-2 rounded-md text-black placeholder:text-black/30 outline-none`}
+									className={`font-manga px-2 rounded-md bg-darkAccent text-white placeholder:text-white/30 outline-none`}
 									required
 								/>
 							</div>
@@ -62,7 +62,7 @@ export default function RegisterPage() {
 									value={email}
 									onChange={(e) => setEmail(e.target.value)}
 									placeholder=''
-									className={`font-manga px-2 rounded-md text-black placeholder:text-black/30 outline-none`}
+									className={`font-manga px-2 rounded-md bg-darkAccent text-white placeholder:text-white/30 outline-none`}
 									required
 								/>
 							</div>
@@ -76,7 +76,7 @@ export default function RegisterPage() {
 									value={password}
 									onChange={(e) => setPassword(e.target.value)}
 									placeholder=''
-									className={`font-manga px-2 rounded-md text-black placeholder:text-black/30 outline-none`}
+									className={`font-manga px-2 rounded-md bg-darkAccent text-white placeholder:text-white/30 outline-none`}
 									required
 								/>
 							</div>
@@ -90,12 +90,12 @@ export default function RegisterPage() {
 						{error && <p className={`text-red-300 font-manga text-xl`}>{error}</p>}
 					</form>
 					<div
-						className={`w-full flex flex-col border-t-2 border-white/10 pt-4 items-center justify-center`}>
+						className={`w-full flex flex-col border-t-2 border-darkAccent pt-4 items-center justify-center`}>
 						<span className={`font-manga text-center text-xl select-none`}>
 							Already have an account?{' '}
 							<span
 								onClick={() => router.push('/login')}
-								className={`text-blue-300 cursor-pointer sm:hover:opacity-50 sm:active:scale-95`}>
+								className={`text-yellow-300 cursor-pointer sm:hover:opacity-50 sm:active:scale-95`}>
 								Login here.
 							</span>
 						</span>

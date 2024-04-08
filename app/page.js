@@ -56,7 +56,7 @@ export default function Home() {
 		}
 	};
 	return (
-		<main className='w-full h-full flex flex-col justify-between items-center'>
+		<main className='w-full h-full flex flex-col items-center '>
 			<div className='flex flex-col justify-center items-center  sm:flex-row  w-full sm:justify-between'>
 				<div
 					onClick={() => {
@@ -71,27 +71,32 @@ export default function Home() {
 				</div>
 				<UserDisplay onClickEnabled={true} />
 			</div>
-			<div className='relative flex flex-col items-center leading-none mt-10 mb-24'>
+			<div className='relative h-fit flex flex-col items-center leading-none'>
 				<div className={`flex space-x-6 items-center justify-center text-center`}>
-					<h1 className={`font-sunny text-8xl`}>Caption Creators</h1>
-					<MdVideoLibrary
+					<h1
+						data-text='Caption Creators'
+						className={`font-sunny text-8xl`}>
+						Caption Creators
+					</h1>
+					{/* <MdVideoLibrary
 						size={70}
 						className={`hidden md:block mb-2`}
-					/>
+					/> */}
 				</div>
-				<span className={`font-manga text-lg text-blue-300 text-center`}>
+				<span
+					className={`bg-dark px-4 py-1 rounded-full font-manga text-md text-yellow-300 text-center `}>
 					Nate Brooks, Gabriel Huber, Connor O’Grady, David Borisevich, and Dominick Winningham
 				</span>
 			</div>
 
-			<div className='h-full w-fit flex flex-col space-y-4 justify-center items-center text-center'>
+			<div className='-translate-y-10 h-full w-fit flex flex-col space-y-4 justify-center items-center text-center'>
 				<>
 					<button
 						onClick={handleCreateLobby}
-						className='bg-white/10 p-4 font-sunny text-5xl rounded-md text-white sm:hover:opacity-50 sm:active:scale-95'>
+						className='bg-dark p-4 font-sunny text-5xl rounded-md text-white outline outline-2 outline-darkAccent  sm:hover:outline-white sm:active:scale-95'>
 						HOST LOBBY
 					</button>
-					<div className='flex flex-col w-full items-center bg-white/10 rounded-md px-2 py-4'>
+					<div className='flex flex-col w-full items-center bg-dark outline outline-2 outline-darkAccent rounded-md px-2 py-4'>
 						<label className='text-start text-5xl font-sunny pb-2'>JOIN LOBBY</label>
 						<div className={`flex space-x-1`}>
 							<input
@@ -105,11 +110,11 @@ export default function Home() {
 									}
 								}}
 								placeholder='Lobby ID'
-								className='outline-none font-manga text-white text-xl text-center bg-white/10 w-full py-1 rounded-md placeholder:text-white/50'
+								className='outline-none font-manga text-white text-xl text-center bg-darkAccent w-full py-1 rounded-md placeholder:text-white/50'
 							/>
 							<button
 								onClick={handleJoinLobby}
-								className='bg-blue-300 select-none outline-none px-2 rounded-md font-sunny text-xl text-black sm:hover:opacity-50 sm:active:scale-95'>
+								className='bg-yellow-300 select-none outline-none px-2 rounded-md font-sunny text-xl text-black outline-2 outline-offset-2 sm:hover:outline-white sm:hover:outline sm:active:scale-95'>
 								<FaArrowRight size={18} />
 							</button>
 						</div>

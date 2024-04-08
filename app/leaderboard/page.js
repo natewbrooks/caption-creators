@@ -251,7 +251,7 @@ export default function LeaderboardPage() {
 		<div
 			style={style}
 			className={`font-manga text-xl flex justify-between px-2 py-2 ${
-				index % 2 ? 'bg-white/10' : 'bg-blue-300/10'
+				index % 2 ? 'bg-dark' : 'bg-darkAccent'
 			}`}>
 			<div className={`font-manga text-xl flex justify-between`}>
 				<div className={`flex space-x-2 items-center`}>
@@ -282,19 +282,23 @@ export default function LeaderboardPage() {
 				<BackButton />
 				<UserDisplay onClickEnabled={true} />
 			</div>
-			<div className='relative w-full h-full flex flex-col justify-center items-center overflow-hidden'>
+			<div className='relative w-full h-full flex flex-col items-center overflow-hidden'>
 				<div className='flex items-center h-fit space-x-4'>
 					<FaTrophy
 						size={32}
 						className={`-translate-y-[0.15rem] text-yellow-500`}
 					/>
-					<h1 className={`text-5xl font-sunny text-center text-white`}>TOP 1000 LEADERBOARD</h1>
+					<h1
+						data-text='TOP 1000 LEADERBOARD'
+						className={`text-5xl font-sunny text-center text-white`}>
+						TOP 1000 LEADERBOARD
+					</h1>
 					<FaTrophy
 						size={32}
 						className={`-translate-y-[0.15rem] text-yellow-500`}
 					/>
 				</div>
-				<div className='max-w-[800px] w-full flex flex-col justify-center p-4 items-center '>
+				<div className='max-w-[800px] w-full flex flex-col p-4 items-center '>
 					<div className='w-full h-fit flex flex-row p-2 rounded-sm items-center justify-center space-x-4'>
 						<div
 							className={`translate-y-[0.15rem] flex items-center h-full justify-center space-x-2 w-fit cursor-pointer sm:hover:opacity-50 sm:active:scale-95`}
@@ -305,11 +309,13 @@ export default function LeaderboardPage() {
 									isDescending ? 'rotate-0' : 'rotate-180'
 								}`}
 							/>
-							<span className={`h-full font-manga text-xl `}>
+							<h1
+								data-text={isDescending ? 'DESCENDING' : 'ASCENDING'}
+								className={`h-full font-manga text-xl `}>
 								{isDescending ? 'DESCENDING' : 'ASCENDING'}
-							</span>
+							</h1>
 						</div>
-						<span className={`text-white/10`}>|</span>
+						<span className={`text-darkAccent`}>|</span>
 						<div className='flex space-x-2 items-center'>
 							<FaSearch
 								size={14}
@@ -319,17 +325,25 @@ export default function LeaderboardPage() {
 								type='text'
 								onChange={handleSearchChange}
 								value={searchTerm}
-								className={`font-manga text-xl rounded-md min-w-[80px] max-w-[140px] px-2 w-full bg-white/10 text-dark outline-none`}
+								className={`font-manga text-xl rounded-md min-w-[80px] max-w-[140px] px-2 w-full bg-darkAccent text-white outline-none`}
 							/>
 						</div>
 					</div>
-					<List
-						height={500}
-						itemCount={sortedUsers.length}
-						itemSize={45}
-						width={'100%'}>
-						{Row}
-					</List>
+					{sortedUsers.length !== 0 ? (
+						<List
+							height={500}
+							itemCount={sortedUsers.length}
+							itemSize={45}
+							width={'100%'}>
+							{Row}
+						</List>
+					) : (
+						<h1
+							data-text='NO MATCHING RESULTS!'
+							className={`mt-4 font-sunny text-red-300 text-2xl`}>
+							NO MATCHING RESULTS!
+						</h1>
+					)}
 				</div>
 			</div>
 		</div>

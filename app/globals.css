@@ -17,15 +17,15 @@
 
 :root {
   --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+  --background-start-rgb: 31, 31, 31;
+  --background-end-rgb: 31, 31, 31;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
+    --background-start-rgb: 31, 31, 31;
+    --background-end-rgb: 31, 31, 31;
   }
 }
 
@@ -37,7 +37,7 @@
 
 /* Track */
 ::-webkit-scrollbar-track {
-  background: #000;
+  background: rgb(var(--background-end-rgb));
 }
 
 /* Handle */
@@ -51,7 +51,22 @@
   opacity: 90%;
 }
 
+h1 {
+  position: relative
+}
+
+h1:after {
+  content: attr(data-text);
+  -webkit-text-stroke: 12px rgb(var(--background-end-rgb));
+  color: rgb(var(--background-end-rgb));
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  z-index: -1
+}
+
 body {
+  overflow: hidden;
   color: rgb(var(--foreground-rgb));
   background: linear-gradient(to bottom,
       transparent,
@@ -61,5 +76,48 @@ body {
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+}
+
+
+.background {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  background-color: rgb(31, 31, 31);
+  overflow: hidden;
+}
+
+.background::before,
+.background::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  /* Ensures coverage during animation */
+  height: 100%;
+  background-repeat: repeat;
+  background-size: 96px 96px;
+  animation: scrollDiagonally 600s linear infinite;
+  z-index: -10;
+  opacity: 0.4;
+}
+
+.background::before {
+  background-image: url("../public/emojis/camera-emoji.svg");
+  /* Adjust starting position if needed */
+}
+
+.background::after {
+  background-image: url("../public/emojis/popcorn_emoji.svg");
+  /* Ensure alternating pattern by offsetting start */
+  background-position: 48px 48px;
+  /* Half of your background-size */
+}
+
+@keyframes scrollDiagonally {
+  to {
+    background-position: 10000px -10000px;
   }
 }
