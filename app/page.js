@@ -57,7 +57,7 @@ export default function Home() {
 	};
 	return (
 		<main className='w-full h-full flex flex-col items-center '>
-			<div className='flex flex-col justify-center items-center  sm:flex-row  w-full sm:justify-between'>
+			<div className='flex flex-col justify-center items-center mb-4 sm:flex-row  w-full sm:justify-between'>
 				<div
 					onClick={() => {
 						router.push('/leaderboard');
@@ -72,10 +72,10 @@ export default function Home() {
 				<UserDisplay onClickEnabled={true} />
 			</div>
 			<div className='relative h-fit flex flex-col items-center leading-none'>
-				<div className={`flex space-x-6 items-center justify-center text-center`}>
+				<div className={`flex items-center justify-center text-center`}>
 					<h1
 						data-text='Caption Creators'
-						className={`font-sunny text-8xl`}>
+						className={`font-sunny text-7xl sm:text-8xl`}>
 						Caption Creators
 					</h1>
 					{/* <MdVideoLibrary
@@ -84,20 +84,20 @@ export default function Home() {
 					/> */}
 				</div>
 				<span
-					className={`bg-dark px-4 py-1 rounded-full font-manga text-md text-yellow-300 text-center `}>
+					className={`bg-dark px-4 py-1 rounded-full font-manga text-sm sm:text-md text-yellow-300 text-center `}>
 					Nate Brooks, Gabriel Huber, Connor O’Grady, David Borisevich, and Dominick Winningham
 				</span>
 			</div>
 
-			<div className='-translate-y-10 h-full w-fit flex flex-col space-y-4 justify-center items-center text-center'>
+			<div className='h-full w-fit flex flex-col space-y-4 justify-center items-center text-center'>
 				<>
 					<button
 						onClick={handleCreateLobby}
-						className='bg-dark p-4 font-sunny text-5xl rounded-md text-white outline outline-2 outline-darkAccent  sm:hover:outline-white sm:active:scale-95'>
+						className='bg-dark p-4 w-full text-center font-sunny text-3xl md:text-5xl  rounded-md text-white outline outline-2 outline-darkAccent  sm:hover:outline-white sm:active:scale-95'>
 						HOST LOBBY
 					</button>
-					<div className='flex flex-col w-full items-center bg-dark outline outline-2 outline-darkAccent rounded-md px-2 py-4'>
-						<label className='text-start text-5xl font-sunny pb-2'>JOIN LOBBY</label>
+					<div className='flex flex-col w-fit items-center bg-dark outline outline-2 outline-darkAccent rounded-md px-2 py-4'>
+						<label className='text-center text-3xl md:text-5xl font-sunny pb-2 '>JOIN LOBBY</label>
 						<div className={`flex space-x-1`}>
 							<input
 								type='text'
