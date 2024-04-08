@@ -81,43 +81,65 @@ body {
 
 
 .background {
-  position: relative;
+  position: absolute;
+  z-index: -20;
   width: 100%;
   height: 100vh;
-  background-color: rgb(31, 31, 31);
   overflow: hidden;
 }
 
-.background::before,
-.background::after {
+.background::before {
   content: "";
-  position: absolute;
+  overflow: hidden;
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   /* Ensures coverage during animation */
   height: 100%;
+  background-image: url("../public/emojis/thought-emoji.svg");
+  background-position: 0px 0px;
   background-repeat: repeat;
   background-size: 96px 96px;
-  animation: scrollDiagonally 600s linear infinite;
+  animation: scrollDiagonally 100s linear infinite;
+  animation-play-state: var(--animation-play-state, running);
+  animation-delay: 500ms;
   z-index: -10;
   opacity: 0.4;
 }
 
-.background::before {
-  background-image: url("../public/emojis/camera-emoji.svg");
-  /* Adjust starting position if needed */
-}
-
-.background::after {
-  background-image: url("../public/emojis/popcorn_emoji.svg");
-  /* Ensure alternating pattern by offsetting start */
-  background-position: 48px 48px;
-  /* Half of your background-size */
-}
 
 @keyframes scrollDiagonally {
   to {
-    background-position: 10000px -10000px;
+    background-position: 4800px -4800px;
   }
+}
+
+
+
+.backgroundOffset {
+  position: absolute;
+  z-index: -20;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.backgroundOffset::before {
+  content: "";
+  position: fixed;
+  overflow: hidden;
+  top: -48px;
+  left: -48px;
+  width: 150%;
+  /* Ensures coverage during animation */
+  height: 150%;
+  background-image: url("../public/emojis/camera-emoji.svg");
+  background-repeat: repeat;
+  background-size: 96px 96px;
+  animation: scrollDiagonally 100s linear infinite;
+  animation-play-state: var(--animation-play-state, running);
+  animation-delay: 500ms;
+  z-index: -10;
+  opacity: 0.4;
 }

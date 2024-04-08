@@ -37,7 +37,9 @@ export default function RootLayout({ children }) {
 	}, []);
 
 	return (
-		<html lang='en'>
+		<html
+			lang='en'
+			className={`overflow-hidden`}>
 			<Helmet>
 				<title>Caption Creators</title>
 				<meta
@@ -91,7 +93,12 @@ export default function RootLayout({ children }) {
 					content='/path/to/image.jpg'
 				/>
 			</Helmet>
-			<body className={`p-8 overflow-hidden ${isPageLoaded ? 'background' : ''}`}>
+			<body className={`p-8 overflow-hidden w-full h-screen `}>
+				<div className='absolute'>
+					<div className={`${isPageLoaded ? 'background' : ''}`}></div>
+					<div className={`${isPageLoaded ? 'backgroundOffset' : ''}`}></div>
+				</div>
+
 				<UserAuthProvider>{children}</UserAuthProvider>
 			</body>
 		</html>

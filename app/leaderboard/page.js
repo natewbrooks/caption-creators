@@ -6,7 +6,7 @@ import BackButton from '../components/BackButton.js';
 import { FaSearch, FaUserCircle } from 'react-icons/fa';
 import { IoFilter } from 'react-icons/io5';
 import { FixedSizeList as List } from 'react-window';
-import { FaTrophy } from 'react-icons/fa6';
+import { FaCrown, FaMedal, FaTrophy } from 'react-icons/fa6';
 import UserDisplay from '../components/login/userDisplay.js';
 
 export default function LeaderboardPage() {
@@ -255,9 +255,29 @@ export default function LeaderboardPage() {
 			}`}>
 			<div className={`font-manga text-xl flex justify-between`}>
 				<div className={`flex space-x-2 items-center`}>
-					<div
-						className={`font-manga text-lg text-white w-[30px] flex items-center justify-center`}>
-						#{sortedUsers[index].rank}
+					<div className={`flex space-x-2`}>
+						<div
+							className={`font-manga text-lg text-white w-[30px] flex items-center justify-center`}>
+							#{sortedUsers[index].rank}
+						</div>
+						{sortedUsers[index].rank === 1 ? (
+							<FaCrown
+								size={24}
+								className={`text-yellow-500`}
+							/>
+						) : sortedUsers[index].rank === 2 ? (
+							<FaMedal
+								size={24}
+								className={`text-slate-300`}
+							/>
+						) : sortedUsers[index].rank === 3 ? (
+							<FaMedal
+								size={24}
+								className={`text-yellow-700`}
+							/>
+						) : (
+							''
+						)}
 					</div>
 					<span className='text-white/10'>|</span>
 					<div className='flex items-center space-x-2'>
@@ -283,22 +303,26 @@ export default function LeaderboardPage() {
 				<UserDisplay onClickEnabled={true} />
 			</div>
 			<div className='relative w-full h-full flex flex-col items-center overflow-hidden'>
-				<div className='flex items-center h-fit space-x-4'>
-					<FaTrophy
-						size={32}
-						className={`-translate-y-[0.15rem] text-yellow-500`}
-					/>
+				<div className='flex items-center space-x-4'>
+					<div className='w-fit h-fit -translate-y-[0.15rem] bg-dark rounded-md p-1'>
+						<FaTrophy
+							size={32}
+							className={` text-yellow-500`}
+						/>
+					</div>
 					<h1
 						data-text='TOP 1000 LEADERBOARD'
 						className={`text-5xl font-sunny text-center text-white`}>
 						TOP 1000 LEADERBOARD
 					</h1>
-					<FaTrophy
-						size={32}
-						className={`-translate-y-[0.15rem] text-yellow-500`}
-					/>
+					<div className='w-fit h-fit -translate-y-[0.15rem] bg-dark rounded-md p-1'>
+						<FaTrophy
+							size={32}
+							className={` text-yellow-500`}
+						/>
+					</div>
 				</div>
-				<div className='max-w-[800px] w-full flex flex-col p-4 items-center '>
+				<div className='relative max-w-[800px] w-full flex flex-col p-4 items-center '>
 					<div className='w-full h-fit flex flex-row p-2 rounded-sm items-center justify-center space-x-4'>
 						<div
 							className={`translate-y-[0.15rem] flex items-center h-full justify-center space-x-2 w-fit cursor-pointer sm:hover:opacity-50 sm:active:scale-95`}
@@ -329,18 +353,20 @@ export default function LeaderboardPage() {
 							/>
 						</div>
 					</div>
-					{sortedUsers.length !== 0 ? (
-						<List
-							height={500}
-							itemCount={sortedUsers.length}
-							itemSize={45}
-							width={'100%'}>
-							{Row}
-						</List>
-					) : (
+					<List
+						className={`${
+							sortedUsers.length === 0 ? '' : 'outline'
+						} outline-2 outline-darkAccent rounded-md`}
+						height={500}
+						itemCount={sortedUsers.length}
+						itemSize={45}
+						width={'100%'}>
+						{Row}
+					</List>
+					{sortedUsers.length === 0 && (
 						<h1
 							data-text='NO MATCHING RESULTS!'
-							className={`mt-4 font-sunny text-red-300 text-2xl`}>
+							className={`absolute z-20 top-20 mt-4 font-sunny text-red-300 text-2xl`}>
 							NO MATCHING RESULTS!
 						</h1>
 					)}

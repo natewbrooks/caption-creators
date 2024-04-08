@@ -255,7 +255,7 @@ export default function GamePage() {
 				</div>
 			</div>
 			<div
-				className={`flex flex-col h-fit w-full md:w-[80%] items-center justify-center bg-dark rounded-md`}>
+				className={`flex flex-col h-fit w-full md:w-[80%] items-center justify-center bg-dark rounded-md outline outline-2 outline-darkAccent`}>
 				<List
 					height={400} // Adjust based on your layout
 					itemCount={players.length}
