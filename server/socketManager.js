@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 let socket;
 let userToken;
 
+// TODO: if user is logged in on firebase auth, then use the currentUser's username to search the database for the userToken instead of generating a new one
 export const initializeSocket = () => {
 	if (typeof window !== 'undefined') {
 		userToken = sessionStorage.getItem('userToken'); // Use sessionStorage to keep data through page refreshes, but if the tab closes we lose the session.

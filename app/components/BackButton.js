@@ -2,28 +2,30 @@ import { getSocket } from '@/server/socketManager';
 import { useRouter } from 'next/navigation';
 import { FaArrowLeft } from 'react-icons/fa6';
 
-const BackButton = () => {
+const BackButton = (goHome) => {
 	const router = useRouter();
 
 	const handleBackButtonClick = () => {
 		// Emit the disconnect event
 		getSocket().emit('leave_lobby');
 
-		// Navigate back
-		// router.back();
-
-		router.push('/');
+		if (!goHome) {
+			// Navigate back 1 step
+			router.back();
+		} else {
+			router.push('/'); // Always go home if goHome is true
+		}
 	};
 
 	return (
 		<div
 			onClick={handleBackButtonClick}
-			className={`flex w-fit items-center text-white cursor-pointer sm:hover:opacity/50 sm:active:scale-95`}>
+			className={`flex space-x-2 w-fit items-center text-white cursor-pointer sm:hover:opacity/50 sm:active:scale-95`}>
 			<FaArrowLeft
 				size={18}
-				className={`mr-2`}
+				className={``}
 			/>
-			<span className={`font-sunny text-2xl`}>RETURN</span>
+			<span className={`font-manga text-xl`}>RETURN</span>
 		</div>
 	);
 };

@@ -1,77 +1,116 @@
 class GameManager {
-	constructor(lobbyId, io) {
-		this.lobbyId = lobbyId; // Unique identifier for the game session
-		this.io = io; // Socket.IO server instance for communication
-		this.players = []; // List of players in the game
-		this.videos = this.loadVideos(); // Load videos for the game
-		this.currentVideoIndex = 0; // Index of the current video being captioned
-		this.captions = {}; // Store captions submitted by players, keyed by video ID
-		this.scores = {}; // Keep track of player scores
-		// Initialize other game-related properties as needed
+	constructor(lobbyId, io, players, totalRounds = 3) {
+		this.lobbyId = lobbyId;
+		this.io = io;
+		this.players = players;
+		this.videos = this.loadVideos();
+		this.currentVideoIndex = 0;
+		this.rounds = {};
+		this.currentRound = 1;
+		this.totalRounds = totalRounds;
+		this.initRounds();
+	}
+
+	initRounds() {
+		this.rounds[this.currentRound] = this.players.map((player) => ({
+			userToken: player.userToken,
+			caption: '',
+			voted: false,
+		}));
 	}
 
 	start() {
-		// Initialize the game, notify players, and set up the first video challenge
-		console.log(`Game ${this.lobbyId} started.`);
 		this.notifyPlayers('game_started', {
 			lobbyId: this.lobbyId,
 			video: this.videos[this.currentVideoIndex],
+			round: this.currentRound,
 		});
 	}
 
 	loadVideos() {
-		// Placeholder function to load videos
+		return []; // Placeholder: Implement actual video loading logic here
 	}
 
-	handleAction(socket, actionType, data) {
-		// General method to handle different types of game actions
+	handleAction(actionType, data) {
 		switch (actionType) {
 			case 'submit_caption':
-				this.submitCaption(socket.id, data.videoId, data.caption);
+				console.log('user ' + data.userToken + ' submitted caption: ' + data.caption);
+				this.submitCaption(data.userToken, data.videoId, data.caption);
 				break;
 			case 'vote_caption':
-				this.voteCaption(socket.id, data.captionId);
+				this.voteCaption(data.userToken, data.captionId);
 				break;
-			// Add more cases for other actions
 			default:
-				console.log(`Unhandled action type: ${actionType}`);
-				socket.emit('action_error', { message: 'Unhandled action type' });
+				console.error(`Unhandled action type: ${actionType}`);
+			// socket.emit('action_error', { message: 'Unhandled action type' });
 		}
 	}
 
-	submitCaption(playerId, videoId, caption) {
-		// Logic to handle caption submission
-		if (!this.captions[videoId]) {
-			this.captions[videoId] = [];
-		}
-		this.captions[videoId].push({ playerId, caption });
+	submitCaption(userToken, videoId, caption) {
+		let roundData = this.rounds[this.currentRound];
+		let playerData = roundData.find((p) => p.userToken === userToken);
+		if (playerData && !playerData.caption) {
+			playerData.caption = caption;
+			this.notifyPlayers('caption_submitted', {
+				userToken: userToken,
+				videoId: videoId,
+				caption: caption,
+			});
 
-		// Broadcast the caption to all players for voting
-		this.notifyPlayers('caption_submitted', { playerId, videoId, caption });
+			if (roundData.every((p) => p.caption !== '')) {
+				this.startVoting(); // All players have submitted captions, start voting
+			}
+		}
+	}
+
+	startVoting() {
+		this.notifyPlayers('voting_started', {
+			round: this.currentRound,
+			captions: this.rounds[this.currentRound].map((p) => ({
+				userToken: p.userToken,
+				caption: p.caption,
+			})),
+		});
 	}
 
 	voteCaption(playerId, captionId) {
-		// Process a vote for a caption
-		// Placeholder: This example assumes each caption has a unique ID
-		console.log(`Player ${playerId} voted for caption ${captionId}`);
-		// Update scores or game state based on the vote
-		// Placeholder for vote processing logic
+		let roundData = this.rounds[this.currentRound];
+		let playerData = roundData.find((p) => p.userToken === playerId);
+		if (playerData && !playerData.voted) {
+			playerData.voted = true;
+			this.notifyPlayers('vote_submitted', { playerId, captionId });
 
-		// Notify players of the updated scores, if applicable
-		// this.notifyPlayers('scores_updated', { scores: this.scores });
+			if (roundData.every((p) => p.voted)) {
+				this.changeRound(); // Check if it's time to change the round
+			}
+		}
 	}
 
+	changeRound() {
+		if (this.currentRound === this.totalRounds) {
+			this.endGame();
+		} else {
+			this.currentRound++;
+			this.initRounds(); // Reinitialize the round data for the new round
+			this.notifyPlayers('round_change', this.currentRound);
+			this.start(); // Start the new round
+		}
+	}
+
+	// This is how the game communicates to all players in it
 	notifyPlayers(event, data) {
-		// Send a message to all players in the game
-		this.io.to(this.lobbyId).emit(event, data);
+		this.io.to(this.lobbyId).emit('notify_players', { event, data });
 	}
 
 	endGame() {
-		// Finalize the game, calculate winners, and clean up
+		this.notifyPlayers('game_ended', { scores: this.calculateScores() });
 		console.log(`Game in lobby ${this.lobbyId} ended.`);
-		this.notifyPlayers('game_ended', {
-			scores: this.scores,
-			// Include other relevant game summary data
-		});
+	}
+
+	calculateScores() {
+		// Implement score calculation logic
+		return {};
 	}
 }
+
+module.exports = GameManager; // Exporting GameManager class
