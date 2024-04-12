@@ -10,6 +10,9 @@ import {
 	updatePassword,
 	updateEmail,
 	sendEmailVerification,
+	sendPasswordResetEmail,
+	EmailAuthProvider,
+	reauthenticateWithCredential,
 } from 'firebase/auth';
 import app from '../../server/firebase/auth.js';
 
@@ -22,115 +25,165 @@ export const UserAuthProvider = ({ children }) => {
 	const [loading, setLoading] = useState(true);
 	const auth = getAuth(app);
 
-	// Modified register function
-	const register = async (username, email, password) => {
-		try {
-			const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-
-			// Now update the profile
-			await updateProfile(userCredential.user, {
-				displayName: username,
-			});
-
-			// Reload the user
-			await userCredential.user.reload();
-
-			// Return the updated userCredential for further use
-			return userCredential.user;
-		} catch (error) {
-			// Handle any errors that occur during account creation or profile update
-			console.error('Error during user registration and profile update:', error);
-			throw error; // Rethrow the error for further handling
-		}
-	};
-
-	// Modified login function
-	const login = (email, password) => {
-		return signInWithEmailAndPassword(auth, email, password);
-	};
-
-	// Logout function remains unchanged
-	const logout = () => signOut(auth);
-
-	const changeUsername = async (newUsername) => {
-		// Ensure we're using the correct user object
-		const user = auth.currentUser;
-
-		if (!user) {
-			throw new Error('Cannot update profile because there is no current user.');
-		}
-
-		try {
-			// Update the profile with the new username
-			await updateProfile(user, {
-				displayName: newUsername,
-			});
-
-			// Now, refresh the currentUser object from the auth state
-			setCurrentUser(auth.currentUser);
-
-			// Alternatively, if you want to trigger a re-render and the state is not updating:
-			// setCurrentUser({ ...auth.currentUser });
-		} catch (error) {
-			console.error('Error updating user profile:', error);
-			throw error;
-		}
-	};
-
-	const changePassword = async (newPassword) => {
-		if (!auth.currentUser) {
-			throw new Error('No user is signed in');
-		}
-
-		try {
-			// Firebase function to update the user's password
-			await updatePassword(auth.currentUser, newPassword);
-		} catch (error) {
-			console.error('Error updating password:', error);
-			throw error; // Propagate the error so it can be caught by the caller
-		}
-	};
-
-	const changeEmail = async (newEmail) => {
-		const user = auth.currentUser;
-
-		if (!user) {
-			throw new Error('No user is signed in.');
-		}
-
-		try {
-			// First, update the user's email to the new email
-			await updateEmail(user, newEmail);
-
-			// Then, send a verification email to the new address
-			await sendEmailVerification(user);
-
-			// Inform the user that a verification email has been sent
-			console.log('Please check your email to verify the new address.');
-		} catch (error) {
-			console.error('Error updating email:', error);
-			throw error; // Propagate the error so it can be caught by the caller
-		}
-	};
-
 	useEffect(() => {
 		const unsubscribe = onAuthStateChanged(auth, (user) => {
 			setCurrentUser(user);
 			setLoading(false);
 		});
 
-		return () => unsubscribe(); // Cleanup subscription on unmount
-	}, []);
+		return unsubscribe;
+	}, [auth]);
+
+	// Checks if the given username already exists
+	const usernameExists = async (username) => {
+		// Check against the user database and seeing if the requested username is already in use
+		return username === 'blueberry';
+	};
+
+	const refreshUser = async () => {
+		await auth.currentUser?.reload();
+		setCurrentUser(auth.currentUser);
+	};
+
+	const reauthenticate = async (password) => {
+		if (!currentUser) {
+			console.error('No user is signed in to reauthenticate.');
+			return false;
+		}
+
+		try {
+			const credential = EmailAuthProvider.credential(currentUser.email, password);
+			await reauthenticateWithCredential(currentUser, credential);
+			await refreshUser();
+			return true;
+		} catch (error) {
+			console.error('Reauthentication error:', error);
+			return false;
+		}
+	};
+
+	// Update this to add the new user to the user and leaderboard databases
+	const register = async (username, email, password) => {
+		if (await usernameExists(username)) {
+			throw new Error('Username is already taken.');
+		}
+		try {
+			const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+			await updateProfile(userCredential.user, { displayName: username });
+			await sendEmailVerification(userCredential.user);
+			userCredential.user.reload();
+			setCurrentUser(userCredential.user);
+		} catch (error) {
+			console.error('Registration error:', error);
+			throw error;
+		}
+	};
+
+	const login = async (email, password) => {
+		try {
+			const userCredential = await signInWithEmailAndPassword(auth, email, password);
+			setCurrentUser(userCredential.user);
+		} catch (error) {
+			console.error('Login error:', error);
+			throw error;
+		}
+	};
+
+	const logout = async () => {
+		try {
+			await signOut(auth);
+			setCurrentUser(null);
+		} catch (error) {
+			console.error('Logout error:', error);
+			throw error;
+		}
+	};
+
+	// Change this to update the user and leaderboard databases with the logged in users userToken and the newUsername
+	const changeUsername = async (newUsername) => {
+		if (!currentUser) {
+			throw new Error('No user is signed in');
+		}
+		if (await usernameExists(newUsername)) {
+			throw new Error('Username is already taken.');
+		}
+		try {
+			await updateProfile(currentUser, { displayName: newUsername });
+			setCurrentUser({ ...currentUser, displayName: newUsername });
+			await refreshUser();
+		} catch (error) {
+			console.error('Username update error:', error);
+			throw error;
+		}
+	};
+
+	const changePassword = async (newPassword) => {
+		if (!currentUser) {
+			throw new Error('No user is signed in');
+		}
+		try {
+			await updatePassword(currentUser, newPassword);
+			await refreshUser();
+		} catch (error) {
+			console.error('Password update error:', error);
+			throw error;
+		}
+	};
+
+	// const emailAlreadyExists = async (email) => {
+	// 	const signInMethods = await fetchSignInMethodsForEmail(auth, email);
+	// 	return signInMethods.length > 0;
+	// };
+
+	// const changeEmail = async (newEmail, password) => {
+	// 	if (!currentUser) {
+	// 		console.error('No user is signed in');
+	// 		throw new Error('No user is signed in');
+	// 	}
+
+	// 	try {
+	// 		const credential = EmailAuthProvider.credential(currentUser.email, currentUser.password);
+	// 		await reauthenticateWithCredential(currentUser, credential);
+	// 	} catch (reauthError) {
+	// 		console.error('Reauthentication failed:', reauthError);
+	// 		throw new Error('Reauthentication failed, please try again.');
+	// 	}
+
+	// 	if (await emailAlreadyExists(newEmail)) {
+	// 		throw new Error('This email is already used by another account');
+	// 	}
+
+	// 	try {
+	// 		await updateEmail(currentUser, newEmail);
+	// 		await sendEmailVerification(currentUser);
+	// 		console.log('Email updated and verification sent.');
+	// 	} catch (updateError) {
+	// 		console.error('Email update error:', updateError);
+	// 		throw updateError;
+	// 	}
+	// };
+
+	const sendPasswordReset = async (email) => {
+		try {
+			await sendPasswordResetEmail(auth, email);
+		} catch (error) {
+			console.error('Password reset error:', error);
+			throw error;
+		}
+	};
 
 	const value = {
+		reauthenticate,
 		currentUser,
 		register,
 		login,
 		logout,
-		loading,
 		changePassword,
 		changeUsername,
-		changeEmail,
+		// changeEmail,
+		sendPasswordReset,
+		loading,
+		refreshUser,
 	};
 
 	return <UserAuthContext.Provider value={value}>{!loading && children}</UserAuthContext.Provider>;

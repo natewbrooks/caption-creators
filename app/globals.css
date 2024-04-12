@@ -19,6 +19,9 @@
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 31, 31, 31;
   --background-end-rgb: 31, 31, 31;
+  --dark: 31, 31, 31;
+  --darkAccent: 52, 52, 52;
+  --green: #86efac;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -67,10 +70,11 @@ h1:after {
 
 body {
   overflow: hidden;
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(to bottom,
+  background: rgb(var(--dark));
+  color: white;
+  /* background: linear-gradient(to bottom,
       transparent,
-      rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
+      rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb)); */
 }
 
 @layer utilities {
@@ -100,8 +104,8 @@ body {
   background-image: url("../public/emojis/thought-emoji.svg");
   background-position: 0px 0px;
   background-repeat: repeat;
-  background-size: 96px 96px;
-  animation: scrollDiagonally 100s linear infinite;
+  background-size: 270px 270px;
+  animation: scrollDiagonally 200s linear infinite;
   animation-play-state: var(--animation-play-state, running);
   animation-delay: 500ms;
   z-index: -10;
@@ -129,17 +133,33 @@ body {
   content: "";
   position: fixed;
   overflow: hidden;
-  top: -48px;
-  left: -48px;
+  top: -135px;
+  left: -135px;
   width: 150%;
   /* Ensures coverage during animation */
   height: 150%;
   background-image: url("../public/emojis/camera-emoji.svg");
   background-repeat: repeat;
-  background-size: 96px 96px;
-  animation: scrollDiagonally 100s linear infinite;
+  background-size: 270px 270px;
+  animation: scrollDiagonally 200s linear infinite;
   animation-play-state: var(--animation-play-state, running);
   animation-delay: 500ms;
   z-index: -10;
   opacity: 0.4;
+}
+
+
+.loadCircle {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  border: 6px solid rgb(var(--darkAccent));
+  border-top-color: var(--green);
+  animation: spin 2s ease-out infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }

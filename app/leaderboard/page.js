@@ -1,13 +1,12 @@
 'use client';
 import React, { useState, useMemo } from 'react';
-import { useAuth } from '../contexts/UserAuthContext.js';
+import { useAuth } from '../contexts/userAuthContext.js';
 import { useRouter } from 'next/navigation';
-import BackButton from '../components/BackButton.js';
 import { FaSearch, FaUserCircle } from 'react-icons/fa';
 import { IoFilter } from 'react-icons/io5';
 import { FixedSizeList as List } from 'react-window';
 import { FaCrown, FaMedal, FaTrophy } from 'react-icons/fa6';
-import UserDisplay from '../components/login/userDisplay.js';
+import TopBar from '../components/login/topBar.js';
 
 export default function LeaderboardPage() {
 	const router = useRouter();
@@ -220,6 +219,7 @@ export default function LeaderboardPage() {
 		{ username: 'papa', score: 610140 },
 	];
 
+	// Sorts user based on the scores and assigns a rank to them
 	users = users
 		.sort((a, b) => b.score - a.score)
 		.map((user, index) => ({
@@ -298,10 +298,11 @@ export default function LeaderboardPage() {
 
 	return (
 		<div className={`w-full h-full flex flex-col`}>
-			<div className={`flex w-full justify-between mb-10`}>
-				<BackButton />
-				<UserDisplay onClickEnabled={true} />
-			</div>
+			<TopBar
+				userOnClickEnabled={true}
+				backButtonGoHome={false}
+				showProfileIfNotLoggedIn={true}
+			/>
 			<div className='relative w-full h-full flex flex-col items-center overflow-hidden'>
 				<div className='flex items-center space-x-4'>
 					<div className='w-fit h-fit -translate-y-[0.15rem] bg-dark rounded-md p-1'>
@@ -312,7 +313,7 @@ export default function LeaderboardPage() {
 					</div>
 					<h1
 						data-text='TOP 1000 LEADERBOARD'
-						className={`text-5xl font-sunny text-center text-white`}>
+						className={`text-6xl md:text-7xl font-sunny text-center text-white`}>
 						TOP 1000 LEADERBOARD
 					</h1>
 					<div className='w-fit h-fit -translate-y-[0.15rem] bg-dark rounded-md p-1'>

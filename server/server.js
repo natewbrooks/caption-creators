@@ -13,7 +13,7 @@ const handle = app.getRequestHandler();
 
 const lobbies = {}; // Maps lobby IDs to lobby details
 const disconnectQueue = []; // Add users to this list before disconnecting them so they have time to restore their session.
-const activeGames = {};
+const activeGames = {}; // Maps lobby IDs to active GameManager instances
 
 const GameManager = require('./gameManager');
 
@@ -105,17 +105,26 @@ app.prepare().then(() => {
 		// RELATED TO INDIVIDUAL LOBBIES GAMEMANAGER
 
 		// Create new GameManager object for new game and hash it with lobbyID as key
-		socket.on('start_game', (lobbyId) => {
+		socket.on('start_game', ({ lobbyId, userToken }) => {
 			const lobby = lobbies[lobbyId];
-			if (lobby && lobby.hostUserToken === socket.userToken) {
+			if (lobby && lobby.hostUserToken === userToken) {
 				if (!activeGames[lobbyId]) {
-					const gameManager = new GameManager(lobbyId, io);
-					activeGames[lobbyId] = gameManager; // Store the game manager instance
-					gameManager.start();
-					console.log(`Game for lobby ${lobbyId} has started.`);
+					// Start a countdown before initializing the game
+					let countdown = 5;
+					const countdownInterval = setInterval(() => {
+						io.to(lobbyId).emit('countdown', countdown);
+						countdown--;
+						if (countdown < 0) {
+							clearInterval(countdownInterval);
+							const gameManager = new GameManager(lobbyId, io, lobbies[lobbyId].members);
+							activeGames[lobbyId] = gameManager;
+							gameManager.start();
+							console.log(`Game for lobby ${lobbyId} has started.`);
+							io.to(lobbyId).emit('navigate', { path: `/game/${lobbyId}` });
+						}
+					}, 1000);
 				} else {
 					console.log(`Game for lobby ${lobbyId} is already active.`);
-					// Optionally, notify the host that the game is already active
 					socket.emit('start_game_error', 'Game is already active.');
 				}
 			} else {
@@ -127,10 +136,14 @@ app.prepare().then(() => {
 		socket.on('game_action', ({ lobbyId, actionType, data }) => {
 			const gameManager = activeGames[lobbyId];
 			if (gameManager) {
-				gameManager.handleAction(socket, actionType, data);
+				try {
+					gameManager.handleAction(actionType, data);
+				} catch (error) {
+					console.error('Error handling action:', error);
+					socket.emit('error', { message: 'Error processing action' });
+				}
 			} else {
-				// Handle case where the game manager doesn't exist, such as sending an error to the client
-				socket.emit('error', 'Game session not found.');
+				socket.emit('error', { message: 'Game session not found.' });
 			}
 		});
 	});

@@ -2,10 +2,9 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSocket, getUserToken } from '@/server/socketManager';
-import { MdVideoLibrary } from 'react-icons/md';
 import { FaArrowRight, FaTrophy } from 'react-icons/fa6';
 import UserDisplay from './components/login/userDisplay';
-import { useAuth } from './contexts/UserAuthContext';
+import { useAuth } from './contexts/userAuthContext';
 
 export default function Home() {
 	const [lobbyId, setLobbyId] = useState('');
@@ -21,7 +20,7 @@ export default function Home() {
 
 		socket.on('lobby_created', ({ lobbyId, hostUserToken }) => {
 			setError('');
-			router.push(`/game/${lobbyId}`);
+			router.push(`/lobby/${lobbyId}`);
 		});
 
 		// Cleanup listeners on component unmount
@@ -51,13 +50,13 @@ export default function Home() {
 			});
 
 			getSocket().on('lobby_joined', () => {
-				router.push(`/game/${lobbyId}`);
+				router.push(`/lobby/${lobbyId}`);
 			});
 		}
 	};
 	return (
 		<main className='w-full h-full flex flex-col items-center '>
-			<div className='flex flex-col justify-center items-center mb-4 sm:flex-row  w-full sm:justify-between'>
+			<div className='flex flex-col justify-center items-center mb-10 sm:flex-row  w-full sm:justify-between'>
 				<div
 					onClick={() => {
 						router.push('/leaderboard');
@@ -69,13 +68,16 @@ export default function Home() {
 					/>
 					<span className={`font-manga text-xl`}>LEADERBOARD</span>
 				</div>
-				<UserDisplay onClickEnabled={true} />
+				<UserDisplay
+					onClickEnabled={true}
+					showLoginOption={true}
+				/>
 			</div>
 			<div className='relative h-fit flex flex-col items-center leading-none'>
 				<div className={`flex items-center justify-center text-center`}>
 					<h1
 						data-text='Caption Creators'
-						className={`font-sunny text-7xl sm:text-8xl`}>
+						className={`font-sunny text-8xl md:text-9xl`}>
 						Caption Creators
 					</h1>
 					{/* <MdVideoLibrary
@@ -84,20 +86,20 @@ export default function Home() {
 					/> */}
 				</div>
 				<span
-					className={`bg-dark px-4 py-1 rounded-full font-manga text-sm sm:text-md text-yellow-300 text-center `}>
+					className={`bg-dark outline outline-2 outline-darkAccent px-4 py-1 rounded-md font-manga text-md md:text-lg xl:text-xl text-yellow-300 text-center `}>
 					Nate Brooks, Gabriel Huber, Connor O’Grady, David Borisevich, and Dominick Winningham
 				</span>
 			</div>
 
-			<div className='h-full w-fit flex flex-col space-y-4 justify-center items-center text-center'>
+			<div className='h-full w-full sm:w-fit flex flex-col space-y-4 relative top-[10%] items-center text-center'>
 				<>
 					<button
 						onClick={handleCreateLobby}
-						className='bg-dark p-4 w-full text-center font-sunny text-3xl md:text-5xl  rounded-md text-white outline outline-2 outline-darkAccent  sm:hover:outline-white sm:active:scale-95'>
+						className='bg-dark p-4 w-full text-center font-sunny text-4xl md:text-5xl  rounded-md text-white outline outline-2 outline-darkAccent  sm:hover:outline-white sm:active:scale-95'>
 						HOST LOBBY
 					</button>
-					<div className='flex flex-col w-fit items-center bg-dark outline outline-2 outline-darkAccent rounded-md px-2 py-4'>
-						<label className='text-center text-3xl md:text-5xl font-sunny pb-2 '>JOIN LOBBY</label>
+					<div className='flex flex-col px-4 w-full sm:w-fit items-center bg-dark outline outline-2 outline-darkAccent rounded-md py-4'>
+						<label className='text-center text-4xl md:text-5xl font-sunny pb-2 '>JOIN LOBBY</label>
 						<div className={`flex space-x-1`}>
 							<input
 								type='text'

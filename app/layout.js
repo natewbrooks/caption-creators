@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import './globals.css';
 import { Helmet } from 'react-helmet';
-import { UserAuthProvider } from './contexts/UserAuthContext';
+import { UserAuthProvider } from './contexts/userAuthContext';
 
 // export const metadata = {
 // 	title: 'Caption Creators',
