@@ -5,6 +5,7 @@ let socket;
 let userToken;
 
 // TODO: if user is logged in on firebase auth, then use the currentUser's username to search the database for the userToken instead of generating a new one
+// will be like useContext(UserAuthContext) to get currentUser and then check whether or not currentUser exists and if they do, pull their userToken from the db otherwise generate a new one
 export const initializeSocket = () => {
 	if (typeof window !== 'undefined') {
 		userToken = sessionStorage.getItem('userToken'); // Use sessionStorage to keep data through page refreshes, but if the tab closes we lose the session.
