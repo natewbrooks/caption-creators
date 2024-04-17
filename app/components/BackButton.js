@@ -1,13 +1,16 @@
 import { getSocket } from '@/server/socketManager';
 import { useRouter } from 'next/navigation';
 import { FaArrowLeft } from 'react-icons/fa6';
+import { useAuth } from '../contexts/userAuthContext';
 
 const BackButton = (goHome) => {
 	const router = useRouter();
+	const { currentUser } = useAuth();
 
-	const handleBackButtonClick = () => {
+	const handleBackButtonClick = async () => {
 		// Emit the disconnect event
-		getSocket().emit('leave_lobby');
+		const socket = await getSocket(currentUser);
+		socket.emit('leave_lobby');
 
 		if (!goHome) {
 			// Navigate back 1 step

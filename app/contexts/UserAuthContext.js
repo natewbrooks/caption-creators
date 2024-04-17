@@ -34,12 +34,6 @@ export const UserAuthProvider = ({ children }) => {
 		return unsubscribe;
 	}, [auth]);
 
-	// Checks if the given username already exists
-	const usernameExists = async (username) => {
-		// Check against the user database and seeing if the requested username is already in use
-		return username === 'blueberry';
-	};
-
 	const refreshUser = async () => {
 		await auth.currentUser?.reload();
 		setCurrentUser(auth.currentUser);
@@ -62,12 +56,21 @@ export const UserAuthProvider = ({ children }) => {
 		}
 	};
 
-	// Update this to add the new user to the user and leaderboard databases
 	const register = async (username, email, password) => {
-		if (await usernameExists(username)) {
-			throw new Error('Username is already taken.');
-		}
 		try {
+			const response = await fetch('/api/users/', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ username, email }),
+			});
+
+			const data = await response.json();
+			if (data.error) {
+				throw new Error(data.error);
+			}
+
 			const userCredential = await createUserWithEmailAndPassword(auth, email, password);
 			await updateProfile(userCredential.user, { displayName: username });
 			await sendEmailVerification(userCredential.user);
@@ -104,15 +107,31 @@ export const UserAuthProvider = ({ children }) => {
 		if (!currentUser) {
 			throw new Error('No user is signed in');
 		}
-		if (await usernameExists(newUsername)) {
-			throw new Error('Username is already taken.');
-		}
+		const currentUsername = currentUser.displayName;
+
 		try {
-			await updateProfile(currentUser, { displayName: newUsername });
-			setCurrentUser({ ...currentUser, displayName: newUsername });
-			await refreshUser();
+			const response = await fetch('/api/users/', {
+				// Make sure this URL is correct
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ currentUsername, newUsername }),
+			});
+
+			const data = await response.json();
+			if (!response.ok) {
+				throw new Error(data.error || 'Failed to update username');
+			}
+
+			// If the update is successful, update the user's profile on the client side
+			await updateProfile(currentUser, { displayName: newUsername }); // Assuming `updateProfile` handles client-side profile update
+			setCurrentUser({ ...currentUser, displayName: newUsername, username: newUsername }); // Update both displayName and username in state
+			await refreshUser(); // Optionally refresh user data if needed
+
+			console.log('Username update successful:', data.message);
 		} catch (error) {
-			console.error('Username update error:', error);
+			console.error('Username update error:', error.message);
 			throw error;
 		}
 	};
