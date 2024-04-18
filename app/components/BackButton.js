@@ -7,9 +7,8 @@ const BackButton = (goHome) => {
 	const router = useRouter();
 	const { currentUser } = useAuth();
 
-	const handleBackButtonClick = async () => {
-		// Emit the disconnect event
-		const socket = await getSocket(currentUser);
+	const handleBackButtonClick = () => {
+		const socket = getSocket(currentUser);
 		socket.emit('leave_lobby');
 
 		if (!goHome) {
