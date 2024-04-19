@@ -133,6 +133,7 @@ export default function GamePage() {
 		let newRoundData = {};
 		newRoundData[currentRound] = players.map((player) => ({
 			userToken: player.userToken,
+			email: player.email,
 			caption: '',
 			voted: false,
 		}));

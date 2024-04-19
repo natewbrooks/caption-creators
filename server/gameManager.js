@@ -14,6 +14,7 @@ class GameManager {
 	initRounds() {
 		this.rounds[this.currentRound] = this.players.map((player) => ({
 			userToken: player.userToken,
+			email: player.email,
 			caption: '',
 			voted: false,
 		}));

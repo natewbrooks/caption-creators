@@ -35,6 +35,7 @@ export default function Home() {
 		getSocket().emit('create_lobby', {
 			hostUserToken: userToken,
 			playerName: currentUser ? currentUser.displayName : 'Host',
+			email: currentUser ? currentUser.email : null,
 		});
 	};
 
@@ -47,6 +48,7 @@ export default function Home() {
 				lobbyId,
 				playerName: currentUser ? currentUser.displayName : 'Anonymous',
 				userToken: userToken,
+				email: currentUser ? currentUser.email : null,
 			});
 
 			getSocket().on('lobby_joined', () => {

@@ -184,7 +184,7 @@ function findLobbyId(userToken) {
 }
 
 // Creates a new lobby with a unique ID and adds the host as the first member.
-function createLobby(socket, { hostUserToken, playerName }, io) {
+function createLobby(socket, { hostUserToken, playerName, email }, io) {
 	/* Generate unique lobby ID with 4 digits (no underscores or hyphens), 62! possible combinations */
 	let lobbyId = nanoid();
 	// If the lobbyId is already in use create a new one until it isn't already used
@@ -194,7 +194,9 @@ function createLobby(socket, { hostUserToken, playerName }, io) {
 
 	lobbies[lobbyId] = {
 		hostUserToken: hostUserToken, // Store the host's user token.
-		members: [{ id: socket.id, name: playerName, isHost: true, userToken: hostUserToken }],
+		members: [
+			{ id: socket.id, name: playerName, email: email, isHost: true, userToken: hostUserToken },
+		],
 	};
 	socket.join(lobbyId); // Add the host's socket to the lobby room.
 	updateLobby(lobbyId, io); // Update all clients with the new lobby details.
@@ -203,7 +205,7 @@ function createLobby(socket, { hostUserToken, playerName }, io) {
 }
 
 // Allows a player to join an existing lobby if it exists and they are not already a member.
-function joinLobby(socket, { lobbyId, playerName, userToken }, io) {
+function joinLobby(socket, { lobbyId, playerName, userToken, email }, io) {
 	const lobby = lobbies[lobbyId];
 	if (!lobby) {
 		socket.emit('error_joining', 'Lobby does not exist.'); // Inform the player if the lobby doesn't exist.
@@ -222,6 +224,7 @@ function joinLobby(socket, { lobbyId, playerName, userToken }, io) {
 		name: playerName,
 		isHost: userToken === lobby.hostUserToken,
 		userToken: userToken,
+		email: email,
 	});
 	socket.join(lobbyId); // Add the player's socket to the lobby room.
 	updateLobby(lobbyId, io); // Update all clients with the new lobby details.
