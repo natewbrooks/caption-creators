@@ -4,21 +4,21 @@ const openai = new OpenAI({
 	apiKey: process.env.OPENAI_API_KEY,
 });
 
-export async function GET(req) {
+export async function POST(req) {
 	try {
 		const completion = await openai.chat.completions.create({
-			model: 'gpt-3.5-turbo',
 			messages: [
 				{
 					role: 'system',
 					content:
-						'You are a helpful assistant who creates short, entertaining keyword or keyphrase prompts to search for a fun or interesting video. You may only use keyword or prompts with a maximum 30 characters long.',
+						'Generate a short keyword or keyphrase prompt for searching videos on any topic. Keep it creative and fun, ensuring it does not exceed 30 characters. Do not use the previous responses to generate content, generate a unique topic each time.',
 				},
 			],
+			model: 'gpt-3.5-turbo',
+			max_tokens: 24,
 		});
 
-		const message = completion.choices[0].message.content.trim();
-		console.log('MSG: ' + message);
+		const message = completion.choices[0].message.content.replace(/"/g, '').trim();
 
 		if (message.length > 30) {
 			return new Response(JSON.stringify({ error: 'Generated message is too long' }), {

@@ -56,7 +56,7 @@ const PromptForKeywordComponent = ({
 	const generateRandomKeyword = async () => {
 		try {
 			const response = await fetch(`/api/chatGPT/`, {
-				method: 'GET',
+				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 			});
 			const data = await response.json();
