@@ -60,7 +60,7 @@ function LobbyInfoSelectModal({
 			)}
 			<button
 				type='submit'
-				className={`bg-dark p-2 md:p-4 w-full text-center font-sunny text-4xl md:text-5xl  cursor-pointer ${
+				className={`bg-dark z-20 p-2 md:p-4 w-full text-center font-sunny text-4xl md:text-5xl  cursor-pointer ${
 					currentAvatar ? 'outline-green-300' : 'outline-red-300'
 				} outline outline-2 rounded-md text-white outline-darkAccent sm:hover:outline-white sm:active:scale-95`}>
 				ENTER LOBBY

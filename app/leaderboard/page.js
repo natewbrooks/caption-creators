@@ -180,7 +180,6 @@ export default function LeaderboardPage() {
 									className={`bg-dark rounded-md w-full flex justify-center`}
 									style={{ height: '90%' }}>
 									<h1
-										data-text='NO MATCHING USER ENTRIES!'
 										className={`w-fit h-fit z-20 mt-8 font-sunny text-white text-2xl lg:text-5xl`}>
 										LOADING...
 									</h1>
@@ -204,7 +203,6 @@ export default function LeaderboardPage() {
 									className={`bg-dark rounded-md w-full flex justify-center`}
 									style={{ height: '90%' }}>
 									<h1
-										data-text='NO MATCHING USER ENTRIES!'
 										className={`w-fit h-fit z-20 mt-8 font-sunny text-red-300 text-2xl lg:text-5xl`}>
 										NO MATCHING USER ENTRIES!
 									</h1>
