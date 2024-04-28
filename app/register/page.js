@@ -51,21 +51,19 @@ export default function RegisterPage() {
 
 			<div className='relative w-full h-full flex justify-center items-center'>
 				<div
-					className={`w-[500px] h-fit bg-dark p-4 rounded-md outline outline-2 outline-darkAccent`}>
+					className={`w-fit md:min-w-[400px] max-w-[800px] h-fit bg-dark p-4 rounded-md outline outline-2 outline-darkAccent`}>
 					{verifyEmailPrompt ? (
 						<>
-							<h1 className={`text-5xl text-center font-sunny pb-2 border-b-2 border-darkAccent`}>
-								ACCOUNT REGISTERED
-							</h1>
+							<h1 className={`text-7xl text-center font-sunny px-4`}>ACCOUNT REGISTERED</h1>
 							{emailVerified ? (
 								<>
-									<h2 className={`pt-2 text-xl text-center text-white font-manga`}>
+									<h2 className={`pt-2 text-2xl text-center text-white font-manga`}>
 										Email verified! Redirecting to home page...
 									</h2>
 								</>
 							) : (
 								<>
-									<h2 className={`py-2 text-xl text-center text-white font-manga`}>
+									<h2 className={`py-2 text-2xl text-center text-white font-manga`}>
 										To login, click the link in the email sent to{' '}
 										<span className={`text-green-300`}>{email}</span> to verify your account.
 									</h2>
@@ -77,16 +75,14 @@ export default function RegisterPage() {
 						</>
 					) : (
 						<>
-							<h1 className={`text-5xl text-center font-sunny pb-2 border-b-2 border-darkAccent`}>
-								REGISTER ACCOUNT
-							</h1>
+							<h1 className={`text-7xl text-center font-sunny px-4`}>REGISTER ACCOUNT</h1>
 							<form
 								onSubmit={handleRegister}
 								className={`flex flex-col space-y-6 justify-center items-center py-4`}>
-								<div className={`flex flex-col space-y-2 justify-center items-center`}>
-									<div className={`flex flex-col text-xl`}>
-										<label className={`text-md font-sunny`}>
-											<span className={`text-red-300 leading-none `}>* </span>USERNAME
+								<div className={`mb-2 flex flex-col space-y-2 justify-center items-center`}>
+									<div className={`flex flex-col text-3xl`}>
+										<label className={`text-md text-yellow-300 font-manga text-2xl`}>
+											USERNAME:
 										</label>
 										<input
 											type='text'
@@ -94,46 +90,44 @@ export default function RegisterPage() {
 											value={username}
 											onChange={(e) => setUsername(e.target.value)}
 											placeholder=''
-											className={`font-manga w-[180px] px-2 rounded-md bg-darkAccent text-white placeholder:text-white/30 outline-none`}
+											className={`font-manga w-[280px] text-center px-2 rounded-md bg-darkAccent text-white placeholder:text-white/30 outline-none`}
 											required
 										/>
 									</div>
-									<div className={`flex flex-col text-xl`}>
-										<label className={`text-md font-sunny`}>
-											<span className={`text-red-300 leading-none `}>* </span>EMAIL
-										</label>
+									<div className={`flex flex-col text-3xl`}>
+										<label className={`text-md text-yellow-300 font-manga text-2xl`}>EMAIL:</label>
 										<input
 											type='email'
 											name='email'
 											value={email}
 											onChange={(e) => setEmail(e.target.value)}
 											placeholder=''
-											className={`font-manga w-[180px] px-2 rounded-md bg-darkAccent text-white placeholder:text-white/30 outline-none`}
+											className={`font-manga w-[280px] text-center px-2 rounded-md bg-darkAccent text-white placeholder:text-white/30 outline-none`}
 											required
 										/>
 									</div>
-									<div className={`flex flex-col text-xl`}>
-										<label className={`text-md font-sunny`}>
-											<span className={`text-red-300 leading-none`}>* </span>PASSWORD
+									<div className={`flex flex-col text-3xl`}>
+										<label className={`text-md text-yellow-300 font-manga text-2xl`}>
+											PASSWORD:
 										</label>
-										<div className='relative w-[180px]'>
+										<div className='relative w-[280px]'>
 											<input
 												type={passwordShown ? 'text' : 'password'}
 												value={password}
 												onChange={(e) => setPassword(e.target.value)}
-												className='font-manga px-2 pr-8 rounded-md bg-darkAccent text-white placeholder:text-white/30 outline-none w-full'
+												className='font-manga text-center px-2 pr-8 rounded-md bg-darkAccent text-white placeholder:text-white/30 outline-none w-full'
 											/>
-											<div className='absolute inset-y-0 right-0 pr-2 flex items-center'>
+											<div className='absolute inset-y-0 translate-y-1 right-0 pr-2 flex items-center'>
 												{passwordShown ? (
 													<FaEye
 														onClick={() => setPasswordShown(false)}
-														size={20}
+														size={24}
 														className='text-white cursor-pointer sm:active:scale-95'
 													/>
 												) : (
 													<FaEyeSlash
 														onClick={() => setPasswordShown(true)}
-														size={20}
+														size={24}
 														className='text-white cursor-pointer sm:active:scale-95'
 													/>
 												)}
@@ -143,20 +137,19 @@ export default function RegisterPage() {
 								</div>
 								<button
 									type='submit'
-									className={`text-xl font-sunny px-4 text-black bg-green-300 rounded-md w-fit sm:hover:opacity-50 sm:active:scale-95`}>
+									className={`bg-dark p-4 w-full text-center font-sunny text-3xl md:text-4xl cursor-pointer outline-green-300 outline outline-2 rounded-md text-white  sm:hover:outline-white sm:active:scale-95`}>
 									SUBMIT
 								</button>
 
 								{error && <p className={`text-red-300 font-manga text-xl`}>{error}</p>}
 							</form>
-							<div
-								className={`w-full flex flex-col border-t-2 border-darkAccent pt-4 items-center justify-center`}>
-								<span className={`font-manga text-center text-xl select-none`}>
-									Already have an account?{' '}
+							<div className={`w-full flex flex-col items-center justify-center`}>
+								<span className={`font-manga text-center text-2xl select-none`}>
+									ALREADY HAVE AN ACCOUNT?{' '}
 									<span
 										onClick={() => router.push('/login')}
-										className={`text-yellow-300 cursor-pointer sm:hover:opacity-50 sm:active:scale-95`}>
-										Login here.
+										className={`text-[1.75rem] text-yellow-300 font-sunny cursor-pointer sm:hover:opacity-50 sm:active:scale-95`}>
+										LOGIN.
 									</span>
 								</span>
 							</div>

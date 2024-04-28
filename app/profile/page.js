@@ -87,11 +87,11 @@ export default function ProfilePage() {
 			<BackButton goHome={false} />
 			<div className='w-full h-full flex flex-col justify-center items-center'>
 				{currentUser ? (
-					<div className='flex flex-col items-center w-full h-full px-4 sm:px-20 py-4'>
+					<div className='flex flex-col items-center w-full h-full md:w-[80%] lg:w-[70%] py-4'>
 						<div className='w-full flex justify-center text-center'>
 							<h1
 								data-text='PROFILE'
-								className='w-fit text-6xl md:text-7xl font-sunny text-center'>
+								className='w-fit xs:text-5xl lg:text-8xl font-sunny text-center'>
 								PROFILE
 							</h1>
 						</div>
@@ -111,10 +111,10 @@ export default function ProfilePage() {
 												<FaXmark size={20} />
 											</div>
 											<div className={``}>
-												<h1 className='w-full justify-center text-xl md:text-2xl font-sunny text-center text-yellow-300 leading-none'>
+												<h1 className='w-full justify-center text-2xl font-sunny text-center text-yellow-300 leading-none'>
 													PASSWORD RESET EMAIL SENT
 												</h1>
-												<h2 className={`text-xl text-center text-white font-manga`}>
+												<h2 className={`text-2xl text-center text-white font-manga`}>
 													To complete your password reset, click the link in the email sent to{' '}
 													<span className={`text-yellow-300`}>{currentEmail}</span>.
 												</h2>
@@ -126,7 +126,7 @@ export default function ProfilePage() {
 														setForgotPassword(false);
 														setResetEmailSent(false);
 													}}
-													className={`font-sunny cursor-pointer sm:hover:opacity-50 sm:active:scale-95 text-[16px] text-center w-fit text-white/40`}>
+													className={`font-sunny cursor-pointer sm:hover:opacity-50 sm:active:scale-95 text-2xl text-center w-fit text-white/40`}>
 													RETURN TO RE-AUTHENTICATION
 												</span>
 											</div>
@@ -143,10 +143,10 @@ export default function ProfilePage() {
 												<FaXmark size={20} />
 											</div>
 											<div className={``}>
-												<h1 className='w-full justify-center text-xl md:text-2xl font-sunny text-center text-yellow-300 leading-none'>
+												<h1 className='w-full justify-center text-2xl font-manga text-center text-yellow-300 leading-none'>
 													FORGOT PASSWORD
 												</h1>
-												<h1 className={`text-xl text-center text-white font-manga`}>
+												<h1 className={`text-2xl text-center text-white font-manga`}>
 													To confirm you want to reset your password, re-enter your account email:{' '}
 													<span className={`text-yellow-300`}>{currentUser.email}</span>.
 												</h1>
@@ -165,7 +165,7 @@ export default function ProfilePage() {
 																setCurrentEmail(e.target.value);
 															}
 														}}
-														className='outline-none w-[240px] font-manga text-xl placeholder:text-md bg-darkAccent text-white px-2 rounded-md'
+														className='outline-none w-[240px] font-manga text-3xl text-center placeholder:text-md bg-darkAccent text-white px-2 rounded-md'
 													/>
 													<button
 														type='submit'
@@ -177,7 +177,7 @@ export default function ProfilePage() {
 												<div className={`w-full flex justify-center items-center`}>
 													<span
 														onClick={() => setForgotPassword(false)}
-														className={`font-sunny cursor-pointer sm:hover:opacity-50 sm:active:scale-95 text-[16px] text-center w-fit text-white/40`}>
+														className={`font-sunny cursor-pointer sm:hover:opacity-50 sm:active:scale-95 text-2xl text-center w-fit text-white/40`}>
 														RETURN TO RE-AUTHENTICATION
 													</span>
 												</div>
@@ -187,15 +187,18 @@ export default function ProfilePage() {
 								) : (
 									<>
 										<div
-											onClick={() => setPromptReauthenticate(false)}
+											onClick={() => {
+												setPromptReauthenticate(false);
+												setEditingProfile(false);
+											}}
 											className='absolute top-2 right-2 cursor-pointer'>
 											<FaXmark size={20} />
 										</div>
 										<div className='flex flex-col w-full items-center'>
-											<h1 className='w-fit text-xl md:text-2xl font-sunny text-center text-yellow-300 '>
+											<h1 className='w-fit text-2xl font-manga text-center text-yellow-300 '>
 												ENTER CURRENT PASSWORD
 											</h1>
-											<h1 className='w-fit text-xl font-manga text-center'>
+											<h1 className='w-fit text-2xl font-manga text-center'>
 												To edit your account information, you must re-authenticate using your
 												current password.
 											</h1>
@@ -203,7 +206,7 @@ export default function ProfilePage() {
 										<form
 											onSubmit={(e) => e.preventDefault()}
 											className='flex w-full justify-center space-x-1'>
-											<div className='relative w-[240px]'>
+											<div className='relative'>
 												<input
 													type={passwordShown ? 'text' : 'password'}
 													placeholder='Current password'
@@ -214,19 +217,19 @@ export default function ProfilePage() {
 															handleReauthenticate(currentPassword);
 														}
 													}}
-													className='outline-none w-full font-manga text-xl placeholder:text-md bg-darkAccent text-white px-2 pr-8 rounded-md'
+													className='outline-none w-[280px] text-center font-manga text-3xl placeholder:text-md bg-darkAccent text-white px-2 pr-8 rounded-md'
 												/>
 												<div className='absolute inset-y-0 right-0 pr-2 flex items-center'>
 													{passwordShown ? (
 														<FaEye
 															onClick={() => setPasswordShown(false)}
-															size={20}
+															size={24}
 															className='text-white cursor-pointer sm:active:scale-95'
 														/>
 													) : (
 														<FaEyeSlash
 															onClick={() => setPasswordShown(true)}
-															size={20}
+															size={24}
 															className='text-white cursor-pointer sm:active:scale-95'
 														/>
 													)}
@@ -236,13 +239,13 @@ export default function ProfilePage() {
 											<button
 												onClick={() => handleReauthenticate(currentPassword)}
 												className='bg-yellow-300 select-none outline-none px-2 rounded-md font-sunny text-xl text-dark outline-2 outline-offset-2 sm:hover:outline-white sm:hover:outline sm:active:scale-95'>
-												<FaArrowRight size={16} />
+												<FaArrowRight size={20} />
 											</button>
 										</form>
 										<div className={`w-full flex justify-center items-center`}>
 											<span
 												onClick={() => setForgotPassword(true)}
-												className={`font-sunny cursor-pointer sm:hover:opacity-50 sm:active:scale-95 text-[16px] text-center w-fit pt-1 text-white/40`}>
+												className={`font-sunny cursor-pointer sm:hover:opacity-50 sm:active:scale-95 text-2xl text-center w-fit pt-1 text-white/40`}>
 												FORGOT PASSWORD?
 											</span>
 										</div>
@@ -252,7 +255,7 @@ export default function ProfilePage() {
 								<>
 									<div className='font-sunny text-2xl flex space-x-2 items-center'>
 										<FaLock
-											size={16}
+											size={24}
 											className={`-translate-y-[0.15rem]`}
 										/>
 										<span className='text-yellow-300'>EMAIL:</span>
@@ -284,13 +287,13 @@ export default function ProfilePage() {
 												{passwordShown ? (
 													<FaEye
 														onClick={() => setPasswordShown(false)}
-														size={20}
+														size={24}
 														className='text-white cursor-pointer sm:active:scale-95'
 													/>
 												) : (
 													<FaEyeSlash
 														onClick={() => setPasswordShown(true)}
-														size={20}
+														size={24}
 														className='text-white cursor-pointer sm:active:scale-95'
 													/>
 												)}
@@ -300,17 +303,17 @@ export default function ProfilePage() {
 								</>
 							) : (
 								<>
-									<div className='font-sunny text-2xl flex space-x-2 items-center'>
+									<div className='font-manga text-2xl flex space-x-2 items-center'>
 										<span className='text-yellow-300'>EMAIL:</span>
-										<span className='font-manga'>{currentUser.email}</span>
+										<span className=''>{currentUser.email}</span>
 									</div>
-									<div className='font-sunny text-2xl flex items-center'>
+									<div className='font-manga text-2xl flex items-center'>
 										<span className='text-yellow-300'>USERNAME:</span>
-										<span className='px-2 font-manga'>{currentUser.displayName}</span>
+										<span className='px-2'>{currentUser.displayName}</span>
 									</div>
-									<div className='font-sunny text-2xl flex space-x-2 items-center'>
+									<div className='font-manga text-2xl flex space-x-2 items-center'>
 										<span className='text-yellow-300'>PASSWORD:</span>
-										<span className='font-manga translate-y-1'>*********</span>
+										<span className='translate-y-1'>*********</span>
 									</div>
 								</>
 							)}
@@ -324,19 +327,16 @@ export default function ProfilePage() {
 						{promptReauthenticate ? (
 							''
 						) : (
-							<div className='text-center select-none max-w-[800px] w-full flex space-x-4 mt-4 justify-center sm:justify-end'>
+							<div className='text-center select-none max-w-[800px] w-full flex space-x-3 mt-4 justify-center sm:justify-end'>
 								<div
 									onClick={handleUpdateProfile}
 									className='w-fit flex justify-center items-center'>
 									<div
-										className={`leading-none bg-dark p-1 px-2 w-full flex space-x-2 items-center justify-center text-center font-sunny text-lg md:text-xl rounded-md ${
+										className={`leading-none bg-dark p-2 w-full flex space-x-2 items-center justify-center text-center font-sunny text-2xl rounded-md ${
 											editingProfile
 												? 'outline-green-300 text-green-300'
-												: 'text-yellow-300 outline-yellow-300'
+												: 'text-white outline-yellow-300'
 										}  cursor-pointer outline outline-2  sm:hover:outline-white sm:active:scale-95`}>
-										<div className='mr-1'>
-											{editingProfile ? <FaCheck size={16} /> : <FaEdit size={20} />}
-										</div>
 										{editingProfile ? 'CONFIRM CHANGES' : 'EDIT PROFILE'}
 									</div>
 								</div>
@@ -347,10 +347,7 @@ export default function ProfilePage() {
 									}}
 									className='w-fit flex justify-center items-center'>
 									<div
-										className={`leading-none bg-dark p-1 px-2 w-full flex space-x-2 items-center justify-center text-center font-sunny text-lg md:text-xl rounded-md text-red-300 cursor-pointer outline outline-2 outline-red-300  sm:hover:outline-white sm:active:scale-95`}>
-										<div className='mr-1'>
-											<ImExit size={20} />
-										</div>
+										className={`leading-none bg-dark p-2 w-full flex space-x-2 items-center justify-center text-center font-sunny text-2xl rounded-md text-white cursor-pointer outline outline-2 outline-red-300  sm:hover:outline-white sm:active:scale-95`}>
 										SIGN OUT
 									</div>
 								</div>

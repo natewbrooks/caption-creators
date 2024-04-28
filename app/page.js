@@ -57,29 +57,28 @@ export default function Home() {
 		}
 	};
 	return (
-		<main className='w-full h-full flex flex-col items-center '>
-			<div className='flex flex-col justify-center items-center mb-10 sm:flex-row  w-full sm:justify-between'>
+		<main className='w-full h-full flex flex-col items-center space-y-4 md:space-y-2'>
+			<div className='flex flex-col justify-center items-center sm:flex-row  w-full sm:justify-between md:mb-4'>
 				<div
 					onClick={() => {
 						router.push('/leaderboard');
 					}}
 					className={`flex space-x-2 items-center cursor-pointer sm:hover:opacity-50 sm:active:scale-95`}>
 					<FaTrophy
-						size={18}
-						className={`text-yellow-500 -translate-y-[0.15rem]`}
+						className={`text-yellow-500 -translate-y-[0.15rem] h-[18px] w-[18px] lg:h-[24px] lg:w-[24px]`}
 					/>
-					<span className={`font-manga text-xl`}>LEADERBOARD</span>
+					<span className={`font-manga  text-2xl lg:text-3xl`}>LEADERBOARD</span>
 				</div>
 				<UserDisplay
 					onClickEnabled={true}
 					showLoginOption={true}
 				/>
 			</div>
-			<div className='relative h-fit flex flex-col items-center leading-none'>
+			<div className='relative h-fit flex flex-col items-center leading-none  pb-2 sm:pb-8 md:pb-14 lg:pb-20'>
 				<div className={`flex items-center justify-center text-center`}>
 					<h1
 						data-text='Caption Creators'
-						className={`font-sunny text-8xl md:text-9xl`}>
+						className={`font-sunny leading-none text-[5rem] xs:text-[5rem] sm:text-[6rem] lg:text-[8rem] xl:text-[12rem]`}>
 						Caption Creators
 					</h1>
 					{/* <MdVideoLibrary
@@ -88,20 +87,20 @@ export default function Home() {
 					/> */}
 				</div>
 				<span
-					className={`bg-dark outline outline-2 outline-darkAccent px-4 py-1 rounded-md font-manga text-md md:text-lg xl:text-xl text-yellow-300 text-center `}>
+					className={`bg-dark outline outline-2 outline-darkAccent max-w-[400px] lg:max-w-[100%] px-4 py-1 rounded-md font-manga text-md text-[1rem] xs:text-[1.25rem] lg:text-[1.75rem] text-yellow-300 text-center whitespace-normal`}>
 					Nate Brooks, Gabriel Huber, Connor O’Grady, David Borisevich, and Dominick Winningham
 				</span>
 			</div>
 
-			<div className='h-full w-full sm:w-fit flex flex-col space-y-4 relative top-[10%] items-center text-center'>
+			<div className='h-fit w-fit flex flex-col space-y-2  items-center text-center'>
 				<>
 					<button
 						onClick={handleCreateLobby}
-						className='bg-dark p-4 w-full text-center font-sunny text-4xl md:text-5xl  rounded-md text-white outline outline-2 outline-darkAccent  sm:hover:outline-white sm:active:scale-95'>
+						className='bg-dark p-4 w-full text-center font-sunny text-5xl lg:text-6xl  rounded-md text-white outline outline-2 outline-darkAccent  sm:hover:outline-white sm:active:scale-95'>
 						HOST LOBBY
 					</button>
-					<div className='flex flex-col px-4 w-full sm:w-fit items-center bg-dark outline outline-2 outline-darkAccent rounded-md py-4'>
-						<label className='text-center text-4xl md:text-5xl font-sunny pb-2 '>JOIN LOBBY</label>
+					<div className='flex flex-col px-4 w-fit items-center bg-dark outline outline-2 outline-darkAccent rounded-md py-4'>
+						<label className='text-center text-5xl lg:text-6xl font-sunny pb-2 '>JOIN LOBBY</label>
 						<div className={`flex space-x-1`}>
 							<input
 								type='text'
@@ -114,12 +113,12 @@ export default function Home() {
 									}
 								}}
 								placeholder='Lobby ID'
-								className='outline-none font-manga text-white text-xl text-center bg-darkAccent w-full py-1 rounded-md placeholder:text-white/50'
+								className='outline-none font-manga text-white text-3xl text-center bg-darkAccent w-full py-1 rounded-md placeholder:text-white/50'
 							/>
 							<button
 								onClick={handleJoinLobby}
 								className='bg-yellow-300 select-none outline-none px-2 rounded-md font-sunny text-xl text-black outline-2 outline-offset-2 sm:hover:outline-white sm:hover:outline sm:active:scale-95'>
-								<FaArrowRight size={18} />
+								<FaArrowRight size={20} />
 							</button>
 						</div>
 						{error && <span className='pt-2 font-manga text-xl text-red-400'>Error - {error}</span>}

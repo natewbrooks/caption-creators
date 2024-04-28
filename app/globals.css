@@ -136,7 +136,6 @@ body {
   top: -135px;
   left: -135px;
   width: 150%;
-  /* Ensures coverage during animation */
   height: 150%;
   background-image: url("../public/emojis/camera-emoji.svg");
   background-repeat: repeat;
