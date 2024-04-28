@@ -84,7 +84,10 @@ export default function ProfilePage() {
 
 	return (
 		<div className='w-full h-full flex flex-col'>
-			<BackButton goHome={false} />
+			<BackButton
+				goHome={false}
+				text={'RETURN'}
+			/>
 			<div className='w-full h-full flex flex-col justify-center items-center'>
 				{currentUser ? (
 					<div className='flex flex-col items-center w-full h-full md:w-[80%] lg:w-[70%] py-4'>

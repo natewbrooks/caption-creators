@@ -11,6 +11,7 @@ import { useAuth } from '@/app/contexts/userAuthContext';
 import LobbyInfoSelectModal from '@/app/components/lobby/LobbyInfoSelectModal';
 import LobbyAvatarSelect from '@/app/components/lobby/LobbyAvatarSelect';
 import AutoSizer from 'react-virtualized-auto-sizer';
+import DropdownNotification from '@/app/components/game/modules/DropdownNotification';
 
 function PlayerRow({ index, style, data }) {
 	const player = data.players[index];
@@ -361,12 +362,11 @@ export default function LobbyPage() {
 
 	return (
 		<div className={`w-full h-full flex flex-col items-center`}>
-			<h1
-				className={`${
-					showLinkCopied ? 'translate-y-0' : '-translate-y-full'
-				} absolute w-full text-center transition-all  duration-500 bg-green-300 border border-b-4 border-dark text-dark xbold text-nowrap left-0 top-0 font-sunny text-2xl`}>
-				LOBBY ID COPIED TO CLIPBOARD!
-			</h1>
+			<DropdownNotification
+				shown={showLinkCopied}
+				text={'LOBBY ID COPIED TO CLIPBOARD!'}
+				bgColorClass={`bg-green-300`}
+			/>
 			<TopBar
 				userOnClickEnabled={false}
 				backButtonGoHome={true}
@@ -497,7 +497,7 @@ export default function LobbyPage() {
 					</div>
 				</>
 			) : (
-				<div className={`flex flex-col w-full max-w-[600px] max-h-[800px] h-full p-4`}>
+				<div className={`flex flex-col w-full max-w-[600px] max-h-[800px] h-full`}>
 					<LobbyInfoSelectModal
 						avatars={avatars}
 						takenAvatars={takenAvatars}

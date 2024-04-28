@@ -3,13 +3,12 @@ import { getSocket, getUserToken } from '@/server/socketManager';
 import { useParams } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import TopBar from '@/app/components/login/topBar';
-import Image from 'next/image';
-import { FaUserCircle, FaCheck } from 'react-icons/fa';
 import CaptionVideoComponent from '../../components/game/CaptionVideoComponent';
 import KeywordPromptComponent from '@/app/components/game/KeywordPromptComponent';
 import BackButton from '@/app/components/BackButton';
 import { FaClock } from 'react-icons/fa6';
 import VotingComponent from '@/app/components/game/VotingComponent';
+import GamePlayersScollbar from '@/app/components/game/modules/GamePlayersScrollbar';
 
 export default function GamePage() {
 	const { id: lobbyId } = useParams();
@@ -24,8 +23,11 @@ export default function GamePage() {
 
 	const [currentRound, setCurrentRound] = useState(1);
 	const [roundData, setRoundData] = useState({});
-	const [captionedThisRound, setCaptionedThisRound] = useState(false);
 	const [gameRoundTimer, setGameRoundTimer] = useState(120);
+	const [roundPhase, setRoundPhase] = useState('keyword-prompt');
+
+	const [currentVoteUser, setCurrentVoteUser] = useState(players[1]?.userToken || null);
+	const [captionedThisRound, setCaptionedThisRound] = useState(false);
 	const timerRef = useRef(null);
 
 	// Temp round timer
@@ -44,27 +46,16 @@ export default function GamePage() {
 		};
 	}, []);
 
-	// display round components
-	const [showKeywordPrompt, setShowKeywordPrompt] = useState(true);
-	const [showCaptionVideo, setShowCaptionVideo] = useState(false);
-	const [showVoting, setShowVoting] = useState(false);
-
 	const handleComponentDisplay = (key) => {
 		switch (key) {
 			case 'keyword-prompt':
-				setShowKeywordPrompt(true);
-				setShowCaptionVideo(false);
-				setShowVoting(false);
+				setRoundPhase(key);
 				break;
 			case 'caption-video':
-				setShowKeywordPrompt(false);
-				setShowCaptionVideo(true);
-				setShowVoting(false);
+				setRoundPhase(key);
 				break;
 			case 'voting':
-				setShowKeywordPrompt(false);
-				setShowCaptionVideo(false);
-				setShowVoting(true);
+				setRoundPhase(key);
 				break;
 			default:
 				break;
@@ -242,6 +233,7 @@ export default function GamePage() {
 				<TopBar
 					userOnClickEnabled={false}
 					backButtonGoHome={true}
+					backButtonText={'EXIT GAME'}
 					showProfileIfNotLoggedIn={false}
 				/>
 			</div>
@@ -251,7 +243,7 @@ export default function GamePage() {
 					className={`flex md:hidden flex-col xs:flex-row justify-center items-center pt-2 xs:pt-0 xs:justify-between space-x-2 w-full`}>
 					<BackButton
 						goHome={true}
-						text='EXIT GAME'
+						text={'EXIT GAME'}
 					/>
 
 					<div className={`w-fit flex sm:flex-col`}>
@@ -344,7 +336,18 @@ export default function GamePage() {
 				<div className={`max-w-[600px] w-full h-full flex flex-col justify-between items-center`}>
 					{players && roundData && (
 						<>
-							{showCaptionVideo && (
+							{roundPhase === 'keyword-prompt' && (
+								<KeywordPromptComponent
+									players={players}
+									currentRound={currentRound}
+									roundData={roundData}
+									setRoundData={setRoundData}
+									lobbyId={lobbyId}
+									userToken={userToken}
+								/>
+							)}
+
+							{roundPhase === 'caption-video' && (
 								<CaptionVideoComponent
 									players={players}
 									currentRound={currentRound}
@@ -358,99 +361,35 @@ export default function GamePage() {
 								/>
 							)}
 
-							{showVoting && (
-								// You can add the voting component here when you have it ready.
-								<VotingComponent
-									players={players}
-									currentRound={currentRound}
-									roundData={roundData}
-									setRoundData={setRoundData}
-									lobbyId={lobbyId}
-									userToken={userToken}
-								/>
-							)}
-
-							{showKeywordPrompt && (
-								<KeywordPromptComponent
-									players={players}
-									currentRound={currentRound}
-									roundData={roundData}
-									setRoundData={setRoundData}
-									lobbyId={lobbyId}
-									userToken={userToken}
-								/>
+							{roundPhase === 'voting' && (
+								<>
+									{() => {
+										setCurrentVoteUser(players[0].userToken);
+									}}
+									<VotingComponent
+										players={players}
+										currentRound={currentRound}
+										roundData={roundData}
+										setRoundData={setRoundData}
+										lobbyId={lobbyId}
+										currentVoteUser={currentVoteUser}
+										userToken={userToken}
+									/>
+								</>
 							)}
 						</>
 					)}
 
-					<div className={`flex flex-col justify-center items-center h-fit w-full`}>
-						<div
-							ref={scrollContainerRef}
-							className='flex bg-dark outline outline-2 outline-darkAccent max-w-[600px] rounded-t-md overflow-x-auto overflow-y-hidden whitespace-nowrap mt-4  justify-start w-full h-fit z-40 font-manga text-xl'>
-							{players.map((player, index) => (
-								<div
-									key={player.userToken}
-									className={`${
-										index % 2 === 0 ? 'bg-dark' : 'bg-darkAccent'
-									} inline-flex flex-none flex-col justify-center items-center pt-2 px-8 `}>
-									<div className={`flex flex-col items-center`}>
-										{player.avatar ? (
-											<div className={`relative`}>
-												<div className={`w-[32px] h-[32px] lg:w-[48px] lg:h-[48px]`}>
-													<Image
-														src={player.avatar}
-														className={`outline-dark outline-2 outline rounded-full transition-all duration-300 ${
-															roundData[currentRound]?.some(
-																(p) => p.userToken === player.userToken && p.caption !== ''
-															)
-																? 'opacity-40 outline-green-300'
-																: 'opacity-100'
-														}`}
-														alt={`Selected Avatar ${index + 1}`}
-														type='responsive'
-														width={100}
-														height={100}
-														unoptimized
-													/>
-												</div>
-												{roundData[currentRound]?.find(
-													(p) => p.userToken === player.userToken && p.caption
-												) && (
-													<div
-														className={`absolute z-20 top-2 right-[0.4rem] lg:top-3 lg:right-[0.65rem] flex items-center space-x-1`}>
-														<FaCheck className='w-[18px] h-[18px] lg:h-[24px] lg:w-[24px] text-green-300' />
-													</div>
-												)}
-											</div>
-										) : (
-											<FaUserCircle
-												size={48}
-												className={`outline-dark outline-2 outline rounded-full`}
-											/>
-										)}
-										<h1 className='font-manga text-2xl'>{player.name}</h1>
-									</div>
-								</div>
-							))}
-						</div>
-						<div className={`lg:max-w-[50%] p-2 flex w-full justify-evenly`}>
-							<div
-								onClick={() => handleComponentDisplay('keyword-prompt')}
-								className={`font-sunny text-2xl bg-blue-300 px-2 text-dark`}>
-								PROMPT
-							</div>
-							<div
-								onClick={() => handleComponentDisplay('caption-video')}
-								className={`font-sunny text-2xl bg-green-300 px-2 text-dark`}>
-								CAPTION
-							</div>
-							<div
-								onClick={() => handleComponentDisplay('voting')}
-								className={`font-sunny text-2xl bg-red-300 px-2 text-dark`}>
-								VOTING
-							</div>
-						</div>
-					</div>
+					<GamePlayersScollbar
+						players={players}
+						roundData={roundData}
+						currentRound={currentRound}
+						scrollContainerRef={scrollContainerRef}
+						handleComponentDisplay={handleComponentDisplay}
+						currentVoteUser={currentVoteUser}
+						setCurrentVoteUser={setCurrentVoteUser}
+						isVotingPhase={roundPhase === 'voting'}
+					/>
 				</div>
 			</div>
 		</div>

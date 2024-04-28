@@ -20,6 +20,15 @@ module.exports = {
 				sunny: ['Sunny'],
 				manga: ['Manga'],
 			},
+			keyframes: {
+				spin: {
+					'0%, 100%': { transform: 'rotate(0deg)' },
+					'50%': { transform: 'rotate(360deg)' },
+				},
+			},
+			animation: {
+				'spin-infinite': 'spin 2s ease-in-out infinite',
+			},
 		},
 		screens: {
 			xs: '240px',

@@ -47,7 +47,10 @@ export default function RegisterPage() {
 
 	return (
 		<div className={`w-full h-full flex flex-col`}>
-			<BackButton goHome={false} />
+			<BackButton
+				goHome={false}
+				text={'RETURN'}
+			/>
 
 			<div className='relative w-full h-full flex justify-center items-center'>
 				<div

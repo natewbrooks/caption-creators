@@ -17,6 +17,7 @@ const KeywordPromptComponent = ({
 }) => {
 	const [keyword, setKeyword] = useState('');
 	const [showConfirmKeyword, setShowConfirmKeyword] = useState(false);
+	const [isGenerating, setIsGenerating] = useState(false);
 
 	// useEffect(() => {
 	// 	const socketInstance = getSocket();
@@ -53,6 +54,7 @@ const KeywordPromptComponent = ({
 	// }, [lobbyId]);
 
 	const generateRandomKeyword = async () => {
+		setIsGenerating(true);
 		try {
 			const response = await fetch(`/api/chatGPT/`, {
 				method: 'POST',
@@ -67,6 +69,15 @@ const KeywordPromptComponent = ({
 		} catch (error) {
 			console.error('Error fetching random keyword:', error.message);
 		}
+		setIsGenerating(false);
+	};
+
+	const toggleRoll = () => {
+		setIsRolling(true);
+		// Reset animation by removing the class after the animation duration
+		setTimeout(() => {
+			setIsRolling(false);
+		}, 1000); // Duration of the animation
 	};
 
 	return (
@@ -106,15 +117,23 @@ const KeywordPromptComponent = ({
 				/>
 				<div className={`flex flex-row w-full justify-between items-center mt-2 `}>
 					<div
-						onClick={() => generateRandomKeyword()}
+						onClick={() => {
+							if (!isGenerating) {
+								generateRandomKeyword();
+							}
+						}}
 						className={`flex select-none space-x-2 items-center w-full text-start font-manga text-2xl whitespace-nowrap `}>
 						<span className={`text-white/40`}>or</span>
 						<div
-							className={`group flex space-x-2 select-none items-center justify-end cursor-pointer md:hover:underline underline-offset-4 `}>
-							<span className={`text-green-300 group-active:scale-95`}>GENERATE RANDOM</span>
+							className={` flex space-x-2 select-none items-center justify-end ${
+								isGenerating ? '' : 'group cursor-pointer md:hover:underline underline-offset-4 '
+							}`}>
+							<span className={`text-green-300 `}>
+								{isGenerating ? 'GENERATING...' : 'GENERATE RANDOM'}{' '}
+							</span>
 							<IoDice
 								size={20}
-								className={`-translate-y-1 select-none group-active:rotate-[270deg] group-active:scale-[95%] scale-[110%] transition-all duration-500`}
+								className={`select-none ${isGenerating ? 'animate-spin' : ''} `}
 							/>
 						</div>
 					</div>

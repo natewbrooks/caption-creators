@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { FaArrowRight } from 'react-icons/fa6';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import ConfirmationModal from './modules/ConfirmationModal';
+import VideoEmbed from './modules/VideoEmbed';
 
 const CaptionVideoComponent = ({
 	players,
@@ -77,27 +78,7 @@ const CaptionVideoComponent = ({
 				/>
 			)}
 			<div className={`relative flex flex-col w-full h-full justify-between pb-2 md:pb-4`}>
-				<div
-					style={{ flexGrow: 1, minHeight: 0 }}
-					className='h-full w-full'>
-					<AutoSizer>
-						{({ height, width }) => (
-							<div
-								style={{ height, width }}
-								className={`flex justify-center items-center aspect-[2/3] bg-white border-2 border-t-[6px] border-dark`}>
-								<iframe
-									height={height}
-									width={width}
-									src='https://www.youtube.com/embed/x6iwZSURP44'
-									title='Inside the mind of a Netplay Falco #shorts #smashbros #ssbm #turndownforwalt #tdfw'
-									frameborder='0'
-									allow='fullscreen'
-									referrerpolicy='strict-origin-when-cross-origin'
-									allowfullscreen></iframe>
-							</div>
-						)}
-					</AutoSizer>
-				</div>
+				<VideoEmbed embedURL={'https://www.youtube.com/embed/x6iwZSURP44'} />
 
 				{captionedThisRound ? (
 					<div className='relative top-3 w-full flex justify-center'>

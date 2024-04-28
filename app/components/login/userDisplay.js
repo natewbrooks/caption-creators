@@ -2,6 +2,7 @@ import { useAuth } from '../../contexts/userAuthContext';
 import { FaUserCircle } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import DropdownNotification from '../game/modules/DropdownNotification';
 
 export default function UserDisplay({ onClickEnabled, showLoginOption }) {
 	const { currentUser } = useAuth();
@@ -20,12 +21,14 @@ export default function UserDisplay({ onClickEnabled, showLoginOption }) {
 	return (
 		<>
 			{!onClickEnabled && (
-				<h1
-					className={`${
-						showError ? 'translate-y-0' : '-translate-y-full'
-					} absolute w-full text-center transition-all  duration-500 bg-red-300 border border-b-4 border-dark text-dark xbold left-0 top-0 font-sunny text-2xl`}>
+				<DropdownNotification
+					text={`
 					ERROR - CAN'T ACCESS ACCOUNT IN LOBBY
-				</h1>
+				
+				`}
+					shown={showError}
+					bgColorClass={`bg-red-300`}
+				/>
 			)}
 			<div
 				onClick={() => {

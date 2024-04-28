@@ -39,7 +39,10 @@ export default function LoginPage() {
 
 	return (
 		<div className='w-full h-full flex flex-col'>
-			<BackButton goHome={false} />
+			<BackButton
+				goHome={false}
+				text={'RETURN'}
+			/>
 
 			<div className=' w-full h-full flex justify-center items-center'>
 				<div
