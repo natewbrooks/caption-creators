@@ -409,7 +409,8 @@ export default function LobbyPage() {
 			{!showEntryPrompt ? (
 				<>
 					{countdown !== null && (
-						<div className={`absolute z-30 w-full h-full flex justify-center items-center`}>
+						<div
+							className={`absolute top-0 bg-dark/80 z-50 w-full h-full flex justify-center items-center`}>
 							<div
 								className={`w-fit h-fit flex justify-center p-12 bg-green-300 outline outline-6 outline-dark rounded-full`}>
 								<div className={`flex flex-col items-center justify-center `}>
@@ -465,7 +466,7 @@ export default function LobbyPage() {
 								)}
 							</AutoSizer>
 						</div>
-						<div className={`z-40`}>
+						<div className={`z-20`}>
 							{userToken === hostUserToken ? (
 								<div
 									onClick={() => {
@@ -473,7 +474,7 @@ export default function LobbyPage() {
 											handleGameStart();
 										}
 									}}
-									className={`bg-dark flex z-20 w-full justify-center text-center p-2 md:p-4 font-sunny text-4xl xl:text-5xl ${
+									className={`bg-dark flex w-full justify-center text-center p-2 md:p-4 font-sunny text-3xl xl:text-4xl ${
 										players.length >= 2
 											? 'cursor-pointer outline-green-300 sm:hover:outline-white sm:active:scale-95'
 											: 'outline-red-300'
@@ -483,7 +484,7 @@ export default function LobbyPage() {
 							) : (
 								players.length >= 2 && (
 									<div
-										className={`bg-dark flex z-20 w-full justify-center text-center p-2 md:p-4 font-sunny text-4xl xl:text-5xl ${
+										className={`bg-dark flex w-full justify-center text-center p-2 md:p-4 font-sunny text-3xl xl:text-4xl ${
 											players.length >= 2 ? 'outline-yellow-300' : 'outline-red-300'
 										} outline outline-2 rounded-md text-white`}>
 										{players.length >= 2

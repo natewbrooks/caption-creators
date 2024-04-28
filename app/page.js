@@ -78,7 +78,7 @@ export default function Home() {
 				<div className={`flex items-center justify-center text-center`}>
 					<h1
 						data-text='Caption Creators'
-						className={`font-sunny leading-none text-[5rem] xs:text-[5rem] sm:text-[6rem] lg:text-[8rem] xxl:text-[12rem]`}>
+						className={`font-sunny leading-none text-[4rem] xs:text-[4rem] sm:text-[6rem] md:text-[8rem] xxl:text-[12rem]`}>
 						Caption Creators
 					</h1>
 					{/* <MdVideoLibrary
@@ -87,7 +87,7 @@ export default function Home() {
 					/> */}
 				</div>
 				<span
-					className={`bg-dark outline outline-2 outline-darkAccent max-w-[400px] lg:max-w-[100%] px-4 py-1 rounded-md font-manga text-md text-[1rem] xs:text-[1.25rem] lg:text-[1.75rem] text-yellow-300 text-center whitespace-normal`}>
+					className={`bg-dark outline outline-2 outline-darkAccent max-w-[400px] lg:max-w-[100%] px-4 py-1 rounded-md font-manga text-md text-[0.75rem] xs:text-[1.25rem] lg:text-[1.75rem] text-yellow-300 text-center whitespace-normal`}>
 					Nate Brooks, Gabriel Huber, Connor O’Grady, David Borisevich, and Dominick Winningham
 				</span>
 			</div>
@@ -96,11 +96,13 @@ export default function Home() {
 				<>
 					<button
 						onClick={handleCreateLobby}
-						className='bg-dark p-4 w-full text-center font-sunny text-5xl lg:text-6xl  rounded-md text-white outline outline-2 outline-darkAccent  sm:hover:outline-white sm:active:scale-95'>
+						className='bg-dark p-4 w-full text-center font-sunny text-4xl sm:text-5xl lg:text-6xl  rounded-md text-white outline outline-2 outline-darkAccent  sm:hover:outline-white sm:active:scale-95'>
 						HOST LOBBY
 					</button>
 					<div className='flex flex-col px-4 w-fit items-center bg-dark outline outline-2 outline-darkAccent rounded-md py-4'>
-						<label className='text-center text-5xl lg:text-6xl font-sunny pb-2 '>JOIN LOBBY</label>
+						<label className='text-center text-4xl sm:text-5xl lg:text-6xl font-sunny pb-2 '>
+							JOIN LOBBY
+						</label>
 						<div className={`flex space-x-1`}>
 							<input
 								type='text'
@@ -113,7 +115,7 @@ export default function Home() {
 									}
 								}}
 								placeholder='Lobby ID'
-								className='outline-none font-manga text-white text-3xl text-center bg-darkAccent w-full py-1 rounded-md placeholder:text-white/50'
+								className='outline-none font-manga text-white xs:text-xl sm:text-3xl text-center bg-darkAccent w-full py-1 rounded-md placeholder:text-white/50'
 							/>
 							<button
 								onClick={handleJoinLobby}

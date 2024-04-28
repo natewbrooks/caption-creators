@@ -6,8 +6,10 @@ import TopBar from '@/app/components/login/topBar';
 import Image from 'next/image';
 import { FaUserCircle, FaCheck } from 'react-icons/fa';
 import CaptionVideoComponent from '../../components/game/CaptionVideoComponent';
-import PromptForKeywordComponent from '@/app/components/game/PromptForKeywordComponent';
+import KeywordPromptComponent from '@/app/components/game/KeywordPromptComponent';
 import BackButton from '@/app/components/BackButton';
+import { FaClock } from 'react-icons/fa6';
+import VotingComponent from '@/app/components/game/VotingComponent';
 
 export default function GamePage() {
 	const { id: lobbyId } = useParams();
@@ -23,6 +25,24 @@ export default function GamePage() {
 	const [currentRound, setCurrentRound] = useState(1);
 	const [roundData, setRoundData] = useState({});
 	const [captionedThisRound, setCaptionedThisRound] = useState(false);
+	const [gameRoundTimer, setGameRoundTimer] = useState(120);
+	const timerRef = useRef(null);
+
+	// Temp round timer
+	useEffect(() => {
+		timerRef.current = setInterval(() => {
+			setGameRoundTimer((prevTimer) => {
+				if (prevTimer <= 1) {
+					return 120;
+				}
+				return prevTimer - 1;
+			});
+		}, 1000);
+
+		return () => {
+			clearInterval(timerRef.current);
+		};
+	}, []);
 
 	// display round components
 	const [showKeywordPrompt, setShowKeywordPrompt] = useState(true);
@@ -225,8 +245,6 @@ export default function GamePage() {
 					showProfileIfNotLoggedIn={false}
 				/>
 			</div>
-			<div className={`w-full block md:hidden`}></div>
-
 			<div
 				className={`flex flex-col w-full items-center h-full space-y-2 leading-none text-center`}>
 				<div
@@ -236,37 +254,90 @@ export default function GamePage() {
 						text='EXIT GAME'
 					/>
 
-					<div className={`flex w-fit text-nowrap justify-center space-x-2`}>
-						<h1
-							data-text={`~ ${lobbyId} ROUND ${currentRound} ~`}
-							className='font-sunny text-2xl select-none'>
-							<span className={`text-green-300`}>~</span>{' '}
-							<span className={`text-yellow-300 text-[1.35rem] font-manga`}>{lobbyId}</span> ROUND{' '}
-							{currentRound} <span className={`text-green-300`}>~</span>
-						</h1>
+					<div className={`w-fit flex sm:flex-col`}>
+						<div className={`flex w-fit text-nowrap justify-center space-x-2`}>
+							<h1
+								data-text={`${lobbyId} ROUND ${currentRound}`}
+								className='font-sunny text-2xl select-none'>
+								<span className={`text-yellow-300 text-[1.4rem] font-manga`}>{lobbyId}</span>
+								{` `}
+								ROUND {currentRound}
+							</h1>
+						</div>
+						<div className='flex w-full justify-end items-center'>
+							<div className={`w-fit p-1 mr-1 rounded-full bg-dark -translate-y-[0.15rem]`}>
+								<FaClock
+									size={14}
+									className='text-white'
+								/>
+							</div>
+							<h1
+								data-text={gameRoundTimer + 's'}
+								className={`min-w-[3ch] items-end flex text-right ${
+									gameRoundTimer < 30
+										? gameRoundTimer < 10
+											? 'text-red-300'
+											: 'text-yellow-300'
+										: 'text-white'
+								} text-[1.35rem] font-manga`}>
+								{gameRoundTimer}s
+							</h1>
+						</div>
 					</div>
 				</div>
 				<div
 					className={`hidden md:flex flex-col w-fit xs:mb-4 lg:mb-8 justify-center items-center`}>
-					<div className={`flex w-full justify-center space-x-2`}>
+					<div className='flex w-full justify-center items-center space-x-2'>
 						<h1
-							data-text={`Game ID -`}
-							className='font-sunny xs:text-5xl xxl:text-8xl select-none'>
-							Game ID -
+							data-text={'~'}
+							className='text-green-300 font-sunny text-3xl md:text-4xl'>
+							~
 						</h1>
+						<div className='flex w-full justify-end items-center'>
+							<div className={`w-fit p-1 mr-1 rounded-full bg-dark -translate-y-[0.15rem]`}>
+								<FaClock
+									size={14}
+									className='text-yellow-300'
+								/>
+							</div>
+							<h1
+								data-text={gameRoundTimer + 's'}
+								className={`min-w-[3ch] items-end flex text-right ${
+									gameRoundTimer < 10 ? 'text-red-300' : 'text-yellow-300'
+								} text-2xl md:text-3xl font-manga`}>
+								{gameRoundTimer}s
+							</h1>
+						</div>
 						<h1
-							data-text={`${lobbyId}`}
-							className='xs:text-5xl xxl:text-8xl font-manga select-text text-yellow-300'>
-							{lobbyId}
+							data-text='•'
+							className='text-green-300 font-sunny text-2xl md:text-3xl'>
+							•
 						</h1>
-					</div>
-					<div className={`flex w-full justify-center space-x-2`}>
+						<div className={`px-2`}>
+							<h1
+								data-text={`ROUND ${currentRound}`}
+								className='font-sunny text-nowrap text-4xl md:text-5xl xxl:text-6xl'>
+								ROUND {currentRound}
+							</h1>
+						</div>
 						<h1
-							data-text={`~ ROUND ${currentRound} ~`}
-							className='font-manga text-2xl sm:text-3xl lg:text-4xl select-none'>
-							<span className={`text-green-300`}>~</span> ROUND {currentRound}{' '}
-							<span className={`text-green-300`}>~</span>
+							data-text='•'
+							className='text-green-300 font-sunny text-2xl md:text-3xl'>
+							•
 						</h1>
+
+						<div className={`left-1 relative flex items-center w-fit`}>
+							<h1
+								data-text={lobbyId}
+								className='font-manga  text-2xl md:text-3xl  min-w-[3ch] items-end flex text-right text-yellow-300'>
+								{lobbyId}
+							</h1>
+							<h1
+								data-text={'~'}
+								className='relative left-3 text-green-300 font-sunny text-2xl md:text-3xl'>
+								~
+							</h1>
+						</div>
 					</div>
 				</div>
 
@@ -289,21 +360,24 @@ export default function GamePage() {
 
 							{showVoting && (
 								// You can add the voting component here when you have it ready.
-								<div>Voting Component Placeholder</div>
-							)}
-
-							{showKeywordPrompt && (
-								<PromptForKeywordComponent
+								<VotingComponent
 									players={players}
 									currentRound={currentRound}
-									captionedThisRound={captionedThisRound}
-									setCaptionedThisRound={setCaptionedThisRound}
 									roundData={roundData}
 									setRoundData={setRoundData}
 									lobbyId={lobbyId}
 									userToken={userToken}
-									handleCaptionSubmit={handleCaptionSubmit}
-									xz
+								/>
+							)}
+
+							{showKeywordPrompt && (
+								<KeywordPromptComponent
+									players={players}
+									currentRound={currentRound}
+									roundData={roundData}
+									setRoundData={setRoundData}
+									lobbyId={lobbyId}
+									userToken={userToken}
 								/>
 							)}
 						</>
@@ -312,13 +386,13 @@ export default function GamePage() {
 					<div className={`flex flex-col justify-center items-center h-fit w-full`}>
 						<div
 							ref={scrollContainerRef}
-							className='flex bg-dark outline outline-2 outline-darkAccent max-w-[600px] rounded-t-md overflow-x-auto overflow-y-hidden whitespace-nowrap mt-4  justify-start w-full h-fit z-50 font-manga text-xl'>
+							className='flex bg-dark outline outline-2 outline-darkAccent max-w-[600px] rounded-t-md overflow-x-auto overflow-y-hidden whitespace-nowrap mt-4  justify-start w-full h-fit z-40 font-manga text-xl'>
 							{players.map((player, index) => (
 								<div
 									key={player.userToken}
 									className={`${
 										index % 2 === 0 ? 'bg-dark' : 'bg-darkAccent'
-									} inline-flex flex-none flex-col justify-center items-center pb-2 pt-4 lg:pb-4 px-8 lg:pt-6 `}>
+									} inline-flex flex-none flex-col justify-center items-center pt-2 px-8 `}>
 									<div className={`flex flex-col items-center`}>
 										{player.avatar ? (
 											<div className={`relative`}>
@@ -362,18 +436,18 @@ export default function GamePage() {
 						<div className={`lg:max-w-[50%] p-2 flex w-full justify-evenly`}>
 							<div
 								onClick={() => handleComponentDisplay('keyword-prompt')}
-								className={`font-sunny text-xl bg-blue-300 px-2 text-dark`}>
+								className={`font-sunny text-2xl bg-blue-300 px-2 text-dark`}>
 								PROMPT
 							</div>
 							<div
 								onClick={() => handleComponentDisplay('caption-video')}
-								className={`font-sunny text-xl bg-green-300 px-2 text-dark`}>
+								className={`font-sunny text-2xl bg-green-300 px-2 text-dark`}>
 								CAPTION
 							</div>
 							<div
 								onClick={() => handleComponentDisplay('voting')}
-								className={`font-sunny text-xl bg-red-300 px-2 text-dark`}>
-								VOTING (not rdy)
+								className={`font-sunny text-2xl bg-red-300 px-2 text-dark`}>
+								VOTING
 							</div>
 						</div>
 					</div>

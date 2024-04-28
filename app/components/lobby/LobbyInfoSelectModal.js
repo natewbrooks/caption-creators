@@ -36,7 +36,7 @@ function LobbyInfoSelectModal({
 						playerName ||
 						(hostUserToken === userToken ? 'HOST' : 'ANONYMOUS')
 					}
-					className='font-sunny w-full text-4xl xl:text-5xl leading-none text-center bg-darkAccent rounded-md outline-none text-white cursor-pointer'
+					className='font-sunny w-full text-3xl sm:text-4xl lg:text-5xl leading-none text-center bg-darkAccent rounded-md outline-none text-white cursor-pointer'
 					maxLength={12}
 					value={playerName}
 					onChange={(e) => setPlayerName(e.target.value)}
@@ -60,7 +60,7 @@ function LobbyInfoSelectModal({
 			)}
 			<button
 				type='submit'
-				className={`bg-dark z-20 p-2 md:p-4 w-full text-center font-sunny text-4xl xl:text-5xl  cursor-pointer ${
+				className={`bg-dark z-20 p-2 md:p-4 w-full text-center font-sunny text-3xl xl:text-4xl  cursor-pointer ${
 					currentAvatar ? 'outline-green-300' : 'outline-red-300'
 				} outline outline-2 rounded-md text-white outline-darkAccent sm:hover:outline-white sm:active:scale-95`}>
 				ENTER LOBBY

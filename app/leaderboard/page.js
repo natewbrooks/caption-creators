@@ -144,12 +144,15 @@ export default function LeaderboardPage() {
 						<div
 							className={`translate-y-[0.15rem] flex items-center h-full justify-center space-x-2 w-fit cursor-pointer sm:hover:opacity-50 sm:active:scale-95`}
 							onClick={() => setIsDescending(!isDescending)}>
-							<IoFilter
-								size={32}
-								className={`bg-dark  p-2 rounded-full text-white -translate-y-[0.15rem] transition-all duration-500 ease-in-out ${
-									isDescending ? 'rotate-0' : 'rotate-180'
-								}`}
-							/>
+							<div className={`bg-dark p-1 rounded-full text-white -translate-y-[0.25rem] `}>
+								<IoFilter
+									size={18}
+									className={`transition-all duration-500 ease-in-out ${
+										isDescending ? 'rotate-0' : 'rotate-180'
+									}`}
+								/>
+							</div>
+
 							<h1
 								data-text={isDescending ? 'DESCENDING' : 'ASCENDING'}
 								className={`h-full font-manga text-2xl lg:text-3xl `}>
@@ -158,15 +161,14 @@ export default function LeaderboardPage() {
 						</div>
 						<span className={`text-darkAccent`}>|</span>
 						<div className='flex space-x-2 items-center'>
-							<FaSearch
-								size={32}
-								className={`bg-dark p-2 rounded-full text-white`}
-							/>
+							<div className={`bg-dark p-2 rounded-full text-white`}>
+								<FaSearch size={14} />
+							</div>
 							<input
 								type='text'
 								onChange={handleSearchChange}
 								value={searchTerm}
-								className={`font-manga text-3xl rounded-md min-w-[80px] max-w-[140px] px-2 w-full bg-darkAccent outline outline-4 outline-dark text-white `}
+								className={`font-manga text-3xl rounded-md max-h-[30px] min-w-[80px] max-w-[140px] px-2 w-full bg-darkAccent outline outline-4 outline-dark text-white `}
 							/>
 						</div>
 					</div>
