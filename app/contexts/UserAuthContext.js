@@ -58,24 +58,31 @@ export const UserAuthProvider = ({ children }) => {
 
 	const register = async (username, email, password) => {
 		try {
-			const response = await fetch('/api/users/', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({ username, email }),
-			});
-
-			const data = await response.json();
-			if (data.error) {
-				throw new Error(data.error);
-			}
-
 			const userCredential = await createUserWithEmailAndPassword(auth, email, password);
 			await updateProfile(userCredential.user, { displayName: username });
 			await sendEmailVerification(userCredential.user);
-			userCredential.user.reload();
-			setCurrentUser(userCredential.user);
+			await signOut(auth);
+
+			// Listen for email verification before proceeding
+			onAuthStateChanged(auth, async (user) => {
+				if (user && user.emailVerified) {
+					// Email is verified, add user details to the database
+					const response = await fetch('/api/users/', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+						},
+						body: JSON.stringify({ username, email }),
+					});
+
+					const data = await response.json();
+					if (data.error) {
+						throw new Error(data.error);
+					}
+					setCurrentUser(user);
+					console.log('User registered and verified:', user);
+				}
+			});
 		} catch (error) {
 			console.error('Registration error:', error);
 			throw error;

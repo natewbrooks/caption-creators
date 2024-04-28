@@ -93,7 +93,7 @@ export default function RootLayout({ children }) {
 					content='/path/to/image.jpg'
 				/>
 			</Helmet>
-			<body className={`p-8 overflow-hidden w-full h-screen `}>
+			<body className={`xs:p-2 sm:p-4 md:p-8 overflow-hidden w-full h-screen `}>
 				<div className='absolute'>
 					<div className={`${isPageLoaded ? 'background' : ''}`}></div>
 					<div className={`${isPageLoaded ? 'backgroundOffset' : ''}`}></div>

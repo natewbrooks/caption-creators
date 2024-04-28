@@ -2,6 +2,8 @@ import { getSocket } from '@/server/socketManager';
 import { FaCheck } from 'react-icons/fa';
 import { FaUserCircle } from 'react-icons/fa';
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
+import { FaArrowRight } from 'react-icons/fa6';
 
 const CaptionVideoComponent = ({
 	players,
@@ -55,9 +57,9 @@ const CaptionVideoComponent = ({
 	}, [roundData]);
 
 	return (
-		<>
+		<div className={`flex xl:flex-col items-center w-[80%] xl:w-[50%] h-full`}>
 			<div
-				className={`flex justify-center items-center aspect-video w-full h-full sm:h-[25vh] md:h-[30vh] lg:h-[40vh] xl:h-[50vh] bg-white rounded-md p-2`}>
+				className={`flex justify-center items-center aspect-[2/3] xl:h-fit w-full bg-white rounded-t-md`}>
 				<h1
 					data-text='VIDEO PLACEHOLDER'
 					className={`font-sunny text-4xl text-dark`}>
@@ -66,7 +68,7 @@ const CaptionVideoComponent = ({
 			</div>
 
 			{captionedThisRound ? (
-				<div className='relative top-4 w-full flex justify-center mt-2'>
+				<div className='relative top-4 w-full flex justify-center'>
 					<h1
 						data-text='Waiting for others to caption...'
 						className={`w-fit font-sunny text-4xl text-yellow-300`}>
@@ -74,7 +76,7 @@ const CaptionVideoComponent = ({
 					</h1>
 				</div>
 			) : (
-				<div>
+				<div className={`flex w-full justify-between`}>
 					<input
 						type='text'
 						value={currentCaption}
@@ -86,47 +88,19 @@ const CaptionVideoComponent = ({
 							}
 						}}
 						placeholder='Enter caption...'
-						className='outline-none font-manga text-white text-xl text-center bg-darkAccent w-full h-[4rem] px-2 rounded-md placeholder:text-white/50'
+						className='outline-none font-manga text-white text-3xl text-center bg-darkAccent w-full h-[4rem] px-2 placeholder:text-white/50'
 					/>
-					<div className={`w-full flex justify-center items-center mt-4`}>
-						<div
-							onClick={() => handleCaptionSubmit(currentCaption)}
-							className='bg-dark p-2 rounded-md w-fit font-sunny text-2xl text-green-300 cursor-pointer outline outline-2 outline-green-300 sm:hover:outline-white sm:active:scale-95'>
-							SUBMIT CAPTION
-						</div>
+					<div
+						onClick={() => handleCaptionSubmit(currentCaption)}
+						className='bg-green-300 p-2 w-fit h-full flex items-center font-sunny text-3xl sm:hover:outline outline-2 cursor-pointer sm:hover:outline-white sm:active:scale-95'>
+						<FaArrowRight
+							size={24}
+							className={`text-dark`}
+						/>
 					</div>
 				</div>
 			)}
-
-			<div className='bg-dark/80 py-4 absolute bottom-0 left-0 flex justify-evenly w-full h-fit -z-[1] font-manga text-xl'>
-				{players.map((player) => (
-					<div
-						key={player.userToken}
-						className='flex flex-col justify-center items-center'>
-						<div className={`flex space-x-2 items-center`}>
-							<FaUserCircle
-								size={18}
-								className={`-translate-y-[0.15rem]`}
-							/>
-							<h1 className='font-manga text-2xl'>{player.name}</h1>
-						</div>
-						<div className='flex'>
-							{roundData[currentRound]?.find(
-								(p) => p.userToken === player.userToken && p.caption
-							) && (
-								<div className={`relative flex items-center space-x-1`}>
-									<h1 className='font-sunny text-md text-green-300'>READY</h1>
-									<FaCheck
-										size={12}
-										className='absolute -right-4 text-green-300'
-									/>
-								</div>
-							)}
-						</div>
-					</div>
-				))}
-			</div>
-		</>
+		</div>
 	);
 };
 

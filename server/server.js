@@ -5,6 +5,8 @@ const { customAlphabet } = require('nanoid');
 const { join } = require('path');
 const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'; // No hyphens or underscores (default has them)
 const nanoid = customAlphabet(alphabet, 4);
+const fs = require('fs');
+const path = require('path');
 
 const port = process.env.PORT || 3000;
 const dev = process.env.NODE_ENV !== 'production';
@@ -33,8 +35,9 @@ app.prepare().then(() => {
 		socket.on('create_lobby', (data) => createLobby(socket, data, io));
 		socket.on('join_lobby', (data) => joinLobby(socket, data, io));
 		socket.on('update_player_name', (data) =>
-			updatePlayerName(data.lobbyId, data.userToken, data.playerName, io)
+			updatePlayerName(data.lobbyId, data.userToken, data.socket, data.playerName, io)
 		);
+		socket.on('avatar_selected', (data) => avatarSelected(socket, data, io));
 		socket.on('fetch_lobby_details', (data) => fetchLobbyDetails(socket, data, io));
 		socket.on('leave_lobby', () => leaveLobby(socket, io));
 
@@ -192,16 +195,32 @@ function createLobby(socket, { hostUserToken, playerName, email }, io) {
 		lobbyId = nanoid();
 	}
 
-	lobbies[lobbyId] = {
-		hostUserToken: hostUserToken, // Store the host's user token.
-		members: [
-			{ id: socket.id, name: playerName, email: email, isHost: true, userToken: hostUserToken },
-		],
-	};
-	socket.join(lobbyId); // Add the host's socket to the lobby room.
-	updateLobby(lobbyId, io); // Update all clients with the new lobby details.
-	socket.emit('lobby_created', { lobbyId, hostUserToken }); // Notify the host that the lobby has been created.
-	console.log('Created new lobby: ' + lobbyId);
+	getAvatarRange(12, (err, range) => {
+		if (err) {
+			socket.emit('error', 'Failed to initialize avatar range.');
+			return;
+		}
+
+		lobbies[lobbyId] = {
+			hostUserToken: hostUserToken, // Store the host's user token.
+			members: [
+				{
+					id: socket.id,
+					name: playerName,
+					email: email,
+					isHost: true,
+					userToken: hostUserToken,
+					avatar: null,
+				},
+			],
+			avatarRange: range,
+			takenAvatars: {},
+		};
+		socket.join(lobbyId); // Add the host's socket to the lobby room.
+		updateLobby(lobbyId, io); // Update all clients with the new lobby details.
+		socket.emit('lobby_created', { lobbyId, hostUserToken }); // Notify the host that the lobby has been created.
+		console.log('Created new lobby: ' + lobbyId);
+	});
 }
 
 // Allows a player to join an existing lobby if it exists and they are not already a member.
@@ -218,6 +237,16 @@ function joinLobby(socket, { lobbyId, playerName, userToken, email }, io) {
 		return;
 	}
 
+	if (activeGames[lobbyId]) {
+		socket.emit('error_joining', 'This lobby is already in a game! You cannot join at this time.');
+		return;
+	}
+
+	if (lobby.members.length >= 9) {
+		socket.emit('error_joining', 'Lobby is full.'); // Inform the player if the lobby is full.
+		return;
+	}
+
 	// Add the new player to the lobby members list.
 	lobby.members.push({
 		id: socket.id,
@@ -225,6 +254,7 @@ function joinLobby(socket, { lobbyId, playerName, userToken, email }, io) {
 		isHost: userToken === lobby.hostUserToken,
 		userToken: userToken,
 		email: email,
+		avatar: null,
 	});
 	socket.join(lobbyId); // Add the player's socket to the lobby room.
 	updateLobby(lobbyId, io); // Update all clients with the new lobby details.
@@ -239,7 +269,10 @@ function updateLobby(lobbyId, io) {
 	io.to(lobbyId).emit('update_lobby', {
 		members: lobby.members,
 		hostUserToken: lobby.hostUserToken,
+		takenAvatars: lobby.takenAvatars,
 	});
+
+	console.log('lobby ' + lobbyId + ' taken: ' + JSON.stringify(lobby.takenAvatars));
 }
 
 // Handles a player leaving a lobby, including deleting the lobby if it becomes empty, and reassigning the host.
@@ -281,18 +314,98 @@ function leaveLobby(socket, io) {
 function fetchLobbyDetails(socket, { lobbyId }, io) {
 	const lobby = lobbies[lobbyId];
 	if (!lobby) {
-		socket.emit('error_fetching_lobby_details', 'Lobby does not exist.'); // Inform if the lobby doesn't exist.
+		socket.emit('error_fetching_lobby_details', 'Lobby does not exist.');
 		return;
 	}
+
 	socket.emit('lobby_details', {
 		members: lobby.members,
 		hostUserToken: lobby.hostUserToken,
+		avatarRange: lobby.avatarRange,
+		takenAvatars: lobby.takenAvatars,
+	});
+}
+
+function getAvatarRange(gap, callback) {
+	const avatarDirectory = path.join(__dirname, '..', 'public', 'avatars');
+
+	fs.readdir(avatarDirectory, (err, files) => {
+		if (err) {
+			console.error('Error accessing avatar directory:', err);
+			callback(err);
+			return;
+		}
+
+		const totalAvatars = files.length;
+		if (totalAvatars < gap) {
+			console.error('Not enough avatars to create a range.');
+			callback(new Error('Not enough avatars to create a range.'));
+			return;
+		}
+
+		const maxStartIndex = Math.max(1, totalAvatars - gap);
+		const start = Math.floor(Math.random() * (maxStartIndex + 1));
+		const end = Math.min(start + gap - 1, totalAvatars - 1);
+
+		callback(null, [start, end]); // plus one to adjust range starting from 1
+	});
+}
+
+// Fetches and sends the details of a specific lobby to a requesting client.
+function avatarSelected(socket, { lobbyId, userToken, avatarSrc }, io) {
+	const lobby = lobbies[lobbyId];
+	if (!lobby) {
+		socket.emit('avatar_selection_response', { success: false, message: 'Lobby does not exist.' });
+		return;
+	}
+
+	// Prevent selection if the avatar is already taken by another user
+	if (lobby.takenAvatars[avatarSrc] && lobby.takenAvatars[avatarSrc] !== userToken) {
+		socket.emit('avatar_selection_response', {
+			success: false,
+			message: 'Avatar is already taken by another user.',
+		});
+		return;
+	}
+
+	// If the user is updating their avatar, first remove the old entry
+	Object.entries(lobby.takenAvatars).forEach(([key, value]) => {
+		if (value === userToken) {
+			delete lobby.takenAvatars[key];
+		}
+	});
+
+	const player = findPlayerInLobby(lobbyId, userToken);
+
+	// Assign the new avatar to this user
+	if (player) {
+		player.avatar = avatarSrc;
+	}
+	lobby.takenAvatars[avatarSrc] = userToken;
+	updateLobby(lobbyId, io);
+
+	socket.emit('avatar_selection_response', {
+		success: true,
+		message: 'Avatar selected successfully.',
 	});
 }
 
 // Updates the name of a player in a lobby.
-function updatePlayerName(lobbyId, userToken, playerName, io) {
+function updatePlayerName(lobbyId, userToken, socket, playerName, io) {
+	const lobby = lobbies[lobbyId];
 	const member = findPlayerInLobby(lobbyId, userToken);
+
+	const nameExists = lobby.members.some(
+		(member) =>
+			member.name.toLowerCase() === playerName.toLowerCase() && member.userToken !== userToken
+	);
+
+	if (nameExists) {
+		if (socket) {
+			socket.emit('update_name_error', 'Name is already taken by another player.');
+		}
+		return;
+	}
 	if (member && playerName) {
 		member.name = playerName; // Update the player's name.
 		updateLobby(lobbyId, io); // Update all clients with the new lobby details.

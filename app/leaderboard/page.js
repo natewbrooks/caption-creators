@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useAuth } from '../contexts/userAuthContext.js';
 import { useRouter } from 'next/navigation';
 import { FaSearch, FaUserCircle } from 'react-icons/fa';
@@ -7,16 +7,22 @@ import { IoFilter } from 'react-icons/io5';
 import { FixedSizeList as List } from 'react-window';
 import { FaCrown, FaMedal, FaTrophy } from 'react-icons/fa6';
 import TopBar from '../components/login/topBar.js';
+import AutoSizer from 'react-virtualized-auto-sizer';
 
 export default function LeaderboardPage() {
 	const router = useRouter();
 	const [searchTerm, setSearchTerm] = useState('');
 	const { currentUser } = useAuth();
 	const [isDescending, setIsDescending] = useState(true);
-	const [users, setUsers] = useState([]); // State to hold user data
+	const [users, setUsers] = useState([]);
+	const [loading, setLoading] = useState(true);
 
+	const containerRef = useRef(null);
+
+	// Adjust fetchUsers to manage loading state:
 	useEffect(() => {
 		const fetchUsers = async () => {
+			setLoading(true); // Set loading to true when fetch starts
 			const response = await fetch('/api/leaderboard', {
 				method: 'GET',
 				headers: { 'Content-Type': 'application/json' },
@@ -26,12 +32,13 @@ export default function LeaderboardPage() {
 				setUsers(
 					data.data.map((user, index) => ({
 						...user,
-						rank: index + 1, // Assign rank as data is assumed to be pre-sorted from the API
+						rank: index + 1,
 					}))
 				);
 			} else {
 				console.error('Failed to fetch leaderboard:', data.error);
 			}
+			setLoading(false); // Set loading to false when fetch completes
 		};
 
 		fetchUsers();
@@ -60,49 +67,53 @@ export default function LeaderboardPage() {
 	const Row = ({ index, style }) => (
 		<div
 			style={style}
-			className={`font-manga text-xl flex justify-between px-2 py-2 ${
+			className={`relative w-full font-manga flex flex-col rounded-md sm:flex-row justify-between xs:items-center px-4 py-2 space-x-4 ${
 				index % 2 ? 'bg-dark' : 'bg-darkAccent'
 			}`}>
-			<div className={`font-manga text-xl flex justify-between`}>
-				<div className={`flex space-x-2 items-center`}>
+			<div className={`font-manga flex w-full justify-between`}>
+				<div className={`flex text-start space-x-2`}>
 					<div className={`flex space-x-2`}>
 						<div
-							className={`font-manga text-lg text-white w-[30px] flex items-center justify-center`}>
+							className={`font-manga text-2xl md:text-3xl text-white w-[30px] flex items-center justify-center`}>
 							#{sortedUsers[index].rank}
 						</div>
-						{sortedUsers[index].rank === 1 ? (
-							<FaCrown
-								size={24}
-								className={`text-yellow-500`}
-							/>
-						) : sortedUsers[index].rank === 2 ? (
-							<FaMedal
-								size={24}
-								className={`text-slate-300`}
-							/>
-						) : sortedUsers[index].rank === 3 ? (
-							<FaMedal
-								size={24}
-								className={`text-yellow-700`}
-							/>
-						) : (
-							''
-						)}
 					</div>
 					<span className='text-white/10'>|</span>
-					<div className='flex items-center space-x-2'>
-						<FaUserCircle
-							size={18}
+					<div className='flex items-center space-x-2 text-2xl md:text-3xl'>
+						{/* <FaUserCircle
+							size={24}
 							className={`text-white`}
-						/>
+						/> */}
 						<span>{sortedUsers[index].username}</span>
 					</div>
 				</div>
 			</div>
 
-			<span>
-				{sortedUsers[index].score} <span className='text-xs h-full'>PTS</span>
-			</span>
+			<div className='flex whitespace-nowrap w-full justify-end items-center pr-2 sm:pr-0'>
+				{/* Conditionally render icons based on rank */}
+				<div className={`px-2`}>
+					{sortedUsers[index].rank === 1 ? (
+						<FaTrophy
+							size={32}
+							className='text-yellow-300 -translate-y-1 mr-2'
+						/>
+					) : sortedUsers[index].rank === 2 ? (
+						<FaMedal
+							size={32}
+							className='text-slate-300 -translate-y-1 mr-2'
+						/>
+					) : sortedUsers[index].rank === 3 ? (
+						<FaMedal
+							size={32}
+							className='text-yellow-700 -translate-y-1 mr-2'
+						/>
+					) : null}
+				</div>
+				{/* Score Display */}
+				<span className='text-2xl md:text-3xl text-end'>
+					{sortedUsers[index].score} <span className='text-lg md:text-xl'>PTS</span>
+				</span>
+			</div>
 		</div>
 	);
 
@@ -113,74 +124,94 @@ export default function LeaderboardPage() {
 				backButtonGoHome={false}
 				showProfileIfNotLoggedIn={true}
 			/>
-			<div className='relative w-full h-full flex flex-col items-center overflow-hidden'>
+			<div className='relative w-full h-full flex flex-col items-center'>
 				<div className='flex items-center space-x-4'>
-					<div className='w-fit h-fit -translate-y-[0.15rem] bg-dark rounded-md p-1'>
-						<FaTrophy
-							size={32}
-							className={` text-yellow-500`}
-						/>
-					</div>
 					<h1
 						data-text='TOP 1000 LEADERBOARD'
-						className={`text-6xl md:text-7xl font-sunny text-center text-white`}>
-						TOP 1000 LEADERBOARD
+						className={`leading-none text-[3rem] md:text-[6rem] lg:text-[7rem] font-sunny text-center text-white`}>
+						TOP{' '}
+						<span className={`relative`}>
+							1000
+							<FaCrown
+								className={`text-stroke absolute text-yellow-300 hover:scale-110 hover:rotate-[15deg] transition-all duration-300 -top-8 -right-5 lg:-top-11 lg:-right-4 drop-shadow-md rotate-[20deg] w-[42px] h-[42px] lg:w-[64px] lg:h-[64px]`}
+							/>
+						</span>{' '}
+						LEADERBOARD
 					</h1>
-					<div className='w-fit h-fit -translate-y-[0.15rem] bg-dark rounded-md p-1'>
-						<FaTrophy
-							size={32}
-							className={` text-yellow-500`}
-						/>
-					</div>
 				</div>
-				<div className='relative max-w-[800px] w-full flex flex-col p-4 items-center '>
+				<div className='relative max-w-[800px] w-full h-full flex flex-col items-center '>
 					<div className='w-full h-fit flex flex-row p-2 rounded-sm items-center justify-center space-x-4'>
 						<div
 							className={`translate-y-[0.15rem] flex items-center h-full justify-center space-x-2 w-fit cursor-pointer sm:hover:opacity-50 sm:active:scale-95`}
 							onClick={() => setIsDescending(!isDescending)}>
 							<IoFilter
-								size={18}
-								className={`text-white -translate-y-[0.15rem] transition-all duration-500 ease-in-out ${
+								size={28}
+								className={`bg-dark p-1 rounded-full text-white -translate-y-[0.15rem] transition-all duration-500 ease-in-out ${
 									isDescending ? 'rotate-0' : 'rotate-180'
 								}`}
 							/>
 							<h1
 								data-text={isDescending ? 'DESCENDING' : 'ASCENDING'}
-								className={`h-full font-manga text-xl `}>
+								className={`h-full font-manga text-2xl lg:text-3xl `}>
 								{isDescending ? 'DESCENDING' : 'ASCENDING'}
 							</h1>
 						</div>
 						<span className={`text-darkAccent`}>|</span>
 						<div className='flex space-x-2 items-center'>
 							<FaSearch
-								size={14}
+								size={20}
 								className={`text-white`}
 							/>
 							<input
 								type='text'
 								onChange={handleSearchChange}
 								value={searchTerm}
-								className={`font-manga text-xl rounded-md min-w-[80px] max-w-[140px] px-2 w-full bg-darkAccent text-white outline-none`}
+								className={`font-manga text-3xl rounded-md min-w-[80px] max-w-[140px] px-2 w-full bg-darkAccent text-white outline-none`}
 							/>
 						</div>
 					</div>
-					<List
-						className={`${
-							sortedUsers.length === 0 ? '' : 'outline'
-						} outline-2 outline-darkAccent bg-darkAccent rounded-md`}
-						height={500}
-						itemCount={sortedUsers.length}
-						itemSize={45}
-						width={'100%'}>
-						{Row}
-					</List>
-					{sortedUsers.length === 0 && (
-						<h1
-							data-text='NO MATCHING RESULTS!'
-							className={`absolute z-20 top-20 mt-4 font-sunny text-red-300 text-2xl`}>
-							NO MATCHING RESULTS!
-						</h1>
-					)}
+					<div
+						className={`w-full h-full max-h-[800px] bg-dark p-4 rounded-md outline outline-2 outline-darkAccent`}>
+						<div
+							ref={containerRef}
+							className={`w-full h-full`}>
+							{loading ? (
+								<div
+									className={`bg-dark rounded-md w-full flex justify-center`}
+									style={{ height: '90%' }}>
+									<h1
+										data-text='NO MATCHING USER ENTRIES!'
+										className={`w-fit h-fit z-20 mt-8 font-sunny text-white text-2xl lg:text-5xl`}>
+										LOADING...
+									</h1>
+								</div>
+							) : sortedUsers.length >= 1 ? (
+								<AutoSizer>
+									{({ height, width }) => (
+										<List
+											className={``}
+											type='responsive'
+											height={height}
+											width={width}
+											itemCount={sortedUsers.length}
+											itemSize={84}>
+											{Row}
+										</List>
+									)}
+								</AutoSizer>
+							) : (
+								<div
+									className={`bg-dark rounded-md w-full flex justify-center`}
+									style={{ height: '90%' }}>
+									<h1
+										data-text='NO MATCHING USER ENTRIES!'
+										className={`w-fit h-fit z-20 mt-8 font-sunny text-red-300 text-2xl lg:text-5xl`}>
+										NO MATCHING USER ENTRIES!
+									</h1>
+								</div>
+							)}
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>

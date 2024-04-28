@@ -21,6 +21,13 @@ module.exports = {
 				manga: ['Manga'],
 			},
 		},
+		screens: {
+			xs: '240px',
+			sm: '360px',
+			md: '680px',
+			lg: '1080px',
+			xl: '1280px',
+		},
 	},
 	plugins: [],
 };

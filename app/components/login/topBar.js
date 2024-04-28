@@ -10,7 +10,7 @@ export default function TopBar({ userOnClickEnabled, backButtonGoHome, showLogin
 	const shouldShowLogin = showLoginOption && !!currentUser;
 
 	return (
-		<div className={`flex w-full justify-between mb-10`}>
+		<div className={`flex w-full justify-between mb-4`}>
 			<BackButton goHome={backButtonGoHome} />
 			<UserDisplay
 				onClickEnabled={userOnClickEnabled}
