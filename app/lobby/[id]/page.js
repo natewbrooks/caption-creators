@@ -370,11 +370,12 @@ export default function LobbyPage() {
 			<TopBar
 				userOnClickEnabled={false}
 				backButtonGoHome={true}
+				backButtonText={'EXIT LOBBY'}
 				showProfileIfNotLoggedIn={false}
 			/>
 			<div
-				id='lobby-header'
-				className={`flex flex-col space-y-1 mt-2 xs:mb-4 lg:mb-8 leading-none justify-center text-center`}>
+				id='lobby-header '
+				className={`flex flex-col space-y-1 mt-2 mb-2 md:mb-4 leading-none justify-center text-center`}>
 				<div className={`relative`}>
 					<div className={`flex space-x-2 w-full justify-center`}>
 						<h1
@@ -409,7 +410,8 @@ export default function LobbyPage() {
 				<>
 					{countdown !== null && (
 						<div className={`absolute z-30 w-full h-full flex justify-center items-center`}>
-							<div className={`w-fit h-fit flex justify-center p-12 bg-green-300 rounded-full`}>
+							<div
+								className={`w-fit h-fit flex justify-center p-12 bg-green-300 outline outline-6 outline-dark rounded-full`}>
 								<div className={`flex flex-col items-center justify-center `}>
 									<h1
 										data-text='GAME STARTS IN...'
@@ -433,7 +435,7 @@ export default function LobbyPage() {
 						</div>
 					)}
 					<div
-						className={`flex flex-col w-full md:w-[80%] max-h-[800px] h-full  p-4 bg-dark rounded-md outline outline-2 outline-darkAccent`}>
+						className={`flex flex-col w-full max-w-[600px] max-h-[800px] h-full p-4 bg-dark rounded-md outline outline-2 outline-darkAccent`}>
 						<div className={`h-full w-full `}>
 							<AutoSizer>
 								{({ height, width }) => (
@@ -463,50 +465,54 @@ export default function LobbyPage() {
 								)}
 							</AutoSizer>
 						</div>
-						{userToken === hostUserToken ? (
-							<div
-								onClick={() => {
-									if (players.length >= 2) {
-										handleGameStart();
-									}
-								}}
-								className={`bg-dark flex z-20 w-full justify-center text-center p-2 md:p-4 font-sunny text-4xl md:text-5xl ${
-									players.length >= 2
-										? 'cursor-pointer outline-green-300 sm:hover:outline-white sm:active:scale-95'
-										: 'outline-red-300'
-								} outline outline-2 rounded-md text-white `}>
-								{players.length >= 2 ? 'START GAME' : 'NEED ATLEAST 2 PLAYERS TO START GAME'}
-							</div>
-						) : (
-							players.length >= 2 && (
+						<div className={`z-40`}>
+							{userToken === hostUserToken ? (
 								<div
-									className={`bg-dark flex z-20 w-full justify-center text-center p-2 md:p-4 font-sunny text-4xl md:text-5xl ${
-										players.length >= 2 ? 'outline-yellow-300' : 'outline-red-300'
-									} outline outline-2 rounded-md text-white`}>
-									{players.length >= 2
-										? 'WAITING FOR HOST TO START GAME'
-										: 'NEED ATLEAST 2 PLAYERS TO START GAME'}
+									onClick={() => {
+										if (players.length >= 2) {
+											handleGameStart();
+										}
+									}}
+									className={`bg-dark flex z-20 w-full justify-center text-center p-2 md:p-4 font-sunny text-4xl xl:text-5xl ${
+										players.length >= 2
+											? 'cursor-pointer outline-green-300 sm:hover:outline-white sm:active:scale-95'
+											: 'outline-red-300'
+									} outline outline-2 rounded-md text-white `}>
+									{players.length >= 2 ? 'START GAME' : 'NEED 2+ PLAYERS TO START GAME'}
 								</div>
-							)
-						)}
+							) : (
+								players.length >= 2 && (
+									<div
+										className={`bg-dark flex z-20 w-full justify-center text-center p-2 md:p-4 font-sunny text-4xl xl:text-5xl ${
+											players.length >= 2 ? 'outline-yellow-300' : 'outline-red-300'
+										} outline outline-2 rounded-md text-white`}>
+										{players.length >= 2
+											? 'WAITING FOR HOST TO START GAME'
+											: 'NEED 2+ PLAYERS TO START GAME'}
+									</div>
+								)
+							)}
+						</div>
 					</div>
 				</>
 			) : (
-				<LobbyInfoSelectModal
-					avatars={avatars}
-					takenAvatars={takenAvatars}
-					userToken={userToken}
-					players={players}
-					playerName={playerName}
-					setPlayerName={setPlayerName}
-					handlePlayerNameSubmit={handlePlayerNameSubmit}
-					handleAvatarSelect={handleAvatarSelect}
-					setShowEntryPrompt={setShowEntryPrompt}
-					currentAvatar={currentAvatar}
-					currentUser={currentUser}
-					hostUserToken={hostUserToken}
-					error={error}
-				/>
+				<div className={`flex flex-col w-full max-w-[600px] max-h-[800px] h-full p-4`}>
+					<LobbyInfoSelectModal
+						avatars={avatars}
+						takenAvatars={takenAvatars}
+						userToken={userToken}
+						players={players}
+						playerName={playerName}
+						setPlayerName={setPlayerName}
+						handlePlayerNameSubmit={handlePlayerNameSubmit}
+						handleAvatarSelect={handleAvatarSelect}
+						setShowEntryPrompt={setShowEntryPrompt}
+						currentAvatar={currentAvatar}
+						currentUser={currentUser}
+						hostUserToken={hostUserToken}
+						error={error}
+					/>
+				</div>
 			)}
 		</div>
 	);

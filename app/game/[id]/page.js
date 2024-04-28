@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { FaUserCircle, FaCheck } from 'react-icons/fa';
 import CaptionVideoComponent from '../../components/game/CaptionVideoComponent';
 import PromptForKeywordComponent from '@/app/components/game/PromptForKeywordComponent';
+import BackButton from '@/app/components/BackButton';
 
 export default function GamePage() {
 	const { id: lobbyId } = useParams();
@@ -217,23 +218,45 @@ export default function GamePage() {
 
 	return (
 		<div className={`w-full h-full flex flex-col items-center`}>
-			<TopBar
-				userOnClickEnabled={false}
-				backButtonGoHome={true}
-				showProfileIfNotLoggedIn={false}
-			/>
+			<div className={`w-full hidden md:block`}>
+				<TopBar
+					userOnClickEnabled={false}
+					backButtonGoHome={true}
+					showProfileIfNotLoggedIn={false}
+				/>
+			</div>
+			<div className={`w-full block md:hidden`}></div>
+
 			<div
 				className={`flex flex-col w-full items-center h-full space-y-2 leading-none text-center`}>
-				<div className={`flex flex-col w-fit xs:mb-4 lg:mb-8 justify-center items-center`}>
+				<div
+					className={`flex md:hidden flex-col xs:flex-row justify-center items-center pt-2 xs:pt-0 xs:justify-between space-x-2 w-full`}>
+					<BackButton
+						goHome={true}
+						text='EXIT GAME'
+					/>
+
+					<div className={`flex w-fit text-nowrap justify-center space-x-2`}>
+						<h1
+							data-text={`~ ${lobbyId} ROUND ${currentRound} ~`}
+							className='font-sunny text-2xl select-none'>
+							<span className={`text-green-300`}>~</span>{' '}
+							<span className={`text-yellow-300 text-[1.35rem] font-manga`}>{lobbyId}</span> ROUND{' '}
+							{currentRound} <span className={`text-green-300`}>~</span>
+						</h1>
+					</div>
+				</div>
+				<div
+					className={`hidden md:flex flex-col w-fit xs:mb-4 lg:mb-8 justify-center items-center`}>
 					<div className={`flex w-full justify-center space-x-2`}>
 						<h1
 							data-text={`Game ID -`}
-							className='font-sunny xs:text-5xl 2xxl:text-8xl select-none'>
+							className='font-sunny xs:text-5xl xxl:text-8xl select-none'>
 							Game ID -
 						</h1>
 						<h1
 							data-text={`${lobbyId}`}
-							className='xs:text-5xl 2xxl:text-8xl font-manga select-text text-yellow-300'>
+							className='xs:text-5xl xxl:text-8xl font-manga select-text text-yellow-300'>
 							{lobbyId}
 						</h1>
 					</div>
@@ -247,7 +270,7 @@ export default function GamePage() {
 					</div>
 				</div>
 
-				<div className={`w-full h-full flex justify-center`}>
+				<div className={`max-w-[600px] w-full h-full flex flex-col justify-between items-center`}>
 					{players && roundData && (
 						<>
 							{showCaptionVideo && (
@@ -280,75 +303,80 @@ export default function GamePage() {
 									lobbyId={lobbyId}
 									userToken={userToken}
 									handleCaptionSubmit={handleCaptionSubmit}
+									xz
 								/>
 							)}
 						</>
 					)}
-				</div>
-			</div>
 
-			<div
-				ref={scrollContainerRef}
-				className='flex bg-dark outline outline-2 outline-darkAccent rounded-t-md overflow-x-auto overflow-y-hidden whitespace-nowrap space-x-12 pb-2 pt-4 lg:pb-4 px-4 lg:pt-6 mt-4  justify-evenly w-full h-fit z-50 font-manga text-xl'>
-				{players.map((player, index) => (
-					<div
-						key={player.userToken}
-						className='inline-flex flex-none flex-col justify-center items-center mx-2'>
-						<div className={`flex flex-col items-center`}>
-							{player.avatar ? (
-								<div className={`relative`}>
-									<div className={`w-[32px] h-[32px] lg:w-[48px] lg:h-[48px]`}>
-										<Image
-											src={player.avatar}
-											className={`outline-dark outline-2 outline rounded-full transition-all duration-300 ${
-												roundData[currentRound]?.some(
-													(p) => p.userToken === player.userToken && p.caption !== ''
-												)
-													? 'opacity-40 outline-green-300'
-													: 'opacity-100'
-											}`}
-											alt={`Selected Avatar ${index + 1}`}
-											type='responsive'
-											width={100}
-											height={100}
-											unoptimized
-										/>
+					<div className={`flex flex-col justify-center items-center h-fit w-full`}>
+						<div
+							ref={scrollContainerRef}
+							className='flex bg-dark outline outline-2 outline-darkAccent max-w-[600px] rounded-t-md overflow-x-auto overflow-y-hidden whitespace-nowrap mt-4  justify-start w-full h-fit z-50 font-manga text-xl'>
+							{players.map((player, index) => (
+								<div
+									key={player.userToken}
+									className={`${
+										index % 2 === 0 ? 'bg-dark' : 'bg-darkAccent'
+									} inline-flex flex-none flex-col justify-center items-center pb-2 pt-4 lg:pb-4 px-8 lg:pt-6 `}>
+									<div className={`flex flex-col items-center`}>
+										{player.avatar ? (
+											<div className={`relative`}>
+												<div className={`w-[32px] h-[32px] lg:w-[48px] lg:h-[48px]`}>
+													<Image
+														src={player.avatar}
+														className={`outline-dark outline-2 outline rounded-full transition-all duration-300 ${
+															roundData[currentRound]?.some(
+																(p) => p.userToken === player.userToken && p.caption !== ''
+															)
+																? 'opacity-40 outline-green-300'
+																: 'opacity-100'
+														}`}
+														alt={`Selected Avatar ${index + 1}`}
+														type='responsive'
+														width={100}
+														height={100}
+														unoptimized
+													/>
+												</div>
+												{roundData[currentRound]?.find(
+													(p) => p.userToken === player.userToken && p.caption
+												) && (
+													<div
+														className={`absolute z-20 top-2 right-[0.4rem] lg:top-3 lg:right-[0.65rem] flex items-center space-x-1`}>
+														<FaCheck className='w-[18px] h-[18px] lg:h-[24px] lg:w-[24px] text-green-300' />
+													</div>
+												)}
+											</div>
+										) : (
+											<FaUserCircle
+												size={48}
+												className={`outline-dark outline-2 outline rounded-full`}
+											/>
+										)}
+										<h1 className='font-manga text-2xl'>{player.name}</h1>
 									</div>
-									{roundData[currentRound]?.find(
-										(p) => p.userToken === player.userToken && p.caption
-									) && (
-										<div
-											className={`absolute z-20 top-2 right-[0.4rem] lg:top-3 lg:right-[0.65rem] flex items-center space-x-1`}>
-											<FaCheck className='w-[18px] h-[18px] lg:h-[24px] lg:w-[24px] text-green-300' />
-										</div>
-									)}
 								</div>
-							) : (
-								<FaUserCircle
-									size={48}
-									className={`outline-dark outline-2 outline rounded-full`}
-								/>
-							)}
-							<h1 className='font-manga text-2xl'>{player.name}</h1>
+							))}
+						</div>
+						<div className={`lg:max-w-[50%] p-2 flex w-full justify-evenly`}>
+							<div
+								onClick={() => handleComponentDisplay('keyword-prompt')}
+								className={`font-sunny text-xl bg-blue-300 px-2 text-dark`}>
+								PROMPT
+							</div>
+							<div
+								onClick={() => handleComponentDisplay('caption-video')}
+								className={`font-sunny text-xl bg-green-300 px-2 text-dark`}>
+								CAPTION
+							</div>
+							<div
+								onClick={() => handleComponentDisplay('voting')}
+								className={`font-sunny text-xl bg-red-300 px-2 text-dark`}>
+								VOTING (not rdy)
+							</div>
 						</div>
 					</div>
-				))}
-			</div>
-			<div className={`p-2 flex w-full justify-evenly`}>
-				<div
-					onClick={() => handleComponentDisplay('keyword-prompt')}
-					className={`font-sunny text-xl bg-blue-300 px-2 text-dark`}>
-					PROMPT
-				</div>
-				<div
-					onClick={() => handleComponentDisplay('caption-video')}
-					className={`font-sunny text-xl bg-green-300 px-2 text-dark`}>
-					CAPTION
-				</div>
-				<div
-					onClick={() => handleComponentDisplay('voting')}
-					className={`font-sunny text-xl bg-red-300 px-2 text-dark`}>
-					VOTING (not rdy)
 				</div>
 			</div>
 		</div>

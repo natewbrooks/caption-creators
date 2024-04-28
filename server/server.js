@@ -343,9 +343,9 @@ function getAvatarRange(gap, callback) {
 			return;
 		}
 
-		const maxStartIndex = Math.max(1, totalAvatars - gap);
-		const start = Math.floor(Math.random() * (maxStartIndex + 1));
-		const end = Math.min(start + gap - 1, totalAvatars - 1);
+		const maxStartIndex = Math.max(1, totalAvatars - gap + 1);
+		const start = Math.floor(Math.random() * maxStartIndex) + 1;
+		const end = start + gap - 1;
 
 		callback(null, [start, end]); // plus one to adjust range starting from 1
 	});

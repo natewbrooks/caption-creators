@@ -3,7 +3,12 @@ import { useRouter } from 'next/navigation';
 import BackButton from '../BackButton';
 import UserDisplay from './userDisplay';
 
-export default function TopBar({ userOnClickEnabled, backButtonGoHome, showLoginOption }) {
+export default function TopBar({
+	userOnClickEnabled,
+	backButtonGoHome,
+	backButtonText,
+	showLoginOption,
+}) {
 	const { currentUser } = useAuth();
 
 	// Determine whether to show the login option
@@ -11,7 +16,10 @@ export default function TopBar({ userOnClickEnabled, backButtonGoHome, showLogin
 
 	return (
 		<div className={`flex w-full justify-between mb-4`}>
-			<BackButton goHome={backButtonGoHome} />
+			<BackButton
+				goHome={backButtonGoHome}
+				text={backButtonText}
+			/>
 			<UserDisplay
 				onClickEnabled={userOnClickEnabled}
 				showLoginOption={shouldShowLogin}

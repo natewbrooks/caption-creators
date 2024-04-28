@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 import { FaArrowLeft } from 'react-icons/fa6';
 import { useAuth } from '../contexts/userAuthContext';
 
-const BackButton = (goHome) => {
+const BackButton = ({ goHome, text = 'RETURN' }) => {
 	const router = useRouter();
 	const { currentUser } = useAuth();
 
@@ -24,7 +24,7 @@ const BackButton = (goHome) => {
 			onClick={handleBackButtonClick}
 			className={`flex space-x-2 w-fit items-center text-white cursor-pointer sm:hover:opacity/50 sm:active:scale-95`}>
 			<FaArrowLeft className={`w-[16px] h-[16px] lg:h-[18px] lg:w-[18px]`} />
-			<span className={`font-manga text-xl lg:text-2xl`}>RETURN</span>
+			<span className={`font-manga text-xl lg:text-2xl`}>{text}</span>
 		</div>
 	);
 };

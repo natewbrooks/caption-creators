@@ -71,20 +71,20 @@ export default function LeaderboardPage() {
 				index % 2 ? 'bg-dark' : 'bg-darkAccent'
 			}`}>
 			<div className={`font-manga flex w-full justify-between`}>
-				<div className={`flex text-start space-x-2`}>
+				<div className={`flex items-center text-start space-x-2`}>
 					<div className={`flex space-x-2`}>
 						<div
-							className={`font-manga text-2xl md:text-3xl text-white w-[30px] flex items-center justify-center`}>
+							className={`font-manga text-2xl md:text-3xl text-white w-fit flex items-center justify-center`}>
 							#{sortedUsers[index].rank}
 						</div>
 					</div>
-					<span className='text-white/10'>|</span>
+					<span className='text-white/10 scale-[175%]'>|</span>
 					<div className='flex items-center space-x-2 text-2xl md:text-3xl'>
 						{/* <FaUserCircle
 							size={24}
 							className={`text-white`}
 						/> */}
-						<span>{sortedUsers[index].username}</span>
+						<span> {sortedUsers[index].username}</span>
 					</div>
 				</div>
 			</div>
@@ -139,14 +139,14 @@ export default function LeaderboardPage() {
 						LEADERBOARD
 					</h1>
 				</div>
-				<div className='relative max-w-[800px] w-full h-full flex flex-col items-center '>
+				<div className='relative max-w-[600px] w-full h-full flex flex-col items-center '>
 					<div className='w-full h-fit flex flex-row p-2 rounded-sm items-center justify-center space-x-4'>
 						<div
 							className={`translate-y-[0.15rem] flex items-center h-full justify-center space-x-2 w-fit cursor-pointer sm:hover:opacity-50 sm:active:scale-95`}
 							onClick={() => setIsDescending(!isDescending)}>
 							<IoFilter
-								size={28}
-								className={`bg-dark p-1 rounded-full text-white -translate-y-[0.15rem] transition-all duration-500 ease-in-out ${
+								size={32}
+								className={`bg-dark  p-2 rounded-full text-white -translate-y-[0.15rem] transition-all duration-500 ease-in-out ${
 									isDescending ? 'rotate-0' : 'rotate-180'
 								}`}
 							/>
@@ -159,14 +159,14 @@ export default function LeaderboardPage() {
 						<span className={`text-darkAccent`}>|</span>
 						<div className='flex space-x-2 items-center'>
 							<FaSearch
-								size={20}
-								className={`text-white`}
+								size={32}
+								className={`bg-dark p-2 rounded-full text-white`}
 							/>
 							<input
 								type='text'
 								onChange={handleSearchChange}
 								value={searchTerm}
-								className={`font-manga text-3xl rounded-md min-w-[80px] max-w-[140px] px-2 w-full bg-darkAccent text-white outline-none`}
+								className={`font-manga text-3xl rounded-md min-w-[80px] max-w-[140px] px-2 w-full bg-darkAccent outline outline-4 outline-dark text-white `}
 							/>
 						</div>
 					</div>
@@ -176,9 +176,7 @@ export default function LeaderboardPage() {
 							ref={containerRef}
 							className={`w-full h-full`}>
 							{loading ? (
-								<div
-									className={`bg-dark rounded-md w-full flex justify-center`}
-									style={{ height: '90%' }}>
+								<div className={`bg-dark rounded-md w-full flex justify-center`}>
 									<h1
 										className={`w-fit h-fit z-20 mt-8 font-sunny text-white text-2xl lg:text-5xl`}>
 										LOADING...

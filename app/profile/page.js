@@ -147,7 +147,7 @@ export default function ProfilePage() {
 													FORGOT PASSWORD
 												</h1>
 												<h1 className={`text-2xl text-center text-white font-manga`}>
-													To confirm you want to reset your password, re-enter your account email:{' '}
+													To confirm password reset, re-enter your account email:{' '}
 													<span className={`text-yellow-300`}>{currentUser.email}</span>.
 												</h1>
 											</div>
@@ -170,7 +170,7 @@ export default function ProfilePage() {
 													<button
 														type='submit'
 														className='bg-yellow-300 select-none outline-none px-2 py-1 rounded-md font-sunny text-xl text-dark outline-2 outline-offset-2 sm:hover:outline-white sm:hover:outline sm:active:scale-95'>
-														<FaArrowRight size={16} />
+														<FaArrowRight size={20} />
 													</button>
 												</div>
 
@@ -199,8 +199,7 @@ export default function ProfilePage() {
 												ENTER CURRENT PASSWORD
 											</h1>
 											<h1 className='w-fit text-2xl font-manga text-center'>
-												To edit your account information, you must re-authenticate using your
-												current password.
+												Reauthenticate to edit your account information.
 											</h1>
 										</div>
 										<form

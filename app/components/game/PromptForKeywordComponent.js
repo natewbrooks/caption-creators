@@ -115,7 +115,7 @@ const PromptForKeywordComponent = ({
 				</div>
 			</div>
 			<div
-				className={`mt-4 bg-dark p-2 md:p-4 w-full text-center font-sunny text-4xl md:text-5xl outline outline-2 ${
+				className={`mt-4 bg-dark p-2 md:p-4 w-full text-center font-sunny text-4xl xl:text-5xl outline outline-2 ${
 					currentCaption !== ''
 						? 'outline-green-300 cursor-pointer sm:hover:outline-white sm:active:scale-95'
 						: 'outline-red-300'
