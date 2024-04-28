@@ -57,9 +57,9 @@ const CaptionVideoComponent = ({
 	}, [roundData]);
 
 	return (
-		<div className={`flex xl:flex-col items-center w-[80%] xl:w-[50%] h-full`}>
+		<div className={`flex xxl:flex-col items-center w-[80%] lg:w-[30%] xxl:w-[50%] h-full`}>
 			<div
-				className={`flex justify-center items-center aspect-[2/3] xl:h-fit w-full bg-white rounded-t-md`}>
+				className={`flex justify-center items-center aspect-[2/3] xxl:h-fit w-full bg-white rounded-t-md`}>
 				<h1
 					data-text='VIDEO PLACEHOLDER'
 					className={`font-sunny text-4xl text-dark`}>

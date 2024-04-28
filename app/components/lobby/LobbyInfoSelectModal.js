@@ -25,9 +25,9 @@ function LobbyInfoSelectModal({
 					handlePlayerNameSubmit();
 				}
 			}}
-			className='flex flex-col space-y-2 items-center justify-between bg-dark outline outline-2 outline-darkAccent p-2 md:p-4 rounded-md w-full md:w-fit h-full md:h-fit'>
+			className='flex flex-col items-center justify-between bg-dark outline outline-2 outline-darkAccent p-2 md:p-4 rounded-md w-full md:w-fit h-full md:h-fit'>
 			<div className={`w-full`}>
-				<div className='font-manga text-xl md:text-3xl text-yellow-300 w-full text-start'>
+				<div className='font-manga text-xl xxl:text-3xl text-yellow-300 w-full text-start'>
 					ENTER GAME NAME:
 				</div>
 				<input
@@ -36,7 +36,7 @@ function LobbyInfoSelectModal({
 						playerName ||
 						(hostUserToken === userToken ? 'HOST' : 'ANONYMOUS')
 					}
-					className='font-sunny w-full text-4xl md:text-5xl leading-none text-center bg-darkAccent rounded-md outline-none text-white cursor-pointer'
+					className='font-sunny w-full text-4xl xxl:text-5xl leading-none text-center bg-darkAccent rounded-md outline-none text-white cursor-pointer'
 					maxLength={12}
 					value={playerName}
 					onChange={(e) => setPlayerName(e.target.value)}

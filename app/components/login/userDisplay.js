@@ -46,14 +46,14 @@ export default function UserDisplay({ onClickEnabled, showLoginOption }) {
 				} flex space-x-2 justify-center items-center`}>
 				{currentUser ? (
 					<>
-						<FaUserCircle className={`h-[18px] w-[18px] lg:h-[24px] lg:w-[24px]`} />
-						<p className={`font-manga text-2xl md:text-3xl`}>{currentUser.displayName}</p>
+						<FaUserCircle className={`w-[16px] h-[16px] lg:h-[18px] lg:w-[18px]`} />
+						<p className={`font-manga text-xl md:text-2xl`}>{currentUser.displayName}</p>
 					</>
 				) : (
 					showLoginOption && (
 						<>
-							<FaUserCircle className={`w-[18px] h-[18px] lg:h-[24px] lg:w-[24px]`} />
-							<span className={`translate-y-[0.15rem] font-manga text-2xl lg:text-3xl`}>LOGIN</span>
+							<FaUserCircle className={`w-[16px] h-[16px] lg:h-[18px] lg:w-[18px]`} />
+							<span className={`translate-y-[0.15rem] font-manga text-xl lg:text-2xl`}>LOGIN</span>
 						</>
 					)
 				)}

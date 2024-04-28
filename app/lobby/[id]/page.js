@@ -152,21 +152,6 @@ export default function LobbyPage() {
 	const { currentUser } = useAuth();
 	const router = useRouter();
 
-	const [listHeight, setListHeight] = useState(window.innerHeight * 0.8); // Initial height set to 80% of viewport height
-
-	useEffect(() => {
-		const handleResize = () => {
-			setListHeight(window.innerHeight * 0.8); // Update height on window resize
-		};
-
-		window.addEventListener('resize', handleResize);
-
-		// Clean up the event listener when the component unmounts
-		return () => {
-			window.removeEventListener('resize', handleResize);
-		};
-	}, []);
-
 	const fetchAvatars = async (start, end) => {
 		const loadedAvatars = [];
 		for (let i = start; i <= end; i++) {
@@ -394,12 +379,12 @@ export default function LobbyPage() {
 					<div className={`flex space-x-2 w-full justify-center`}>
 						<h1
 							data-text={`Lobby ID -`}
-							className='font-sunny  xs:text-5xl lg:text-8xl select-none'>
+							className='font-sunny  xs:text-5xl 2xxl:text-8xl select-none'>
 							Lobby ID -
 						</h1>
 						<h1
 							data-text={`${lobbyId}`}
-							className='xs:text-5xl lg:text-8xl font-manga select-text text-yellow-300'>
+							className='xs:text-5xl 2xxl:text-8xl font-manga select-text text-yellow-300'>
 							{lobbyId}
 						</h1>
 					</div>
@@ -407,7 +392,7 @@ export default function LobbyPage() {
 					<FaCopy
 						onClick={handleLobbyIdCopy}
 						size={20}
-						className={`text-white absolute -right-8 bottom-5 lg:bottom-12 cursor-pointer sm:hover:opacity-50 sm:active:scale-95`}
+						className={`text-white absolute -right-8 bottom-5 xxl:bottom-12 cursor-pointer sm:hover:opacity-50 sm:active:scale-95`}
 					/>
 				</div>
 				<div className={`flex w-full justify-center space-x-2`}>
@@ -423,8 +408,7 @@ export default function LobbyPage() {
 			{!showEntryPrompt ? (
 				<>
 					{countdown !== null && (
-						<div
-							className={`absolute z-30 w-full h-full flex justify-center items-center md:-translate-y-40`}>
+						<div className={`absolute z-30 w-full h-full flex justify-center items-center`}>
 							<div className={`w-fit h-fit flex justify-center p-12 bg-green-300 rounded-full`}>
 								<div className={`flex flex-col items-center justify-center `}>
 									<h1

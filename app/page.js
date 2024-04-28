@@ -65,9 +65,9 @@ export default function Home() {
 					}}
 					className={`flex space-x-2 items-center cursor-pointer sm:hover:opacity-50 sm:active:scale-95`}>
 					<FaTrophy
-						className={`text-yellow-500 -translate-y-[0.15rem] h-[18px] w-[18px] lg:h-[24px] lg:w-[24px]`}
+						className={`text-yellow-500 -translate-y-[0.15rem] w-[16px] h-[16px] lg:h-[18px] lg:w-[18px]`}
 					/>
-					<span className={`font-manga  text-2xl lg:text-3xl`}>LEADERBOARD</span>
+					<span className={`font-manga  text-xl lg:text-2xl`}>LEADERBOARD</span>
 				</div>
 				<UserDisplay
 					onClickEnabled={true}
@@ -78,7 +78,7 @@ export default function Home() {
 				<div className={`flex items-center justify-center text-center`}>
 					<h1
 						data-text='Caption Creators'
-						className={`font-sunny leading-none text-[5rem] xs:text-[5rem] sm:text-[6rem] lg:text-[8rem] xl:text-[12rem]`}>
+						className={`font-sunny leading-none text-[5rem] xs:text-[5rem] sm:text-[6rem] lg:text-[8rem] xxl:text-[12rem]`}>
 						Caption Creators
 					</h1>
 					{/* <MdVideoLibrary

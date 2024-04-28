@@ -91,7 +91,7 @@ export default function ProfilePage() {
 						<div className='w-full flex justify-center text-center'>
 							<h1
 								data-text='PROFILE'
-								className='w-fit xs:text-5xl lg:text-8xl font-sunny text-center'>
+								className='w-fit xs:text-5xl 2xxl:text-8xl font-sunny text-center'>
 								PROFILE
 							</h1>
 						</div>

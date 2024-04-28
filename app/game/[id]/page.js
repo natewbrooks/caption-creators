@@ -228,12 +228,12 @@ export default function GamePage() {
 					<div className={`flex w-full justify-center space-x-2`}>
 						<h1
 							data-text={`Game ID -`}
-							className='font-sunny xs:text-5xl lg:text-8xl select-none'>
+							className='font-sunny xs:text-5xl 2xxl:text-8xl select-none'>
 							Game ID -
 						</h1>
 						<h1
 							data-text={`${lobbyId}`}
-							className='xs:text-5xl lg:text-8xl font-manga select-text text-yellow-300'>
+							className='xs:text-5xl 2xxl:text-8xl font-manga select-text text-yellow-300'>
 							{lobbyId}
 						</h1>
 					</div>

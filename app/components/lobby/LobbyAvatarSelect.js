@@ -4,14 +4,14 @@ import AutoSizer from 'react-virtualized-auto-sizer';
 
 function LobbyAvatarSelect({ avatars, takenAvatars, userToken, players, handleAvatarSelect }) {
 	return (
-		<div>
+		<div className={`h-full w-full`}>
 			<h1
 				data-text='SELECT AVATAR'
-				className='mt-4 mb-2 font-manga text-xl md:text-3xl text-yellow-300 cursor-pointer w-full text-end'>
+				className='mt-4 mb-2 font-manga text-xl xxl:text-3xl text-yellow-300 cursor-pointer w-full text-end'>
 				SELECT AVATAR:
 			</h1>
 			<div
-				className={`max-h-[240px] sm:max-h-[260px] xl:max-h-[300px] 2xl:max-h-[400px] overflow-auto pb-4 grid grid-cols-3 md:grid-cols-4 gap-6 bg-none rounded-md`}>
+				className={`max-h-[200px] md:max-h-[150px] xl:max-h-[200px] xxl:max-h-[400px] overflow-auto pb-4 grid grid-cols-3 sm:grid-cols-4 gap-6 bg-none rounded-md`}>
 				{avatars.map((src, index) => {
 					const isTaken = takenAvatars[src];
 					const isMine = takenAvatars[src] === userToken;
@@ -31,7 +31,7 @@ function LobbyAvatarSelect({ avatars, takenAvatars, userToken, players, handleAv
 								</div>
 							)}
 
-							<div className='relative w-[72px] h-[72px] md:w-[84px] md:h-[84px]'>
+							<div className='relative w-[72px] h-[72px]'>
 								<Image
 									src={src}
 									onClick={() => {
