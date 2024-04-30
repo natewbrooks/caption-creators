@@ -23,8 +23,14 @@ const BackButton = ({ goHome, text = 'RETURN' }) => {
 		<div
 			onClick={handleBackButtonClick}
 			className={`flex space-x-2 w-fit items-center text-white cursor-pointer sm:hover:opacity/50 sm:active:scale-95`}>
-			<FaArrowLeft className={`w-[16px] h-[16px] lg:h-[18px] lg:w-[18px]`} />
-			<span className={`font-manga text-xl lg:text-2xl`}>{text}</span>
+			<div className={`bg-dark p-1 rounded-full`}>
+				<FaArrowLeft className={`w-[16px] h-[16px] lg:h-[18px] lg:w-[18px]`} />
+			</div>
+			<h1
+				data-text={text}
+				className={`font-manga text-xl lg:text-2xl`}>
+				{text}
+			</h1>
 		</div>
 	);
 };

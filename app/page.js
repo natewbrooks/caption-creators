@@ -64,10 +64,14 @@ export default function Home() {
 						router.push('/leaderboard');
 					}}
 					className={`flex space-x-2 items-center cursor-pointer sm:hover:opacity-50 sm:active:scale-95`}>
-					<FaTrophy
-						className={`text-yellow-500 -translate-y-[0.15rem] w-[16px] h-[16px] lg:h-[18px] lg:w-[18px]`}
-					/>
-					<span className={`font-manga  text-xl lg:text-2xl`}>LEADERBOARD</span>
+					<div className={`bg-dark p-1 rounded-full -translate-y-[0.15rem]`}>
+						<FaTrophy className={`text-yellow-500 w-[16px] h-[16px] lg:h-[18px] lg:w-[18px]`} />
+					</div>
+					<h1
+						data-text='LEADERBOARD'
+						className={`font-manga  text-xl lg:text-2xl`}>
+						LEADERBOARD
+					</h1>
 				</div>
 				<UserDisplay
 					onClickEnabled={true}

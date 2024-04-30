@@ -10,48 +10,16 @@ import ConfirmationModal from './modules/ConfirmationModal';
 const KeywordPromptComponent = ({
 	players,
 	currentRound,
-	roundData,
-	setRoundData,
+	gameData,
+	setGameData,
+	setIsFinishedPhase,
 	lobbyId,
 	userToken,
 }) => {
 	const [keyword, setKeyword] = useState('');
 	const [showConfirmKeyword, setShowConfirmKeyword] = useState(false);
+	const [submitted, setSubmitted] = useState(false);
 	const [isGenerating, setIsGenerating] = useState(false);
-
-	// useEffect(() => {
-	// 	const socketInstance = getSocket();
-
-	// 	socketInstance.on('notify_players', ({ event, data }) => {
-	// 		if (!data || !data.userToken) return;
-	// 		const wasMyAction = data.userToken === userToken;
-
-	// 		setRoundData((prev) => {
-	// 			const newRoundData = { ...prev };
-	// 			const playerEntries = newRoundData[1] || [];
-
-	// 			const playerIndex = playerEntries.findIndex((p) => p.userToken === data.userToken);
-	// 			if (playerIndex !== -1) {
-	// 				if (event === 'prompt') {
-	// 					playerEntries[playerIndex].caption = data.caption;
-	// 					if (wasMyAction) setCaptionedThisRound(true);
-	// 				}
-	// 			}
-
-	// 			return newRoundData;
-	// 		});
-	// 	});
-
-	// 	socketInstance.on('round_change', (round) => {
-	// 		setCaptionedThisRound(false);
-	// 		setKeyword('');
-	// 	});
-
-	// 	return () => {
-	// 		socketInstance.off('notify_players');
-	// 		socketInstance.off('round_change');
-	// 	};
-	// }, [lobbyId]);
 
 	const generateRandomKeyword = async () => {
 		setIsGenerating(true);
@@ -72,12 +40,22 @@ const KeywordPromptComponent = ({
 		setIsGenerating(false);
 	};
 
-	const toggleRoll = () => {
-		setIsRolling(true);
-		// Reset animation by removing the class after the animation duration
-		setTimeout(() => {
-			setIsRolling(false);
-		}, 1000); // Duration of the animation
+	const handleSubmit = () => {
+		setShowConfirmKeyword(false);
+		setSubmitted(true);
+		setIsFinishedPhase(true);
+
+		const socket = getSocket();
+		if (socket) {
+			socket.emit('game_action', {
+				lobbyId: lobbyId,
+				userToken: userToken,
+				key: 'prompt',
+				data: { prompt: keyword },
+			});
+		} else {
+			console.error('Socket not available or not connected.');
+		}
 	};
 
 	return (
@@ -85,7 +63,7 @@ const KeywordPromptComponent = ({
 			{showConfirmKeyword && (
 				<ConfirmationModal
 					onConfirm={() => {
-						setShowConfirmKeyword(false);
+						handleSubmit();
 					}}
 					onCancel={() => {
 						setShowConfirmKeyword(false);
@@ -99,65 +77,105 @@ const KeywordPromptComponent = ({
 
 			<div
 				className={`flex flex-col w-full max-w-[600px] justify-center items-center h-fit border-2 border-darkAccent rounded-md bg-dark p-2`}>
-				<div className='font-manga text-xl md:text-2xl text-yellow-300 w-full text-start'>
-					ENTER SHORT KEYWORD / PHRASE:
-				</div>
-				<input
-					type='text'
-					value={keyword}
-					maxLength={30}
-					onChange={(e) => setKeyword(e.target.value)}
-					onKeyDown={(e) => {
-						if (e.key === 'Enter') {
-							setShowConfirmKeyword(true);
-						}
-					}}
-					placeholder='Enter keyword or phrase'
-					className='outline-none font-manga text-white text-3xl text-center rounded-md bg-darkAccent w-full h-[4rem] px-2 placeholder:text-white/50'
-				/>
-				<div className={`flex flex-row w-full justify-between items-center mt-2 `}>
-					<div
-						onClick={() => {
-							if (!isGenerating) {
-								generateRandomKeyword();
-							}
-						}}
-						className={`flex select-none space-x-2 items-center w-full text-start font-manga text-2xl whitespace-nowrap `}>
-						<span className={`text-white/40`}>or</span>
-						<div
-							className={` flex space-x-2 select-none items-center justify-end ${
-								isGenerating ? '' : 'group cursor-pointer md:hover:underline underline-offset-4 '
-							}`}>
-							<span className={`text-green-300 `}>
-								{isGenerating ? 'GENERATING...' : 'GENERATE RANDOM'}{' '}
-							</span>
-							<IoDice
-								size={20}
-								className={`select-none ${isGenerating ? 'animate-spin' : ''} `}
-							/>
+				{submitted === false ? (
+					<>
+						<div className='font-manga text-xl md:text-2xl text-yellow-300 w-full text-start'>
+							ENTER SHORT KEYWORD / PHRASE:
 						</div>
-					</div>
-					<div
-						className={`w-full text-end font-manga text-xl ${
-							keyword.length < 25 ? '' : keyword.length < 30 ? 'text-yellow-300' : 'text-red-300'
-						}`}>
-						{keyword.length}/30
-					</div>
-				</div>
-				<div
-					onClick={() => {
-						if (keyword !== '') {
-							setShowConfirmKeyword(true);
-						}
-					}}
-					className={`mt-4 bg-dark p-2 md:p-4 w-full text-center font-sunny text-3xl xl:text-4xl outline outline-2 ${
-						keyword !== ''
-							? 'outline-green-300 cursor-pointer sm:hover:outline-white sm:active:scale-95'
-							: 'outline-red-300'
-					} rounded-md text-white `}>
-					SUBMIT
-				</div>
+						<input
+							type='text'
+							value={keyword}
+							maxLength={30}
+							onChange={(e) => setKeyword(e.target.value)}
+							onKeyDown={(e) => {
+								if (e.key === 'Enter') {
+									setShowConfirmKeyword(true);
+								}
+							}}
+							placeholder='Enter keyword or phrase'
+							className='outline-none font-manga text-white text-3xl text-center rounded-md bg-darkAccent w-full h-[4rem] px-2 placeholder:text-white/50'
+						/>
+						<div className={`flex flex-row w-full justify-between items-center mt-2 `}>
+							<div
+								onClick={() => {
+									if (!isGenerating) {
+										generateRandomKeyword();
+									}
+								}}
+								className={`flex select-none space-x-2 items-center w-full text-start font-manga text-2xl whitespace-nowrap `}>
+								<span className={`text-white/40`}>or</span>
+								<div
+									className={` flex space-x-2 select-none items-center justify-end ${
+										isGenerating
+											? ''
+											: 'group cursor-pointer md:hover:underline underline-offset-4 '
+									}`}>
+									<span className={`text-green-300 `}>
+										{isGenerating ? 'GENERATING...' : 'GENERATE RANDOM'}{' '}
+									</span>
+									<IoDice
+										size={20}
+										className={`select-none ${isGenerating ? 'animate-spin' : ''} `}
+									/>
+								</div>
+							</div>
+							<div
+								className={`w-full text-end font-manga text-xl ${
+									keyword.length < 25
+										? ''
+										: keyword.length < 30
+										? 'text-yellow-300'
+										: 'text-red-300'
+								}`}>
+								{keyword.length}/30
+							</div>
+						</div>
+
+						<div
+							onClick={() => {
+								if (keyword !== '') {
+									setShowConfirmKeyword(true);
+								}
+							}}
+							className={`mt-4 bg-dark p-2 md:p-4 w-full text-center font-sunny text-3xl xl:text-4xl outline outline-2 ${
+								keyword !== ''
+									? 'outline-green-300 cursor-pointer sm:hover:outline-white sm:active:scale-95'
+									: 'outline-red-300'
+							} rounded-md text-white `}>
+							SUBMIT
+						</div>
+					</>
+				) : (
+					<>
+						<div className='font-manga text-xl md:text-2xl text-yellow-300 w-full text-start'>
+							YOUR SUBMITTED KEYWORD / PHRASE:
+						</div>
+						<div
+							placeholder='Enter keyword or phrase'
+							className='outline-none font-manga text-white text-3xl text-center rounded-md bg-darkAccent w-full h-fit px-2 placeholder:text-white/50'>
+							{keyword}
+						</div>
+						<div
+							className={`w-full flex items-center justify-end text-end font-manga text-xl mt-2 ${
+								keyword.length < 25 ? '' : keyword.length < 30 ? 'text-yellow-300' : 'text-red-300'
+							}`}>
+							<div className={`text-green-300 mr-1 pb-1`}>
+								<FaCheck size={14} />
+							</div>{' '}
+							{keyword.length}/30
+						</div>
+					</>
+				)}
 			</div>
+			{submitted && (
+				<div className='full h-full w-full flex items-end justify-center'>
+					<h1
+						data-text='Waiting for others to finish...'
+						className={`w-fit font-sunny text-3xl md:text-4xl text-yellow-300`}>
+						Waiting for others to finish...
+					</h1>
+				</div>
+			)}
 		</>
 	);
 };

@@ -144,7 +144,7 @@ export default function LobbyPage() {
 	const [showLinkCopied, setShowLinkCopied] = useState(false);
 	const [disconnectingUsers, setDisconnectingUsers] = useState({});
 	const [hostUserToken, setHostUserToken] = useState(null);
-	const [countdown, setCountdown] = useState(null);
+	const [gameStartCountdown, setGameStartCountdown] = useState(null);
 	const [avatars, setAvatars] = useState([]);
 	const [takenAvatars, setTakenAvatars] = useState({});
 	const [currentAvatar, setCurrentAvatar] = useState('');
@@ -201,16 +201,21 @@ export default function LobbyPage() {
 
 		if (lobbyId && socketInstance) {
 			// Navigate to /game/[id] when game start
-			socketInstance.on('navigate', ({ path }) => {
-				console.log(`Navigating to ${path}`);
-				router.push(path);
+			socketInstance.on('notify_players', ({ event, data }) => {
+				switch (event) {
+					case 'navigate':
+						let path = data.path;
+						console.log(`Navigating to ${path}`);
+						router.push(path);
+						break;
+				}
 			});
 
 			// Shows countdown til start of game
-			socketInstance.on('countdown', (count) => {
-				setCountdown(count);
+			socketInstance.on('game_start_countdown', (count) => {
+				setGameStartCountdown(count);
 				if (count < 1) {
-					setCountdown(null); // Reset countdown after it finishes
+					setGameStartCountdown(null); // Reset countdown after it finishes
 				}
 			});
 
@@ -218,8 +223,8 @@ export default function LobbyPage() {
 			return () => {
 				socketInstance.off('lobby_details');
 				socketInstance.off('update_lobby');
-				socketInstance.off('navigate');
-				socketInstance.off('countdown');
+				socketInstance.off('notify_players');
+				socketInstance.off('game_start_countdown');
 			};
 		}
 	}, [lobbyId, userToken]);
@@ -246,7 +251,7 @@ export default function LobbyPage() {
 				// Immediately set the initial duration
 				setDisconnectingUsers((prev) => ({ ...prev, [userToken]: duration }));
 
-				// Start a new countdown interval for this user
+				// Start a new gameStartCountdown interval for this user
 				intervalIds[userToken] = setInterval(() => {
 					setDisconnectingUsers((prev) => {
 						const currentTime = prev[userToken];
@@ -408,7 +413,7 @@ export default function LobbyPage() {
 
 			{!showEntryPrompt ? (
 				<>
-					{countdown !== null && (
+					{gameStartCountdown !== null && (
 						<div
 							className={`absolute top-0 bg-dark/80 z-50 w-full h-full flex justify-center items-center`}>
 							<div
@@ -420,16 +425,16 @@ export default function LobbyPage() {
 										GAME STARTS IN...
 									</h1>
 									<h1
-										data-text={`${countdown}`}
+										data-text={`${gameStartCountdown}`}
 										id='startTimer'
 										className={` translate-y-4 text-9xl font-manga z-20 ${
-											countdown >= 4
+											gameStartCountdown >= 4
 												? 'text-green-300'
-												: countdown <= 3 && countdown >= 2
+												: gameStartCountdown <= 3 && gameStartCountdown >= 2
 												? 'text-yellow-300'
 												: 'text-red-300'
 										}`}>
-										{countdown || 'Go!'}
+										{gameStartCountdown || 'Go!'}
 									</h1>
 								</div>
 							</div>

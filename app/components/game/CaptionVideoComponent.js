@@ -13,61 +13,38 @@ const CaptionVideoComponent = ({
 	currentRound,
 	captionedThisRound,
 	setCaptionedThisRound,
-	roundData,
-	setRoundData,
+	gameData,
+	setGameData,
+	setIsFinishedPhase,
 	lobbyId,
 	userToken,
-	handleCaptionSubmit,
 }) => {
 	const [currentCaption, setCurrentCaption] = useState('');
 	const [showConfirmCaption, setShowConfirmCaption] = useState(false);
+	const [confirmedCaption, setConfirmedCaption] = useState(false);
 
-	useEffect(() => {
-		const socketInstance = getSocket();
-
-		socketInstance.on('notify_players', ({ event, data }) => {
-			if (!data || !data.userToken) return;
-			const wasMyAction = data.userToken === userToken;
-
-			setRoundData((prev) => {
-				const newRoundData = { ...prev };
-				const playerEntries = newRoundData[1] || [];
-
-				const playerIndex = playerEntries.findIndex((p) => p.userToken === data.userToken);
-				if (playerIndex !== -1) {
-					if (event === 'caption_submitted') {
-						playerEntries[playerIndex].caption = data.caption;
-						if (wasMyAction) setCaptionedThisRound(true);
-					}
-				}
-
-				return newRoundData;
+	const handleCaptionSubmit = () => {
+		const socket = getSocket();
+		if (socket) {
+			socket.emit('game_action', {
+				lobbyId: lobbyId,
+				userToken: userToken,
+				key: 'caption',
+				data: { caption: currentCaption },
 			});
-		});
-
-		socketInstance.on('round_change', (round) => {
-			setCaptionedThisRound(false);
-			setCurrentCaption('');
-		});
-
-		return () => {
-			socketInstance.off('notify_players');
-			socketInstance.off('round_change');
-		};
-	}, [lobbyId]);
-
-	useEffect(() => {
-		console.log('Round data updated:', JSON.stringify(roundData));
-	}, [roundData]);
+			setConfirmedCaption(true);
+			setShowConfirmCaption(false);
+			setIsFinishedPhase(true);
+		} else {
+			console.error('Socket not available');
+		}
+	};
 
 	return (
 		<>
 			{showConfirmCaption && (
 				<ConfirmationModal
-					onConfirm={() => {
-						handleCaptionSubmit(currentCaption);
-						setShowConfirmCaption(false);
-					}}
+					onConfirm={() => handleCaptionSubmit()}
 					onCancel={() => {
 						setShowConfirmCaption(false);
 					}}
@@ -77,11 +54,11 @@ const CaptionVideoComponent = ({
 					title='CONFIRM CAPTION'
 				/>
 			)}
-			<div className={`relative flex flex-col w-full h-full justify-between pb-2 md:pb-4`}>
+			<div className={`relative flex flex-col w-full h-full justify-between `}>
 				<VideoEmbed embedURL={'https://www.youtube.com/embed/x6iwZSURP44'} />
 
-				{captionedThisRound ? (
-					<div className='relative top-3 w-full flex justify-center'>
+				{confirmedCaption ? (
+					<div className='relative top-1 w-full flex justify-center'>
 						<h1
 							data-text='Waiting for others to caption...'
 							className={`w-fit font-sunny text-3xl md:text-4xl text-yellow-300`}>
@@ -101,7 +78,7 @@ const CaptionVideoComponent = ({
 								}
 							}}
 							placeholder='Enter caption for this video...'
-							className='border-l-2 border-y-2 rounded-bl-md border-dark focus:outline-none  font-manga text-white text-3xl text-center bg-darkAccent w-full p-2 md:p-3 placeholder:text-white/50'
+							className='border-l-2 border-y-2 border-dark focus:outline-none  font-manga text-white text-3xl text-center bg-darkAccent w-full p-2 md:p-3 placeholder:text-white/50'
 						/>
 						<div
 							onClick={() => {
@@ -109,7 +86,7 @@ const CaptionVideoComponent = ({
 									setShowConfirmCaption(true);
 								}
 							}}
-							className={`bg-dark-300 rounded-br-md ${
+							className={`bg-dark-300 rounded-l-md ${
 								currentCaption !== ''
 									? 'border-green-300 sm:hover:border-white sm:active:scale-95'
 									: 'border-red-300 text-white-300'

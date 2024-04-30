@@ -1,0 +1,76 @@
+{
+	"gameModes": [
+		{
+			"name": "Standard",
+			"rounds": [
+				{
+					"phases": [
+						{
+							"name": "Prompt Phase",
+							"duration": 15,
+							"key": "prompt"
+						},
+						{
+							"name": "Caption Phase",
+							"duration": 10,
+							"key": "caption"
+						},
+						{
+							"name": "Voting Phase",
+							"duration": 15,
+							"key": "vote"
+						}
+					]
+				},
+				{
+					"phases": [
+						{
+							"name": "Prompt Phase",
+							"duration": 10,
+							"key": "prompt",
+							"videoCriteria": {
+								"promptType": "ai",
+								"numPrompts": 2,
+								"distribution": "even"
+							}
+						},
+						{
+							"name": "Caption Phase",
+							"duration": 15,
+							"key": "caption"
+						},
+						{
+							"name": "Voting Phase",
+							"duration": 10,
+							"key": "vote"
+						}
+					]
+				},
+				{
+					"phases": [
+						{
+							"name": "Prompt Phase",
+							"duration": 10,
+							"key": "prompt",
+							"videoCriteria": {
+								"promptType": "user",
+								"numPrompts": 1,
+								"distribution": "even"
+							}
+						},
+						{
+							"name": "Caption Phase",
+							"duration": 15,
+							"key": "caption"
+						},
+						{
+							"name": "Voting Phase",
+							"duration": 5,
+							"key": "vote"
+						}
+					]
+				}
+			]
+		}
+	]
+}

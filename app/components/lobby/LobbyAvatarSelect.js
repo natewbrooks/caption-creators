@@ -16,7 +16,6 @@ function LobbyAvatarSelect({ avatars, takenAvatars, userToken, players, handleAv
 				{/* Adjust this value to account for the header */}
 				<AutoSizer>
 					{({ height, width }) => {
-						console.log('AutoSizer height:', height, 'width:', width); // Add this line for debugging
 						return (
 							<div
 								style={{ height, width }}

@@ -6,16 +6,21 @@ import { TiArrowSortedDown } from 'react-icons/ti';
 
 const GamePlayersScrollbar = ({
 	players,
-	roundData,
+	userToken,
+	gameData,
 	currentRound,
+	currentPhase,
 	currentVoteUser,
 	setCurrentVoteUser,
-	scrollContainerRef,
-	isVotingPhase,
 	handleComponentDisplay,
+	isFinishedPhase,
 }) => {
+	const scrollContainerRef = useRef(null); // Used in the GamePlayersScrollbar at the bottom
 	const [activeElementPosition, setActiveElementPosition] = useState(0);
 	const [animateArrow, setAnimateArrow] = useState(false);
+
+	const [touchStartX, setTouchStartX] = useState(0); // Used to improve scroll functionality in GamePlayersScrollbar
+	const [touchMoveX, setTouchMoveX] = useState(0); // Used to improve scroll functionality in GamePlayersScrollbar
 
 	const updateIndicatorPosition = () => {
 		const activeElement = document.getElementById(`player-${currentVoteUser}`);
@@ -36,14 +41,14 @@ const GamePlayersScrollbar = ({
 		window.addEventListener('resize', handleResize);
 
 		return () => window.removeEventListener('resize', handleResize);
-	}, [currentVoteUser, isVotingPhase, players]);
+	}, [currentVoteUser, currentPhase === 'vote', players]);
 
 	useEffect(() => {
-		if (isVotingPhase && currentVoteUser) {
+		if (currentPhase === 'vote' && currentVoteUser) {
 			setAnimateArrow(true);
 			scrollToActiveUser();
 		}
-	}, [currentVoteUser, isVotingPhase]);
+	}, [currentVoteUser, currentPhase === 'vote']);
 
 	// Make the scrollTo function center the element
 	const scrollToActiveUser = () => {
@@ -61,12 +66,54 @@ const GamePlayersScrollbar = ({
 		}
 	};
 
+	const handleWheel = (e) => {
+		if (scrollContainerRef.current) {
+			scrollContainerRef.current.scrollLeft -= e.deltaY;
+			e.preventDefault(); // Prevent the default vertical scroll
+		}
+	};
+
+	useEffect(() => {
+		const container = scrollContainerRef.current;
+		if (container) {
+			container.addEventListener('wheel', handleWheel);
+			container.addEventListener('touchstart', handleTouchStart, { passive: true });
+			container.addEventListener('touchmove', handleTouchMove, { passive: false });
+			container.addEventListener('touchend', handleTouchEnd, { passive: true });
+		}
+		return () => {
+			if (container) {
+				container.removeEventListener('wheel', handleWheel);
+				container.removeEventListener('touchstart', handleTouchStart);
+				container.removeEventListener('touchmove', handleTouchMove);
+				container.removeEventListener('touchend', handleTouchEnd);
+			}
+		};
+	}, [touchMoveX]);
+
+	const handleTouchStart = (e) => {
+		setTouchStartX(e.touches[0].clientX);
+		setTouchMoveX(0); // Reset move distance on new touch
+	};
+
+	const handleTouchMove = (e) => {
+		const touchX = e.touches[0].clientX;
+		const moveX = touchStartX - touchX;
+		setTouchMoveX(moveX);
+	};
+
+	const handleTouchEnd = () => {
+		if (scrollContainerRef.current) {
+			scrollContainerRef.current.scrollLeft += touchMoveX;
+		}
+	};
+
 	return (
 		<div className={`relative flex flex-col justify-center items-center h-fit w-full `}>
 			{/* Arrow pointing to the active element */}
-			{isVotingPhase && (
+			{currentPhase === 'vote' && (
 				<div
-					className={`absolute -top-0 z-20 ${
+					className={`absolute -top-2 z-20 ${
 						animateArrow ? 'transition-all duration-[400ms] ease-in-out transform' : ''
 					} `}
 					onTransitionEnd={() => {
@@ -84,7 +131,7 @@ const GamePlayersScrollbar = ({
 
 			<div
 				ref={scrollContainerRef}
-				className='flex bg-dark outline outline-2 outline-darkAccent max-w-[600px] rounded-t-md overflow-x-auto overflow-y-hidden whitespace-nowrap mt-4 justify-start w-full h-fit font-manga text-xl'
+				className='flex bg-dark outline outline-2 outline-darkAccent max-w-[600px] rounded-t-md overflow-x-auto overflow-y-hidden whitespace-nowrap mt-2 justify-start w-full h-fit font-manga text-xl'
 				onScroll={updateIndicatorPosition}>
 				{players.map((player, index) => (
 					<div
@@ -92,7 +139,7 @@ const GamePlayersScrollbar = ({
 						id={`player-${player.userToken}`}
 						className={`${
 							index % 2 === 0 ? 'bg-dark' : 'bg-darkAccent'
-						} transition-all duration-300 ease-in-out transform inline-flex flex-none flex-col justify-center items-center pt-2 px-8 `}
+						} transition-all duration-300 ease-in-out transform inline-flex flex-none flex-col justify-center items-center pt-2 px-6 md:px-8 `}
 						onClick={() => {
 							setCurrentVoteUser(player.userToken);
 							updateIndicatorPosition();
@@ -103,14 +150,12 @@ const GamePlayersScrollbar = ({
 									<Image
 										src={player.avatar}
 										className={`border-2 rounded-full transition-all ease-in-out delay-100 duration-500 ${
-											currentVoteUser === player.userToken && isVotingPhase
+											currentVoteUser === player.userToken && currentPhase === 'vote'
 												? 'border-yellow-300'
 												: 'border-dark'
 										} ${
-											roundData[currentRound]?.some(
-												(p) => p.userToken === player.userToken && p.caption !== ''
-											)
-												? 'opacity-40 outline-green-300'
+											isFinishedPhase && player.userToken === userToken
+												? 'opacity-40 outline-green-300 border-green-300'
 												: 'opacity-100'
 										}`}
 										alt={`Selected Avatar ${index + 1}`}
@@ -118,6 +163,14 @@ const GamePlayersScrollbar = ({
 										height={48}
 										unoptimized
 									/>
+									{isFinishedPhase && player.userToken === userToken && (
+										<div>
+											<FaCheck
+												size={18}
+												className={`absolute top-4 right-4 text-green-300`}
+											/>
+										</div>
+									)}
 								</div>
 							) : (
 								<FaUserCircle
@@ -125,13 +178,13 @@ const GamePlayersScrollbar = ({
 									className={` ${
 										index % 2 === 0 ? 'text-darkAccent border-darkAccent' : 'text-dark border-dark'
 									} ${
-										currentVoteUser === player.userToken && isVotingPhase
+										currentVoteUser === player.userToken && currentPhase === 'vote'
 											? 'border-yellow-300'
 											: ' '
 									} border-2 rounded-full transition-all ease-in-out delay-100 duration-500`}
 								/>
 							)}
-							<h1 className='font-manga text-2xl'>{player.name}</h1>
+							<h1 className='font-manga text-xl md:text-2xl'>{player.name}</h1>
 						</div>
 					</div>
 				))}
@@ -139,17 +192,17 @@ const GamePlayersScrollbar = ({
 
 			<div className={`lg:max-w-[50%] p-2 flex w-full justify-evenly`}>
 				<div
-					onClick={() => handleComponentDisplay('keyword-prompt')}
+					onClick={() => handleComponentDisplay('prompt')}
 					className={`font-sunny text-2xl bg-blue-300 px-2 text-dark`}>
 					PROMPT
 				</div>
 				<div
-					onClick={() => handleComponentDisplay('caption-video')}
+					onClick={() => handleComponentDisplay('video')}
 					className={`font-sunny text-2xl bg-green-300 px-2 text-dark`}>
 					CAPTION
 				</div>
 				<div
-					onClick={() => handleComponentDisplay('voting')}
+					onClick={() => handleComponentDisplay('vote')}
 					className={`font-sunny text-2xl bg-red-300 px-2 text-dark`}>
 					VOTING
 				</div>

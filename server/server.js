@@ -17,7 +17,7 @@ const lobbies = {}; // Maps lobby IDs to lobby details
 const disconnectQueue = []; // Add users to this list before disconnecting them so they have time to restore their session.
 const activeGames = {}; // Maps lobby IDs to active GameManager instances
 
-const GameManager = require('./gameManager');
+const GameManager = require('./game/gameManager');
 
 app.prepare().then(() => {
 	const server = createServer((req, res) => handle(req, res));
@@ -115,15 +115,18 @@ app.prepare().then(() => {
 					// Start a countdown before initializing the game
 					let countdown = 5;
 					const countdownInterval = setInterval(() => {
-						io.to(lobbyId).emit('countdown', countdown);
+						io.to(lobbyId).emit('game_start_countdown', countdown);
 						countdown--;
 						if (countdown < 0) {
 							clearInterval(countdownInterval);
-							const gameManager = new GameManager(lobbyId, io, lobbies[lobbyId].members);
+							const gameManager = new GameManager(
+								lobbyId,
+								io,
+								lobbies[lobbyId].members,
+								'Standard'
+							);
 							activeGames[lobbyId] = gameManager;
-							gameManager.start();
-							console.log(`Game for lobby ${lobbyId} has started.`);
-							io.to(lobbyId).emit('navigate', { path: `/game/${lobbyId}` });
+							gameManager.startNewGame();
 						}
 					}, 1000);
 				} else {
@@ -136,11 +139,14 @@ app.prepare().then(() => {
 		});
 
 		// Generalized socket connection with standardized data format to delegate to lobbyID's active GameManager
-		socket.on('game_action', ({ lobbyId, actionType, data }) => {
+		socket.on('game_action', ({ lobbyId, key, userToken, data }) => {
+			console.log(
+				'GAME ACTION: ' + userToken + ' KEY: ' + key + ' ACTION: ' + JSON.stringify(data)
+			);
 			const gameManager = activeGames[lobbyId];
 			if (gameManager) {
 				try {
-					gameManager.handleAction(actionType, data);
+					gameManager.handlePlayerAction(key, userToken, data);
 				} catch (error) {
 					console.error('Error handling action:', error);
 					socket.emit('error', { message: 'Error processing action' });

@@ -15,7 +15,7 @@ export default function TopBar({
 	const shouldShowLogin = showLoginOption && !!currentUser;
 
 	return (
-		<div className={`flex w-full justify-between mb-4`}>
+		<div className={`flex w-full justify-between mb-2`}>
 			<BackButton
 				goHome={backButtonGoHome}
 				text={backButtonText}
