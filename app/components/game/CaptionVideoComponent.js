@@ -1,4 +1,3 @@
-import { getSocket } from '@/server/socketManager';
 import { FaCheck } from 'react-icons/fa';
 import { FaUserCircle } from 'react-icons/fa';
 import { useState, useEffect } from 'react';
@@ -7,6 +6,7 @@ import { FaArrowRight } from 'react-icons/fa6';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import ConfirmationModal from './modules/ConfirmationModal';
 import VideoEmbed from './modules/VideoEmbed';
+import { useSocket } from '@/app/contexts/socketContext';
 
 const CaptionVideoComponent = ({
 	players,
@@ -15,26 +15,25 @@ const CaptionVideoComponent = ({
 	setCaptionedThisRound,
 	gameData,
 	setGameData,
-	setIsFinishedPhase,
 	lobbyId,
-	userToken,
 }) => {
 	const [currentCaption, setCurrentCaption] = useState('');
 	const [showConfirmCaption, setShowConfirmCaption] = useState(false);
 	const [confirmedCaption, setConfirmedCaption] = useState(false);
 
+	const { socket, userToken } = useSocket();
+
 	const handleCaptionSubmit = () => {
-		const socket = getSocket();
 		if (socket) {
 			socket.emit('game_action', {
 				lobbyId: lobbyId,
 				userToken: userToken,
+				isFinished: true,
 				key: 'caption',
 				data: { caption: currentCaption },
 			});
 			setConfirmedCaption(true);
 			setShowConfirmCaption(false);
-			setIsFinishedPhase(true);
 		} else {
 			console.error('Socket not available');
 		}

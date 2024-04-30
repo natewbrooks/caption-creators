@@ -1,8 +1,9 @@
 class Phase {
-	constructor(gameData, phaseConfig, notifyPlayers, endPhase) {
+	constructor(gameData, phaseConfig, notifyPlayers, phaseIndex, endPhase) {
 		this.name = phaseConfig.name;
 		this.duration = phaseConfig.duration;
 		this.key = phaseConfig.key;
+		this.phaseIndex = phaseIndex;
 
 		this.endPhase = endPhase;
 		this.phaseTimer = null;
@@ -15,9 +16,10 @@ class Phase {
 	start() {
 		this.notifyPlayers('phase_start', {
 			key: this.key,
-			gameData: this.gameData,
+			phaseIndex: this.phaseIndex,
 			duration: this.duration,
 		});
+
 		this.timeElapsed = 0;
 		this.startPhaseTimer();
 	}

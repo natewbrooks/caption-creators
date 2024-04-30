@@ -1,6 +1,5 @@
 'use client';
 import { FixedSizeList as List } from 'react-window';
-import { getSocket, getUserToken } from '@/server/socketManager';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useCallback } from 'react';
 import { FaPencil, FaCheck, FaCopy } from 'react-icons/fa6';
@@ -12,6 +11,7 @@ import LobbyInfoSelectModal from '@/app/components/lobby/LobbyInfoSelectModal';
 import LobbyAvatarSelect from '@/app/components/lobby/LobbyAvatarSelect';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import DropdownNotification from '@/app/components/game/modules/DropdownNotification';
+import { useSocket } from '@/app/contexts/socketContext';
 
 function PlayerRow({ index, style, data }) {
 	const player = data.players[index];
@@ -138,8 +138,7 @@ export default function LobbyPage() {
 	const { id: lobbyId } = useParams();
 	const [players, setPlayers] = useState([]);
 	const [playerName, setPlayerName] = useState('');
-	const [socket, setSocket] = useState(null);
-	const userToken = getUserToken();
+	const { socket, userToken } = useSocket();
 	const [editingName, setEditingName] = useState(false);
 	const [showLinkCopied, setShowLinkCopied] = useState(false);
 	const [disconnectingUsers, setDisconnectingUsers] = useState({});
@@ -149,6 +148,7 @@ export default function LobbyPage() {
 	const [takenAvatars, setTakenAvatars] = useState({});
 	const [currentAvatar, setCurrentAvatar] = useState('');
 	const [showEntryPrompt, setShowEntryPrompt] = useState(true);
+	const [gameStarted, setGameStarted] = useState(false);
 	const [error, setError] = useState('');
 	const { currentUser } = useAuth();
 	const router = useRouter();
@@ -164,24 +164,18 @@ export default function LobbyPage() {
 
 	useEffect(() => {
 		const fetchData = async () => {
-			const socketInstance = getSocket();
-			setSocket(socketInstance);
-
-			if (lobbyId && socketInstance) {
-				socketInstance.emit('fetch_lobby_details', { lobbyId });
-				socketInstance.on(
-					'lobby_details',
-					({ members, hostUserToken, avatarRange, takenAvatars }) => {
-						setPlayers(members);
-						setHostUserToken(hostUserToken);
-						setTakenAvatars(takenAvatars);
-						if (avatarRange) {
-							fetchAvatars(avatarRange[0], avatarRange[1]);
-						}
+			if (lobbyId && socket) {
+				socket.emit('fetch_lobby_details', { lobbyId });
+				socket.on('lobby_details', ({ members, hostUserToken, avatarRange, takenAvatars }) => {
+					setPlayers(members);
+					setHostUserToken(hostUserToken);
+					setTakenAvatars(takenAvatars);
+					if (avatarRange) {
+						fetchAvatars(avatarRange[0], avatarRange[1]);
 					}
-				);
+				});
 
-				socketInstance.on('update_lobby', ({ members, hostUserToken, takenAvatars }) => {
+				socket.on('update_lobby', ({ members, hostUserToken, takenAvatars }) => {
 					setPlayers(members);
 					setHostUserToken(hostUserToken);
 					setTakenAvatars(takenAvatars);
@@ -196,12 +190,9 @@ export default function LobbyPage() {
 	}, [lobbyId, userToken, setTakenAvatars]);
 
 	useEffect(() => {
-		const socketInstance = getSocket();
-		setSocket(socketInstance);
-
-		if (lobbyId && socketInstance) {
+		if (lobbyId && socket) {
 			// Navigate to /game/[id] when game start
-			socketInstance.on('notify_players', ({ event, data }) => {
+			socket.on('notify_players', ({ event, data }) => {
 				switch (event) {
 					case 'navigate':
 						let path = data.path;
@@ -212,28 +203,26 @@ export default function LobbyPage() {
 			});
 
 			// Shows countdown til start of game
-			socketInstance.on('game_start_countdown', (count) => {
+			socket.on('game_start_countdown', (count) => {
 				setGameStartCountdown(count);
 				if (count < 1) {
+					setGameStarted(true);
 					setGameStartCountdown(null); // Reset countdown after it finishes
 				}
 			});
 
 			// Cleanup function removes event listeners
 			return () => {
-				socketInstance.off('lobby_details');
-				socketInstance.off('update_lobby');
-				socketInstance.off('notify_players');
-				socketInstance.off('game_start_countdown');
+				socket.off('lobby_details');
+				socket.off('update_lobby');
+				socket.off('notify_players');
+				socket.off('game_start_countdown');
 			};
 		}
 	}, [lobbyId, userToken]);
 
 	useEffect(() => {
-		const socketInstance = getSocket();
-		setSocket(socketInstance);
-
-		if (socketInstance) {
+		if (socket) {
 			window.addEventListener('beforeunload', handleUnload);
 			// Check if the document is already loaded
 			if (document.readyState === 'complete') {
@@ -245,7 +234,7 @@ export default function LobbyPage() {
 
 			let intervalIds = {}; // To store interval IDs for clearing them later
 
-			socketInstance.on('disconnectTimerStarted', ({ userToken, duration }) => {
+			socket.on('disconnectTimerStarted', ({ userToken, duration }) => {
 				clearInterval(intervalIds[userToken]); // Clear existing interval if any
 
 				// Immediately set the initial duration
@@ -269,7 +258,7 @@ export default function LobbyPage() {
 				}, duration * 1000);
 			});
 
-			socketInstance.on('disconnectTimerEnded', (userToken) => {
+			socket.on('disconnectTimerEnded', (userToken) => {
 				clearInterval(intervalIds[userToken]); // Clear the interval when the timer ends
 				setDisconnectingUsers((prev) => {
 					const { [userToken]: _, ...rest } = prev;
@@ -281,19 +270,17 @@ export default function LobbyPage() {
 				window.removeEventListener('beforeunload', handleUnload);
 				window.removeEventListener('load', handleReload);
 				Object.values(intervalIds).forEach(clearInterval);
-				socketInstance.off('disconnectTimerStarted');
-				socketInstance.off('disconnectTimerEnded');
+				socket.off('disconnectTimerStarted');
+				socket.off('disconnectTimerEnded');
 			};
 		}
 	}, [socket, userToken]);
 
 	function handleUnload() {
-		const socketInstance = getSocket();
-		socketInstance.emit('reload', userToken);
+		socket.emit('reload', userToken);
 	}
 	function handleReload() {
-		const socketInstance = getSocket();
-		socketInstance.emit('restore_session', userToken);
+		socket.emit('restore_session', userToken);
 	}
 
 	const handlePlayerNameSubmit = useCallback(() => {
@@ -309,16 +296,13 @@ export default function LobbyPage() {
 			});
 
 			setPlayers(updatedPlayers);
-
-			const socketInstance = getSocket();
-			socketInstance.emit('update_player_name', { lobbyId, userToken, playerName: newName });
+			socket.emit('update_player_name', { lobbyId, userToken, playerName: newName });
 		}
 	}, [playerName, players, userToken, lobbyId]);
 
 	const handleGameStart = () => {
 		console.log('Preparing to start game for lobby ' + lobbyId);
-		const socketInstance = getSocket();
-		socketInstance.emit('start_game', { lobbyId, userToken });
+		socket.emit('start_game', { lobbyId, userToken });
 	};
 
 	const handleLobbyIdCopy = () => {
@@ -356,9 +340,7 @@ export default function LobbyPage() {
 		setTakenAvatars(updatedTakenAvatars);
 		setCurrentAvatar(avatarSrc);
 
-		// Emit the avatar selection event to the server
-		const socketInstance = getSocket();
-		socketInstance.emit('avatar_selected', {
+		socket.emit('avatar_selected', {
 			lobbyId,
 			userToken,
 			avatarSrc,
@@ -395,11 +377,13 @@ export default function LobbyPage() {
 						</h1>
 					</div>
 
-					<FaCopy
-						onClick={handleLobbyIdCopy}
-						size={20}
-						className={`text-white absolute -right-8 bottom-5 xxl:bottom-12 cursor-pointer sm:hover:opacity-50 sm:active:scale-95`}
-					/>
+					<div className={`absolute -right-10 bottom-3 xxl:bottom-12  bg-dark p-2 rounded-full`}>
+						<FaCopy
+							onClick={handleLobbyIdCopy}
+							size={18}
+							className={`text-white  cursor-pointer sm:hover:opacity-50 sm:active:scale-95`}
+						/>
+					</div>
 				</div>
 				<div className={`flex w-full justify-center space-x-2`}>
 					<h1
@@ -413,29 +397,47 @@ export default function LobbyPage() {
 
 			{!showEntryPrompt ? (
 				<>
-					{gameStartCountdown !== null && (
+					{(gameStartCountdown > 0 || gameStarted) && (
 						<div
 							className={`absolute top-0 bg-dark/80 z-50 w-full h-full flex justify-center items-center`}>
 							<div
 								className={`w-fit h-fit flex justify-center p-12 bg-green-300 outline outline-6 outline-dark rounded-full`}>
 								<div className={`flex flex-col items-center justify-center `}>
-									<h1
-										data-text='GAME STARTS IN...'
-										className={`font-sunny text-3xl text-dark`}>
-										GAME STARTS IN...
-									</h1>
-									<h1
-										data-text={`${gameStartCountdown}`}
-										id='startTimer'
-										className={` translate-y-4 text-9xl font-manga z-20 ${
-											gameStartCountdown >= 4
-												? 'text-green-300'
-												: gameStartCountdown <= 3 && gameStartCountdown >= 2
-												? 'text-yellow-300'
-												: 'text-red-300'
-										}`}>
-										{gameStartCountdown || 'Go!'}
-									</h1>
+									{!gameStarted ? (
+										<>
+											<h1
+												data-text='GAME STARTS IN...'
+												className={`font-sunny text-3xl text-dark`}>
+												GAME STARTS IN...
+											</h1>
+											<h1
+												data-text={`${gameStartCountdown}`}
+												id='startTimer'
+												className={` translate-y-4 text-9xl font-manga z-20 ${
+													gameStartCountdown >= 4
+														? 'text-green-300'
+														: gameStartCountdown <= 3 && gameStartCountdown >= 2
+														? 'text-yellow-300'
+														: 'text-red-300'
+												}`}>
+												{gameStartCountdown || 'GO!'}
+											</h1>
+										</>
+									) : (
+										<>
+											<h1
+												data-text='GAME STARTING...'
+												className={`font-sunny text-3xl text-dark`}>
+												GAME STARTING...
+											</h1>
+											<h1
+												data-text={`GO!`}
+												id='startTimer'
+												className={` translate-y-4 text-9xl font-manga z-20 text-red-300`}>
+												{'GO!'}
+											</h1>
+										</>
+									)}
 								</div>
 							</div>
 						</div>
@@ -475,7 +477,7 @@ export default function LobbyPage() {
 							{userToken === hostUserToken ? (
 								<div
 									onClick={() => {
-										if (players.length >= 2) {
+										if (players.length >= 1) {
 											handleGameStart();
 										}
 									}}

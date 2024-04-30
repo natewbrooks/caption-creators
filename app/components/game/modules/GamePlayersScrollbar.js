@@ -3,21 +3,23 @@ import Image from 'next/image';
 import { FaUserCircle, FaCheck } from 'react-icons/fa';
 import { useState, useEffect, useRef } from 'react';
 import { TiArrowSortedDown } from 'react-icons/ti';
+import { useSocket } from '@/app/contexts/socketContext';
 
 const GamePlayersScrollbar = ({
 	players,
-	userToken,
 	gameData,
 	currentRound,
 	currentPhase,
 	currentVoteUser,
 	setCurrentVoteUser,
 	handleComponentDisplay,
-	isFinishedPhase,
+	usersFinished,
+	phaseData,
 }) => {
 	const scrollContainerRef = useRef(null); // Used in the GamePlayersScrollbar at the bottom
 	const [activeElementPosition, setActiveElementPosition] = useState(0);
 	const [animateArrow, setAnimateArrow] = useState(false);
+	const { userToken } = useSocket();
 
 	const [touchStartX, setTouchStartX] = useState(0); // Used to improve scroll functionality in GamePlayersScrollbar
 	const [touchMoveX, setTouchMoveX] = useState(0); // Used to improve scroll functionality in GamePlayersScrollbar
@@ -31,8 +33,6 @@ const GamePlayersScrollbar = ({
 
 			const newPosition = elementRect.left + elementRect.width / 2 - containerRect.left;
 			setActiveElementPosition(newPosition);
-
-			console.log('New arrow position:', newPosition);
 		}
 	};
 
@@ -133,64 +133,78 @@ const GamePlayersScrollbar = ({
 				ref={scrollContainerRef}
 				className='flex bg-dark outline outline-2 outline-darkAccent max-w-[600px] rounded-t-md overflow-x-auto overflow-y-hidden whitespace-nowrap mt-2 justify-start w-full h-fit font-manga text-xl'
 				onScroll={updateIndicatorPosition}>
-				{players.map((player, index) => (
-					<div
-						key={player.userToken}
-						id={`player-${player.userToken}`}
-						className={`${
-							index % 2 === 0 ? 'bg-dark' : 'bg-darkAccent'
-						} transition-all duration-300 ease-in-out transform inline-flex flex-none flex-col justify-center items-center pt-2 px-6 md:px-8 `}
-						onClick={() => {
-							setCurrentVoteUser(player.userToken);
-							updateIndicatorPosition();
-						}}>
-						<div className={`flex flex-col items-center `}>
-							{player.avatar ? (
-								<div className={`relative`}>
-									<Image
-										src={player.avatar}
-										className={`border-2 rounded-full transition-all ease-in-out delay-100 duration-500 ${
-											currentVoteUser === player.userToken && currentPhase === 'vote'
-												? 'border-yellow-300'
-												: 'border-dark'
-										} ${
-											isFinishedPhase && player.userToken === userToken
-												? 'opacity-40 outline-green-300 border-green-300'
-												: 'opacity-100'
-										}`}
-										alt={`Selected Avatar ${index + 1}`}
-										width={48}
-										height={48}
-										unoptimized
-									/>
-									{isFinishedPhase && player.userToken === userToken && (
-										<div>
+				{players.map((player, index) => {
+					const hasResults = usersFinished.find((userToken) => userToken === player.userToken);
+					const votesFor =
+						currentPhase === 'vote'
+							? phaseData.find((user) => user.userToken === userToken)?.results.vote?.[
+									player.userToken
+							  ] ?? 0
+							: 0;
+
+					return (
+						<div
+							key={player.userToken}
+							id={`player-${player.userToken}`}
+							className={`${
+								index % 2 === 0 ? 'bg-dark' : 'bg-darkAccent'
+							} transition-all duration-300 ease-in-out transform inline-flex flex-none flex-col justify-center items-center pt-2 px-6 md:px-8`}
+							onClick={() => {
+								if (currentPhase === 'vote') {
+									setCurrentVoteUser(player.userToken);
+									updateIndicatorPosition();
+								}
+							}}>
+							<div className={`flex flex-col items-center`}>
+								{player.avatar ? (
+									<div className={`relative`}>
+										<Image
+											src={player.avatar}
+											className={`border-2 rounded-full transition-all ease-in-out delay-100 duration-500 ${
+												currentVoteUser === player.userToken && currentPhase === 'vote'
+													? 'border-yellow-300'
+													: 'border-dark'
+											} ${
+												hasResults ? 'opacity-40 outline-green-300 border-green-300' : 'opacity-100'
+											}`}
+											alt={`Selected Avatar ${index + 1}`}
+											width={48}
+											height={48}
+											unoptimized
+										/>
+										{hasResults && (
 											<FaCheck
 												size={18}
 												className={`absolute top-4 right-4 text-green-300`}
 											/>
-										</div>
-									)}
-								</div>
-							) : (
-								<FaUserCircle
-									size={48}
-									className={` ${
-										index % 2 === 0 ? 'text-darkAccent border-darkAccent' : 'text-dark border-dark'
-									} ${
-										currentVoteUser === player.userToken && currentPhase === 'vote'
-											? 'border-yellow-300'
-											: ' '
-									} border-2 rounded-full transition-all ease-in-out delay-100 duration-500`}
-								/>
-							)}
-							<h1 className='font-manga text-xl md:text-2xl'>{player.name}</h1>
+										)}
+									</div>
+								) : (
+									<FaUserCircle
+										size={48}
+										className={`${
+											index % 2 === 0
+												? 'text-darkAccent border-darkAccent'
+												: 'text-dark border-dark'
+										} ${
+											currentVoteUser === player.userToken && currentPhase === 'vote'
+												? 'border-yellow-300'
+												: ' '
+										}
+                        border-2 rounded-full transition-all ease-in-out delay-100 duration-500`}
+									/>
+								)}
+								<h1 className='font-manga text-xl md:text-2xl'>{player.name}</h1>
+								{currentPhase === 'vote' && (
+									<h1 className='absolute top-0 z-50 right-1 font-manga text-xl'>x{votesFor}</h1>
+								)}
+							</div>
 						</div>
-					</div>
-				))}
+					);
+				})}
 			</div>
 
-			<div className={`lg:max-w-[50%] p-2 flex w-full justify-evenly`}>
+			{/* <div className={`lg:max-w-[50%] p-2 flex w-full justify-evenly`}>
 				<div
 					onClick={() => handleComponentDisplay('prompt')}
 					className={`font-sunny text-2xl bg-blue-300 px-2 text-dark`}>
@@ -206,7 +220,7 @@ const GamePlayersScrollbar = ({
 					className={`font-sunny text-2xl bg-red-300 px-2 text-dark`}>
 					VOTING
 				</div>
-			</div>
+			</div> */}
 		</div>
 	);
 };

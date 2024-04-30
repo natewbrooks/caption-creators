@@ -79,11 +79,9 @@ class GameManager {
 		this.game.start();
 	}
 
-	handlePlayerAction(key, userToken, data) {
+	handlePlayerAction(key, userToken, isFinished, data) {
 		let currentPhase = this.gameData.rounds[this.currentRoundIndex].phases[this.currentPhaseIndex];
-		const playerData = currentPhase.data.find((player) => player.userToken === userToken);
-		console.log('ROUND INDEX ' + this.currentRoundIndex);
-		console.log('PHASE INDEX ' + this.currentPhaseIndex);
+		const playerData = currentPhase.data.find((player) => player.userToken === userToken); // Find current phase data of the player provided
 
 		if (!playerData) {
 			console.error('Player not found for userToken:', userToken);
@@ -104,6 +102,14 @@ class GameManager {
 				playerData.results.vote = data.vote;
 				break;
 		}
+
+		this.notifyPlayers('data_updated', {
+			gameData: this.gameData,
+			userToken: userToken,
+			isFinished: isFinished,
+			currentRoundIndex: this.currentRoundIndex,
+			currentPhaseIndex: this.currentPhaseIndex,
+		});
 		console.log('currentPhaseData: ' + JSON.stringify(currentPhase));
 	}
 

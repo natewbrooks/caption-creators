@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import './globals.css';
 import { Helmet } from 'react-helmet';
 import { UserAuthProvider } from './contexts/userAuthContext';
+import { SocketProvider } from './contexts/socketContext';
 
 // export const metadata = {
 // 	title: 'Caption Creators',
@@ -98,8 +99,9 @@ export default function RootLayout({ children }) {
 					<div className={`${isPageLoaded ? 'background' : ''}`}></div>
 					<div className={`${isPageLoaded ? 'backgroundOffset' : ''}`}></div>
 				</div>
-
-				<UserAuthProvider>{children}</UserAuthProvider>
+				<SocketProvider>
+					<UserAuthProvider>{children}</UserAuthProvider>
+				</SocketProvider>
 			</body>
 		</html>
 	);

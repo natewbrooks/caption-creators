@@ -1,4 +1,3 @@
-import { getSocket } from '@/server/socketManager';
 import { FaCheck } from 'react-icons/fa';
 import { FaUserCircle } from 'react-icons/fa';
 import { useState, useEffect } from 'react';
@@ -6,20 +5,15 @@ import Image from 'next/image';
 import { FaArrowRight } from 'react-icons/fa6';
 import { IoDice } from 'react-icons/io5';
 import ConfirmationModal from './modules/ConfirmationModal';
+import { useSocket } from '@/app/contexts/socketContext';
 
-const KeywordPromptComponent = ({
-	players,
-	currentRound,
-	gameData,
-	setGameData,
-	setIsFinishedPhase,
-	lobbyId,
-	userToken,
-}) => {
+const KeywordPromptComponent = ({ players, currentRound, gameData, setGameData, lobbyId }) => {
 	const [keyword, setKeyword] = useState('');
 	const [showConfirmKeyword, setShowConfirmKeyword] = useState(false);
 	const [submitted, setSubmitted] = useState(false);
 	const [isGenerating, setIsGenerating] = useState(false);
+
+	const { socket, userToken } = useSocket();
 
 	const generateRandomKeyword = async () => {
 		setIsGenerating(true);
@@ -43,13 +37,11 @@ const KeywordPromptComponent = ({
 	const handleSubmit = () => {
 		setShowConfirmKeyword(false);
 		setSubmitted(true);
-		setIsFinishedPhase(true);
-
-		const socket = getSocket();
 		if (socket) {
 			socket.emit('game_action', {
 				lobbyId: lobbyId,
 				userToken: userToken,
+				isFinished: true,
 				key: 'prompt',
 				data: { prompt: keyword },
 			});
@@ -152,7 +144,7 @@ const KeywordPromptComponent = ({
 						</div>
 						<div
 							placeholder='Enter keyword or phrase'
-							className='outline-none font-manga text-white text-3xl text-center rounded-md bg-darkAccent w-full h-fit px-2 placeholder:text-white/50'>
+							className='outline-none items-center flex justify-center font-manga text-white text-3xl text-center rounded-md bg-darkAccent w-full h-[4rem] px-2 placeholder:text-white/50'>
 							{keyword}
 						</div>
 						<div

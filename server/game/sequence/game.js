@@ -66,10 +66,10 @@ class Game {
 		});
 		console.log('ROUND ' + (this.currentRoundIndex + 1) + ' ENDED');
 
-		this.currentRoundIndex++;
-		this.updateRoundIndex(this.currentRoundIndex);
-
-		if (this.currentRoundIndex < this.rounds.length) {
+		if (this.currentRoundIndex + 1 < this.rounds.length) {
+			this.currentRoundIndex++;
+			this.updateRoundIndex(this.currentRoundIndex);
+			this.updatePhaseIndex(0);
 			this.rounds[this.currentRoundIndex].start();
 		} else {
 			this.end();
@@ -78,6 +78,7 @@ class Game {
 
 	end() {
 		console.log('GAME ENDED FOR LOBBY ' + this.gameData.lobbyId);
+		console.log('FINAL GAME DATA ' + JSON.stringify(this.gameData));
 		this.stopGameTimer();
 		this.notifyPlayers('game_end', {
 			message: 'GAME FOR LOBBY ' + this.gameData.lobbyId + ' ENDED',

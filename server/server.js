@@ -139,14 +139,11 @@ app.prepare().then(() => {
 		});
 
 		// Generalized socket connection with standardized data format to delegate to lobbyID's active GameManager
-		socket.on('game_action', ({ lobbyId, key, userToken, data }) => {
-			console.log(
-				'GAME ACTION: ' + userToken + ' KEY: ' + key + ' ACTION: ' + JSON.stringify(data)
-			);
+		socket.on('game_action', ({ lobbyId, key, userToken, isFinished, data }) => {
 			const gameManager = activeGames[lobbyId];
 			if (gameManager) {
 				try {
-					gameManager.handlePlayerAction(key, userToken, data);
+					gameManager.handlePlayerAction(key, userToken, isFinished, data);
 				} catch (error) {
 					console.error('Error handling action:', error);
 					socket.emit('error', { message: 'Error processing action' });

@@ -1,20 +1,20 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getSocket, getUserToken } from '@/server/socketManager';
 import { FaArrowRight, FaTrophy } from 'react-icons/fa6';
 import UserDisplay from './components/login/userDisplay';
 import { useAuth } from './contexts/userAuthContext';
+import { useSocket } from './contexts/socketContext';
 
 export default function Home() {
 	const [lobbyId, setLobbyId] = useState('');
 	const [error, setError] = useState('');
 	const router = useRouter();
-	const userToken = getUserToken();
+	const { socket, userToken } = useSocket();
 	const { currentUser } = useAuth();
 
 	useEffect(() => {
-		const socket = getSocket();
+		if (!socket) return;
 
 		socket.on('error_joining', setError);
 
@@ -32,7 +32,7 @@ export default function Home() {
 
 	const handleCreateLobby = () => {
 		// Create the lobby, store the hosts userToken
-		getSocket().emit('create_lobby', {
+		socket.emit('create_lobby', {
 			hostUserToken: userToken,
 			playerName: currentUser ? currentUser.displayName : 'Host',
 			email: currentUser ? currentUser.email : null,
@@ -42,16 +42,14 @@ export default function Home() {
 	const handleJoinLobby = () => {
 		// Send user information to server to join lobby if the player inputted a lobby that exists
 		if (lobbyId) {
-			console.log('currentUser at lobby join:', currentUser);
-
-			getSocket().emit('join_lobby', {
+			socket.emit('join_lobby', {
 				lobbyId,
 				playerName: currentUser ? currentUser.displayName : 'Anonymous',
 				userToken: userToken,
 				email: currentUser ? currentUser.email : null,
 			});
 
-			getSocket().on('lobby_joined', () => {
+			socket.on('lobby_joined', () => {
 				router.push(`/lobby/${lobbyId}`);
 			});
 		}

@@ -1,14 +1,14 @@
-import { getSocket } from '@/server/socketManager';
 import { useRouter } from 'next/navigation';
 import { FaArrowLeft } from 'react-icons/fa6';
 import { useAuth } from '../contexts/userAuthContext';
+import { useSocket } from '../contexts/socketContext';
 
 const BackButton = ({ goHome, text = 'RETURN' }) => {
 	const router = useRouter();
 	const { currentUser } = useAuth();
+	const { socket } = useSocket();
 
 	const handleBackButtonClick = () => {
-		const socket = getSocket(currentUser);
 		socket.emit('leave_lobby');
 
 		if (!goHome) {

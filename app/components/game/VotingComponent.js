@@ -1,7 +1,7 @@
-import { getSocket } from '@/server/socketManager';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FaArrowRight } from 'react-icons/fa6';
 import VideoEmbed from './modules/VideoEmbed';
+import { useSocket } from '@/app/contexts/socketContext';
 
 const VotingComponent = ({
 	players,
@@ -9,75 +9,68 @@ const VotingComponent = ({
 	gameData,
 	setGameData,
 	lobbyId,
-	userToken,
 	currentVoteUser,
-	setIsFinishedPhase,
 }) => {
 	const [totalVotes, setTotalVotes] = useState(5); // Total votes allowed for clients
 	const [votesUsed, setVotesUsed] = useState(0); // Current client's number of votes used
-	const [vote, setVote] = useState([]);
+	const [vote, setVote] = useState({});
+	const voteRef = useRef(vote); // Create a ref to track the latest vote state
+
+	const { socket, userToken } = useSocket();
 
 	useEffect(() => {
-		const socket = getSocket();
-
-		socket.on('notify_players', ({ event, data }) => {
-			if (event === 'phase_end') {
-				if (data.key === 'vote') {
-					if (!vote) {
-						return;
-					}
-					socket.emit('game_action', {
-						lobbyId: lobbyId,
-						userToken: userToken,
-						key: 'vote',
-						data: {
-							vote: vote,
-						},
-					});
-					setIsFinishedPhase(true);
-				}
-			}
+		const initialVotes = {};
+		players.forEach((player) => {
+			initialVotes[player.userToken] = 0;
 		});
-
-		return () => {
-			socket.off('notify_players');
-		};
+		setVote(initialVotes);
+		voteRef.current = initialVotes;
 	}, []);
 
 	useEffect(() => {
-		const initialVotes = players.map((player) => ({
-			userToken: player.userToken,
-			quantityOfVotes: 0,
-		}));
-		setVote(initialVotes);
-	}, []);
+		handleSubmit();
+	}, [vote]);
 
 	const addVote = () => {
 		if (votesUsed < totalVotes && currentVoteUser) {
-			setVote((currentVotes) =>
-				currentVotes.map((player) =>
-					player.userToken === currentVoteUser
-						? { ...player, quantityOfVotes: player.quantityOfVotes + 1 }
-						: player
-				)
-			);
+			setVote((prevVotes) => {
+				const updatedVotes = {
+					...prevVotes,
+					[currentVoteUser]: (prevVotes[currentVoteUser] || 0) + 1,
+				};
+				voteRef.current = updatedVotes;
+				return updatedVotes;
+			});
 			setVotesUsed(votesUsed + 1);
-			console.log(vote);
 		}
 	};
 
 	const subtractVote = () => {
-		if (votesUsed > 0 && currentVoteUser) {
-			setVote((currentVotes) =>
-				currentVotes.map((player) =>
-					player.userToken === currentVoteUser && player.quantityOfVotes > 0
-						? { ...player, quantityOfVotes: player.quantityOfVotes - 1 }
-						: player
-				)
-			);
+		if (votesUsed > 0 && currentVoteUser && vote[currentVoteUser] > 0) {
+			setVote((prevVotes) => {
+				const updatedVotes = {
+					...prevVotes,
+					[currentVoteUser]: prevVotes[currentVoteUser] - 1,
+				};
+				voteRef.current = updatedVotes;
+				return updatedVotes;
+			});
 			setVotesUsed(votesUsed - 1);
-			console.log(vote);
 		}
+	};
+
+	const handleSubmit = () => {
+		const currentVotes = voteRef.current;
+		if (!currentVotes) {
+			return;
+		}
+		socket.emit('game_action', {
+			lobbyId: lobbyId,
+			userToken: userToken,
+			isFinished: false,
+			key: 'vote',
+			data: { vote: currentVotes },
+		});
 	};
 
 	return (
@@ -125,8 +118,7 @@ const VotingComponent = ({
 						<div className={`flex flex-col w-full justify-center items-center py-2`}>
 							<h1
 								className={`text-xl md:text-2xl xxl:text-3xl font-manga text-white text-nowrap px-1 w-fit`}>
-								x{vote.find((player) => player.userToken === currentVoteUser)?.quantityOfVotes || 0}{' '}
-								votes{' '}
+								x{vote[currentVoteUser] || 0} votes{' '}
 							</h1>
 						</div>
 						<div

@@ -1,5 +1,4 @@
 'use client';
-import { getSocket, getUserToken } from '@/server/socketManager';
 import { useParams } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import TopBar from '@/app/components/login/topBar';
@@ -9,6 +8,7 @@ import BackButton from '@/app/components/BackButton';
 import { FaClock } from 'react-icons/fa6';
 import VotingComponent from '@/app/components/game/VotingComponent';
 import GamePlayersScrollbar from '@/app/components/game/modules/GamePlayersScrollbar';
+import { useSocket } from '@/app/contexts/socketContext';
 
 export default function GamePage() {
 	const { id: lobbyId } = useParams(); // Current Lobby ID!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -27,17 +27,19 @@ export default function GamePage() {
 	*/
 
 	const [playerName, setPlayerName] = useState(''); // Clients game name
-	const [socket, setSocket] = useState(null); // Clients websocket
-	const userToken = getUserToken(); // Get clients userToken
+	const { socket, userToken } = useSocket(); // Clients websocket and userToken
 
 	const [disconnectingUsers, setDisconnectingUsers] = useState({}); // Players who disconnected or swapped tabs within the last 10 seconds
 
 	const [currentRound, setCurrentRound] = useState(1); // Keeps track of current round
-	const [gameData, setGameData] = useState({}); // Keeps track of the current round data
+	const [gameData, setGameData] = useState({}); // Keeps track of the game data
+	const [phaseData, setPhaseData] = useState([]); // Keeps track of current phase data
 
 	const [gamePhaseTimer, setGamePhaseTimer] = useState(0); // Keeps track of the current phase's
 	const [currentPhase, setCurrentPhase] = useState('prompt'); // Keeps track of the current phase
-	const [isFinishedPhase, setIsFinishedPhase] = useState(false); // Keeps track of whether the client is done the current phase
+	const [phaseIndex, setPhaseIndex] = useState(0); // Keep track of current phase INDEX (reconstructed on client)
+	const [roundIndex, setRoundIndex] = useState(0); // Keep track of current round INDEX (reconstructed on client)
+	const [usersFinished, setUsersFinished] = useState([]); // Keeps track of the userTokens that are finished current phase
 
 	const [currentVoteUser, setCurrentVoteUser] = useState(null); // The userToken of the player the client is currently looking at in the voting component
 
@@ -58,8 +60,8 @@ export default function GamePage() {
 	};
 
 	// const handleCaptionSubmit = (caption) => {
-	// 	const socketInstance = getSocket();
-	// 	socketInstance.emit('game_action', {
+	//
+	// 	socket.emit('game_action', {
 	// 		lobbyId,
 	// 		actionType: 'submit_caption',
 	// 		data: {
@@ -71,10 +73,7 @@ export default function GamePage() {
 	// };
 
 	// useEffect(() => {
-	// 	const socketInstance = getSocket();
-	// 	setSocket(socketInstance);
-
-	// 	if (socketInstance) {
+	// 	if (socket) {
 	// 		window.addEventListener('beforeunload', handleUnload);
 	// 		// Check if the document is already loaded
 	// 		if (document.readyState === 'complete') {
@@ -85,7 +84,7 @@ export default function GamePage() {
 
 	// 		let intervalIds = {}; // To store interval IDs for clearing them later
 
-	// 		socketInstance.on('disconnectTimerStarted', ({ userToken, duration }) => {
+	// 		socket.on('disconnectTimerStarted', ({ userToken, duration }) => {
 	// 			clearInterval(intervalIds[userToken]); // Clear existing interval if any
 
 	// 			// Immediately set the initial duration
@@ -109,7 +108,7 @@ export default function GamePage() {
 	// 			}, duration * 1000);
 	// 		});
 
-	// 		socketInstance.on('disconnectTimerEnded', (userToken) => {
+	// 		socket.on('disconnectTimerEnded', (userToken) => {
 	// 			clearInterval(intervalIds[userToken]);
 	// 			setDisconnectingUsers((prev) => {
 	// 				const { [userToken]: _, ...rest } = prev;
@@ -122,68 +121,90 @@ export default function GamePage() {
 	// 			window.removeEventListener('beforeunload', handleUnload);
 	// 			window.removeEventListener('load', handleReload);
 	// 			Object.values(intervalIds).forEach(clearInterval);
-	// 			socketInstance.off('disconnectTimerStarted');
-	// 			socketInstance.off('disconnectTimerEnded');
+	// 			socket.off('disconnectTimerStarted');
+	// 			socket.off('disconnectTimerEnded');
 	// 		};
 	// 	}
 	// }, [socket, userToken]);
 
 	// function handleUnload() {
-	// 	const socketInstance = getSocket();
-	// 	socketInstance.emit('reload', userToken);
+	//
+	// 	socket.emit('reload', userToken);
 	// }
 	// function handleReload() {
-	// 	const socketInstance = getSocket();
-	// 	socketInstance.emit('restore_session', userToken);
+	//
+	// 	socket.emit('restore_session', userToken);
 	// }
 
 	useEffect(() => {
-		const socketInstance = getSocket();
-		setSocket(socketInstance);
-
-		socketInstance.on('lobby_details', ({ members }) => {
+		socket.on('lobby_details', ({ members }) => {
 			setPlayers(members);
 		});
 
-		socketInstance.on('notify_players', ({ event, data }) => {
-			console.log('NOTIFIED PLAYERS: ' + JSON.stringify(data));
+		socket.on('notify_players', ({ event, data }) => {
 			switch (event) {
 				case 'game_start':
 					setGameData(data.gameData);
+					setRoundIndex(0);
+					setPhaseIndex(0);
+					setUsersFinished([]);
 					break;
 				case 'round_start':
-					setGameData(data.gameData);
-					setCurrentRound(data.round);
-					setIsFinishedPhase(false);
+					setCurrentRound(data.roundIndex + 1);
+					setRoundIndex(data.roundIndex);
 					break;
 				case 'phase_countdown':
-					console.log(data.time);
 					setGamePhaseTimer(data.time);
 					break;
 				case 'phase_start':
-					setGameData(data.gameData);
 					setCurrentPhase(data.key);
+					setPhaseIndex(data.phaseIndex);
 					setGamePhaseTimer(data.duration);
-					setIsFinishedPhase(false);
+					setUsersFinished([]);
+					break;
+				case 'data_updated':
+					setGameData(data.gameData);
+
+					if (data.isFinished) {
+						setUsersFinished((prev) => {
+							if (!prev.includes(data.userToken)) {
+								return [...prev, data.userToken];
+							}
+							return prev;
+						});
+					}
 					break;
 			}
 		});
 
-		socketInstance.emit('fetch_lobby_details', { lobbyId });
+		socket.emit('fetch_lobby_details', { lobbyId });
 
 		return () => {
-			socketInstance.off('lobby_details');
-			socketInstance.off('notify_players');
+			socket.off('lobby_details');
+			socket.off('notify_players');
 		};
-	}, [lobbyId]);
+	}, [socket, lobbyId]);
 
 	useEffect(() => {
-		console.log(players[0]);
-	}, []);
+		const rounds = gameData.rounds;
+		if (rounds && rounds.length > roundIndex) {
+			const currentRound = rounds[roundIndex];
+			if (currentRound.phases && currentRound.phases.length > phaseIndex) {
+				const currentPhaseData = currentRound.phases[phaseIndex];
+				if (currentPhaseData) {
+					setPhaseData(currentPhaseData.data);
+				} else {
+					setPhaseData([]);
+				}
+			}
+		}
+	}, [roundIndex, phaseIndex, gameData]);
 
 	useEffect(() => {
-		console.log('Game data updated:', JSON.stringify(gameData));
-	}, [gameData]);
+		if (currentPhase === 'vote' && players.length > 0) {
+			setCurrentVoteUser(players[0].userToken);
+		}
+	}, [currentPhase]);
 
 	return (
 		<div className={`w-full h-full flex flex-col items-center`}>
@@ -252,11 +273,11 @@ export default function GamePage() {
 								/>
 							</div>
 							<h1
-								data-text={gamePhaseTimer + 's'}
+								data-text={`${gamePhaseTimer < 10 ? '0' : ''}${gamePhaseTimer}s`}
 								className={`min-w-[3ch] items-end flex text-right ${
 									gamePhaseTimer < 10 ? 'text-red-300' : 'text-yellow-300'
 								} text-2xl md:text-3xl font-manga`}>
-								{gamePhaseTimer}s
+								{gamePhaseTimer < 10 ? `0${gamePhaseTimer}` : gamePhaseTimer}s
 							</h1>
 						</div>
 						<h1
@@ -298,13 +319,10 @@ export default function GamePage() {
 							{currentPhase === 'prompt' && (
 								<KeywordPromptComponent
 									lobbyId={lobbyId}
-									userToken={userToken}
 									players={players}
 									currentRound={currentRound}
 									gameData={gameData}
 									setGameData={setGameData}
-									isFinishedPhase={isFinishedPhase}
-									setIsFinishedPhase={setIsFinishedPhase}
 								/>
 							)}
 
@@ -315,13 +333,10 @@ export default function GamePage() {
 									gameData={gameData}
 									setGameData={setGameData}
 									lobbyId={lobbyId}
-									userToken={userToken}
-									isFinishedPhase={isFinishedPhase}
-									setIsFinishedPhase={setIsFinishedPhase}
 								/>
 							)}
 
-							{/* {currentPhase === 'vote' && (
+							{currentPhase === 'vote' && (
 								<VotingComponent
 									players={players}
 									currentRound={currentRound}
@@ -329,24 +344,21 @@ export default function GamePage() {
 									setGameData={setGameData}
 									lobbyId={lobbyId}
 									currentVoteUser={currentVoteUser}
-									userToken={userToken}
-									isFinishedPhase={isFinishedPhase}
-									setIsFinishedPhase={setIsFinishedPhase}
 								/>
-							)} */}
+							)}
 						</>
 					)}
 
 					<GamePlayersScrollbar
 						players={players}
-						userToken={userToken}
 						currentRound={currentRound}
 						currentPhase={currentPhase}
 						gameData={gameData}
 						handleComponentDisplay={handleComponentDisplay}
 						currentVoteUser={currentVoteUser}
 						setCurrentVoteUser={setCurrentVoteUser}
-						isFinishedPhase={isFinishedPhase}
+						usersFinished={usersFinished || []}
+						phaseData={phaseData}
 					/>
 				</div>
 			</div>

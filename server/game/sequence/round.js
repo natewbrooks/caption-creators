@@ -18,19 +18,17 @@ class Round {
 		for (let index = 0; index < this.roundConfig.phases.length; index++) {
 			const phaseConfig = this.roundConfig.phases[index];
 			this.phases.push(
-				new Phase(this.gameData, phaseConfig, this.notifyPlayers, this.endPhase.bind(this))
+				new Phase(this.gameData, phaseConfig, this.notifyPlayers, index, this.endPhase.bind(this))
 			);
 		}
 	}
 
 	start() {
 		this.notifyPlayers('round_start', {
-			round: this.roundIndex + 1,
-			gameData: this.gameData,
+			roundIndex: this.roundIndex,
 			message: 'ROUND ' + (this.roundIndex + 1) + ' STARTED',
 		});
 		console.log('ROUND ' + (this.roundIndex + 1) + ' STARTED');
-		console.log(JSON.stringify(this.gameData));
 
 		this.initPhases();
 		this.phases[this.currentPhaseIndex].start();
@@ -40,12 +38,11 @@ class Round {
 		this.notifyPlayers('phase_end', {
 			key: key,
 		});
-		this.notifyPlayers('phase_end', { key: this.key });
+		``;
 
-		this.currentPhaseIndex++;
-		this.updatePhaseIndex(this.currentPhaseIndex);
-
-		if (this.currentPhaseIndex < this.phases.length) {
+		if (this.currentPhaseIndex + 1 < this.phases.length) {
+			this.currentPhaseIndex++;
+			this.updatePhaseIndex(this.currentPhaseIndex);
 			this.phases[this.currentPhaseIndex].start();
 		} else {
 			this.endRound();
