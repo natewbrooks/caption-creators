@@ -8,7 +8,12 @@
 						{
 							"name": "Prompt Phase",
 							"duration": 15,
-							"key": "prompt"
+							"key": "prompt",
+							"options": {
+								"promptGeneration": "human",
+								"videoQuantity": "players",
+								"videoDistribution": "even"
+							}
 						},
 						{
 							"name": "Caption Phase",
@@ -18,7 +23,10 @@
 						{
 							"name": "Voting Phase",
 							"duration": 15,
-							"key": "vote"
+							"key": "vote",
+							"options": {
+								"captionLink": "Caption Phase"
+							}
 						}
 					]
 				},
@@ -28,10 +36,10 @@
 							"name": "Prompt Phase",
 							"duration": 10,
 							"key": "prompt",
-							"videoCriteria": {
-								"promptType": "ai",
-								"numPrompts": 2,
-								"distribution": "even"
+							"options": {
+								"promptGeneration": "ai",
+								"videoQuantity": "1/2-players",
+								"videoDistribution": "even"
 							}
 						},
 						{
@@ -42,7 +50,10 @@
 						{
 							"name": "Voting Phase",
 							"duration": 10,
-							"key": "vote"
+							"key": "vote",
+							"options": {
+								"captionLink": "Caption Phase"
+							}
 						}
 					]
 				},
@@ -52,10 +63,10 @@
 							"name": "Prompt Phase",
 							"duration": 10,
 							"key": "prompt",
-							"videoCriteria": {
-								"promptType": "user",
-								"numPrompts": 1,
-								"distribution": "even"
+							"options": {
+								"promptGeneration": "ai",
+								"videoQuantity": "1",
+								"videoDistribution": "even"
 							}
 						},
 						{
@@ -66,7 +77,10 @@
 						{
 							"name": "Voting Phase",
 							"duration": 5,
-							"key": "vote"
+							"key": "vote",
+							"options": {
+								"captionLink": "Caption Phase"
+							}
 						}
 					]
 				}

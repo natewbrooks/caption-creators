@@ -2,11 +2,11 @@
 import { useParams } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import TopBar from '@/app/components/login/topBar';
-import CaptionVideoComponent from '../../components/game/CaptionVideoComponent';
-import KeywordPromptComponent from '@/app/components/game/KeywordPromptComponent';
+import CaptionComponent from '../../components/game/CaptionComponent';
+import PromptComponent from '@/app/components/game/PromptComponent';
 import BackButton from '@/app/components/BackButton';
 import { FaClock } from 'react-icons/fa6';
-import VotingComponent from '@/app/components/game/VotingComponent';
+import VotingComponent from '@/app/components/game/VoteComponent';
 import GamePlayersScrollbar from '@/app/components/game/modules/GamePlayersScrollbar';
 import { useSocket } from '@/app/contexts/socketContext';
 
@@ -32,7 +32,8 @@ export default function GamePage() {
 	const [disconnectingUsers, setDisconnectingUsers] = useState({}); // Players who disconnected or swapped tabs within the last 10 seconds
 
 	const [currentRound, setCurrentRound] = useState(1); // Keeps track of current round
-	const [gameData, setGameData] = useState({}); // Keeps track of the game data
+	const [gameData, setGameData] = useState({}); // Keeps track of the entire game data
+	const [roundData, setRoundData] = useState([]); // Keeps track of current round data
 	const [phaseData, setPhaseData] = useState([]); // Keeps track of current phase data
 
 	const [gamePhaseTimer, setGamePhaseTimer] = useState(0); // Keeps track of the current phase's
@@ -42,6 +43,7 @@ export default function GamePage() {
 	const [usersFinished, setUsersFinished] = useState([]); // Keeps track of the userTokens that are finished current phase
 
 	const [currentVoteUser, setCurrentVoteUser] = useState(null); // The userToken of the player the client is currently looking at in the voting component
+	const [currentVideoDisplayed, setCurrentVideoDisplayed] = useState(null);
 
 	const handleComponentDisplay = (key) => {
 		switch (key) {
@@ -154,6 +156,7 @@ export default function GamePage() {
 					setRoundIndex(data.roundIndex);
 					break;
 				case 'phase_countdown':
+					console.log(data.key + ', ' + data.time);
 					setGamePhaseTimer(data.time);
 					break;
 				case 'phase_start':
@@ -161,19 +164,12 @@ export default function GamePage() {
 					setPhaseIndex(data.phaseIndex);
 					setGamePhaseTimer(data.duration);
 					setUsersFinished([]);
+					console.log('USERS FINISHED: ' + data.usersFinished);
 					break;
-				case 'data_updated':
-					setGameData(data.gameData);
-
-					if (data.isFinished) {
-						setUsersFinished((prev) => {
-							if (!prev.includes(data.userToken)) {
-								return [...prev, data.userToken];
-							}
-							return prev;
-						});
-					}
-					break;
+				case 'game_data_updated':
+					setGameData(data.gameData || gameData);
+					setUsersFinished(data.usersFinished || usersFinished);
+					console.log('USERS FINISHED: ' + data.usersFinished);
 			}
 		});
 
@@ -189,6 +185,7 @@ export default function GamePage() {
 		const rounds = gameData.rounds;
 		if (rounds && rounds.length > roundIndex) {
 			const currentRound = rounds[roundIndex];
+			setRoundData(currentRound);
 			if (currentRound.phases && currentRound.phases.length > phaseIndex) {
 				const currentPhaseData = currentRound.phases[phaseIndex];
 				if (currentPhaseData) {
@@ -317,7 +314,7 @@ export default function GamePage() {
 					{players && gameData && (
 						<>
 							{currentPhase === 'prompt' && (
-								<KeywordPromptComponent
+								<PromptComponent
 									lobbyId={lobbyId}
 									players={players}
 									currentRound={currentRound}
@@ -327,12 +324,14 @@ export default function GamePage() {
 							)}
 
 							{currentPhase === 'caption' && (
-								<CaptionVideoComponent
+								<CaptionComponent
 									players={players}
 									currentRound={currentRound}
 									gameData={gameData}
 									setGameData={setGameData}
 									lobbyId={lobbyId}
+									currentVideoDisplayed={currentVideoDisplayed}
+									setCurrentVideoDisplayed={setCurrentVideoDisplayed}
 								/>
 							)}
 
@@ -340,10 +339,14 @@ export default function GamePage() {
 								<VotingComponent
 									players={players}
 									currentRound={currentRound}
+									roundData={roundData}
+									phaseData={phaseData}
 									gameData={gameData}
 									setGameData={setGameData}
 									lobbyId={lobbyId}
 									currentVoteUser={currentVoteUser}
+									currentVideoDisplayed={currentVideoDisplayed}
+									setCurrentVideoDisplayed={setCurrentVideoDisplayed}
 								/>
 							)}
 						</>

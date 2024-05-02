@@ -89,8 +89,12 @@ export default function Home() {
 					/> */}
 				</div>
 				<span
-					className={`bg-dark outline outline-2 outline-darkAccent max-w-[400px] lg:max-w-[100%] px-4 py-1 rounded-md font-manga text-md text-[0.75rem] xs:text-[1.25rem] lg:text-[1.75rem] text-yellow-300 text-center whitespace-normal`}>
-					Nate Brooks, Gabriel Huber, Connor O’Grady, David Borisevich, and Dominick Winningham
+					className={`bg-dark outline outline-2  outline-darkAccent max-w-[280px] md:max-w-[600px] px-4 py-1 rounded-md font-manga text-md text-[0.75rem] xs:text-[1.25rem] lg:text-[1.55rem] text-yellow-300 text-center whitespace-normal`}>
+					HOW TO PLAY:{' '}
+					<span className={`text-white`}>
+						A STANDARD GAME IS 3 ROUNDS WITH 4 PHASES: PROMPTING, CAPTIONING, PREVIEWING, AND
+						VOTING.
+					</span>
 				</span>
 			</div>
 

@@ -8,20 +8,35 @@ import ConfirmationModal from './modules/ConfirmationModal';
 import VideoEmbed from './modules/VideoEmbed';
 import { useSocket } from '@/app/contexts/socketContext';
 
-const CaptionVideoComponent = ({
+const CaptionComponent = ({
 	players,
 	currentRound,
 	captionedThisRound,
 	setCaptionedThisRound,
 	gameData,
+	roundData,
+	phaseData,
 	setGameData,
 	lobbyId,
+	currentVideoDisplayed,
+	setCurrentVideoDisplayed,
 }) => {
 	const [currentCaption, setCurrentCaption] = useState('');
 	const [showConfirmCaption, setShowConfirmCaption] = useState(false);
 	const [confirmedCaption, setConfirmedCaption] = useState(false);
 
 	const { socket, userToken } = useSocket();
+
+	useEffect(() => {
+		if (gameData.rounds && gameData.rounds[currentRound - 1]) {
+			const videoAssignment = gameData.rounds[currentRound - 1].videoAssignments.find(
+				(assignment) => assignment.userToken === userToken // corrected to use userToken
+			);
+			if (videoAssignment && videoAssignment.video) {
+				setCurrentVideoDisplayed(videoAssignment.video);
+			}
+		}
+	}, [currentRound, gameData, userToken]);
 
 	const handleCaptionSubmit = () => {
 		if (socket) {
@@ -54,7 +69,7 @@ const CaptionVideoComponent = ({
 				/>
 			)}
 			<div className={`relative flex flex-col w-full h-full justify-between `}>
-				<VideoEmbed embedURL={'https://www.youtube.com/embed/x6iwZSURP44'} />
+				<VideoEmbed embedURL={currentVideoDisplayed} />
 
 				{confirmedCaption ? (
 					<div className='relative top-1 w-full flex justify-center'>
@@ -102,4 +117,4 @@ const CaptionVideoComponent = ({
 	);
 };
 
-export default CaptionVideoComponent;
+export default CaptionComponent;

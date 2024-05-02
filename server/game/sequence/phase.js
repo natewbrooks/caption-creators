@@ -31,8 +31,7 @@ class Phase {
 		this.phaseTimer = setInterval(() => {
 			this.timeElapsed++;
 			if (this.timeElapsed >= this.duration) {
-				this.stopPhaseTimer();
-				this.endPhase(this.key);
+				this.stopPhase();
 			} else {
 				this.notifyPlayers('phase_countdown', {
 					key: this.key,
@@ -47,6 +46,11 @@ class Phase {
 			clearInterval(this.phaseTimer);
 			this.phaseTimer = null;
 		}
+	}
+
+	stopPhase() {
+		this.stopPhaseTimer();
+		this.endPhase(this.key);
 	}
 }
 

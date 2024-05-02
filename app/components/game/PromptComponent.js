@@ -7,7 +7,7 @@ import { IoDice } from 'react-icons/io5';
 import ConfirmationModal from './modules/ConfirmationModal';
 import { useSocket } from '@/app/contexts/socketContext';
 
-const KeywordPromptComponent = ({ players, currentRound, gameData, setGameData, lobbyId }) => {
+const PromptComponent = ({ players, currentRound, gameData, setGameData, lobbyId }) => {
 	const [keyword, setKeyword] = useState('');
 	const [showConfirmKeyword, setShowConfirmKeyword] = useState(false);
 	const [submitted, setSubmitted] = useState(false);
@@ -172,4 +172,4 @@ const KeywordPromptComponent = ({ players, currentRound, gameData, setGameData, 
 	);
 };
 
-export default KeywordPromptComponent;
+export default PromptComponent;

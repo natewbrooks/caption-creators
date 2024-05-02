@@ -54,10 +54,12 @@ function LobbyAvatarSelect({ avatars, takenAvatars, userToken, players, handleAv
 													}}
 													layout='fill'
 													objectFit='cover' // Adjust as needed
-													className={`rounded-full outline outline-darkAccent outline-2 ${
+													className={`rounded-full transform transition-colors duration-500 ease-in-out outline outline-2 ${
 														isTaken
-															? 'opacity-40 select-none'
-															: 'lg:hover:outline-white active:scale-95 cursor-pointer'
+															? `opacity-40 ${
+																	isMine ? 'outline-green-300' : 'outline-red-300'
+															  } select-none`
+															: 'lg:hover:outline-white outline-darkAccent  active:scale-95 cursor-pointer'
 													}`}
 													alt={`${isTaken ? 'Taken' : ''} Avatar ${index + 1}`}
 													unoptimized

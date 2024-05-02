@@ -134,7 +134,7 @@ const GamePlayersScrollbar = ({
 				className='flex bg-dark outline outline-2 outline-darkAccent max-w-[600px] rounded-t-md overflow-x-auto overflow-y-hidden whitespace-nowrap mt-2 justify-start w-full h-fit font-manga text-xl'
 				onScroll={updateIndicatorPosition}>
 				{players.map((player, index) => {
-					const hasResults = usersFinished.find((userToken) => userToken === player.userToken);
+					const hasFinished = usersFinished.find((userToken) => userToken === player.userToken);
 					const votesFor =
 						currentPhase === 'vote'
 							? phaseData.find((user) => user.userToken === userToken)?.results.vote?.[
@@ -165,14 +165,16 @@ const GamePlayersScrollbar = ({
 													? 'border-yellow-300'
 													: 'border-dark'
 											} ${
-												hasResults ? 'opacity-40 outline-green-300 border-green-300' : 'opacity-100'
+												hasFinished
+													? 'opacity-40 outline-green-300 border-green-300'
+													: 'opacity-100'
 											}`}
 											alt={`Selected Avatar ${index + 1}`}
 											width={48}
 											height={48}
 											unoptimized
 										/>
-										{hasResults && (
+										{hasFinished && (
 											<FaCheck
 												size={18}
 												className={`absolute top-4 right-4 text-green-300`}

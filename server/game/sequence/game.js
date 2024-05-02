@@ -67,6 +67,7 @@ class Game {
 		console.log('ROUND ' + (this.currentRoundIndex + 1) + ' ENDED');
 
 		if (this.currentRoundIndex + 1 < this.rounds.length) {
+			this.rounds[this.currentRoundIndex] = null;
 			this.currentRoundIndex++;
 			this.updateRoundIndex(this.currentRoundIndex);
 			this.updatePhaseIndex(0);

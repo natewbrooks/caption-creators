@@ -15,7 +15,7 @@ const VideoEmbed = ({ embedURL }) => {
 							height={height}
 							width={width}
 							src={embedURL}
-							title='Inside the mind of a Netplay Falco #shorts #smashbros #ssbm #turndownforwalt #tdfw'
+							title={`TITLE OF VIDEO`}
 							frameBorder='0'
 							allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen'
 							referrerPolicy='strict-origin-when-cross-origin'

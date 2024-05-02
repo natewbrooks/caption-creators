@@ -108,7 +108,7 @@ function PlayerRow({ index, style, data }) {
 					)}
 				</div>
 				{isCurrentUser && (
-					<div className='select-none outline-none absolute bottom-5 -right-3 flex items-center justify-center'>
+					<div className='select-none outline-none absolute bottom-4 -right-3 flex items-center justify-center'>
 						{editingName ? (
 							<FaCheck
 								onClick={() => {
@@ -443,7 +443,7 @@ export default function LobbyPage() {
 						</div>
 					)}
 					<div
-						className={`flex flex-col w-full max-w-[600px] max-h-[800px] h-full p-4 bg-dark rounded-md outline outline-2 outline-darkAccent`}>
+						className={`flex flex-col w-full max-w-[600px] max-h-[800px] h-full p-2 bg-dark rounded-md outline outline-2 outline-darkAccent`}>
 						<div className={`h-full w-full `}>
 							<AutoSizer>
 								{({ height, width }) => (

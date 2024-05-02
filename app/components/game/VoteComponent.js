@@ -7,12 +7,18 @@ const VotingComponent = ({
 	players,
 	currentRound,
 	gameData,
+	phaseData,
+	roundData,
 	setGameData,
 	lobbyId,
+	currentVideoDisplayed,
+	setCurrentVideoDisplayed,
 	currentVoteUser,
 }) => {
 	const [totalVotes, setTotalVotes] = useState(5); // Total votes allowed for clients
 	const [votesUsed, setVotesUsed] = useState(0); // Current client's number of votes used
+	const [linkedCaptionPhaseData, setLinkedCaptionPhaseData] = useState(null);
+	const [caption, setCaption] = useState('');
 	const [vote, setVote] = useState({});
 	const voteRef = useRef(vote); // Create a ref to track the latest vote state
 
@@ -67,16 +73,43 @@ const VotingComponent = ({
 		socket.emit('game_action', {
 			lobbyId: lobbyId,
 			userToken: userToken,
-			isFinished: false,
+			isFinished: votesUsed === totalVotes,
 			key: 'vote',
 			data: { vote: currentVotes },
 		});
 	};
 
+	useEffect(() => {
+		const videoAssignment = gameData.rounds[currentRound - 1].videoAssignments.find(
+			(assignment) => assignment.userToken === currentVoteUser
+		);
+		if (videoAssignment) {
+			setCurrentVideoDisplayed(videoAssignment.video);
+		}
+
+		const captionPhaseData = gameData.rounds[currentRound - 1].phases.find(
+			(phase) => phase.key === 'caption'
+		);
+		const playerData = captionPhaseData.data.find((data) => data.userToken === currentVoteUser);
+		if (playerData) {
+			setCaption(playerData.results.caption);
+		}
+	}, [currentRound, gameData, currentVoteUser]);
+
 	return (
 		<>
 			<div className={`relative flex flex-col w-full h-full justify-between items-center `}>
 				<div className={`flex flex-col sm:flex-row items-center w-full space-x-2 justify-center`}>
+					<h1
+						data-text={`x${totalVotes - votesUsed} VOTES REMAIN`}
+						className={`font-manga text-nowrap text-xl md:text-2xl lg:text-3xl`}>
+						x{totalVotes - votesUsed} VOTES REMAIN
+					</h1>
+					<h1
+						data-text={`•`}
+						className={`hidden sm:flex text-xl md:text-2xl lg:text-3xl font-manga text-green-300 text-nowrap `}>
+						•
+					</h1>
 					<h1
 						data-text={`${
 							players.find((player) => player.userToken === currentVoteUser)?.name.toUpperCase() ||
@@ -87,44 +120,31 @@ const VotingComponent = ({
 							'NONE SELECTED'}
 						's CAPTION
 					</h1>
-					<h1
-						data-text={`•`}
-						className={`hidden sm:flex text-xl md:text-2xl lg:text-3xl font-manga text-green-300 text-nowrap `}>
-						•
-					</h1>
-
-					<h1
-						data-text={`x${totalVotes - votesUsed} VOTES REMAINING`}
-						className={`font-manga text-nowrap text-xl md:text-2xl lg:text-3xl`}>
-						x{totalVotes - votesUsed} VOTES REMAINING
-					</h1>
 				</div>
 
-				<VideoEmbed embedURL={'https://www.youtube.com/embed/x6iwZSURP44'} />
-				<div className='w-full flex flex-col'>
-					<div className='px-2 bg-dark  border-x-2 py-1 border-t-2 border-darkAccent font-manga text-xl md:text-2xl xxl:text-3xl whitespace-nowrap overflow-x-auto'>
-						A silly little mongoose loves to eat his lil carrots!
-					</div>
+				<VideoEmbed embedURL={currentVideoDisplayed} />
+				<div className='flex w-full leading-none  p-3 h-fit  overflow-y-hidden  px-3 md:px-2 md:justify-center bg-darkAccent  border-x-2 border-t-2 border-dark font-manga text-xl md:text-2xl xxl:text-3xl whitespace-nowrap overflow-x-auto'>
+					{caption}
 				</div>
 
 				<div className={`w-full h-fit flex justify-center`}>
 					<div
-						className={`flex bg-dark border-darkAccent border-2 h-full w-full items-center justify-evenly`}>
+						className={`flex p-1 space-x-1 bg-dark border-darkAccent border-2 h-full w-full items-center justify-evenly`}>
 						<div
 							onClick={() => subtractVote()}
-							className={`text-3xl xl:text-4xl bg-dark border-red-300 border-2 leading-none font-sunny rounded-r-md text-white flex h-full w-full items-center justify-center md:hover:border-white active:scale-95 cursor-pointer`}>
-							-1
+							className={`text-3xl xl:text-4xl rounded-md bg-dark py-2 border-red-300 border-2 leading-none font-sunny text-white flex h-full w-full items-center justify-center md:hover:border-white active:scale-95 cursor-pointer`}>
+							-1 VOTE
 						</div>
-						<div className={`flex flex-col w-full justify-center items-center py-2`}>
+						{/* <div className={`flex flex-col w-full justify-center items-center py-2`}>
 							<h1
 								className={`text-xl md:text-2xl xxl:text-3xl font-manga text-white text-nowrap px-1 w-fit`}>
 								x{vote[currentVoteUser] || 0} votes{' '}
 							</h1>
-						</div>
+						</div> */}
 						<div
 							onClick={() => addVote()}
-							className={`text-3xl xl:text-4xl bg-dark border-green-300 border-2 leading-none font-sunny rounded-l-md text-white flex h-full w-full items-center justify-center md:hover:border-white active:scale-95 cursor-pointer`}>
-							+1
+							className={`text-3xl xl:text-4xl py-2 rounded-md bg-dark border-green-300 border-2 leading-none font-sunny  text-white flex h-full w-full items-center justify-center md:hover:border-white active:scale-95 cursor-pointer`}>
+							+1 VOTE
 						</div>
 					</div>
 				</div>

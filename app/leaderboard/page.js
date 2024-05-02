@@ -173,7 +173,7 @@ export default function LeaderboardPage() {
 						</div>
 					</div>
 					<div
-						className={`w-full h-full max-h-[800px] bg-dark p-4 rounded-md outline outline-2 outline-darkAccent`}>
+						className={`w-full h-full max-h-[800px] bg-dark p-2 rounded-md outline outline-2 outline-darkAccent`}>
 						<div
 							ref={containerRef}
 							className={`w-full h-full`}>
