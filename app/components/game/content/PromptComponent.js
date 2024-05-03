@@ -4,10 +4,17 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { FaArrowRight } from 'react-icons/fa6';
 import { IoDice } from 'react-icons/io5';
-import ConfirmationModal from './modules/ConfirmationModal';
+import ConfirmationModal from '../modules/ConfirmationModal';
 import { useSocket } from '@/app/contexts/socketContext';
 
-const PromptComponent = ({ players, currentRound, gameData, setGameData, lobbyId }) => {
+const PromptComponent = ({
+	players,
+	gameData,
+	setGameData,
+	lobbyId,
+	gamePhaseTimer,
+	setTimeLeftAtSubmit,
+}) => {
 	const [keyword, setKeyword] = useState('');
 	const [showConfirmKeyword, setShowConfirmKeyword] = useState(false);
 	const [submitted, setSubmitted] = useState(false);
@@ -45,6 +52,8 @@ const PromptComponent = ({ players, currentRound, gameData, setGameData, lobbyId
 				key: 'prompt',
 				data: { prompt: keyword },
 			});
+			setTimeLeftAtSubmit(gamePhaseTimer);
+			console.log('TIME LEFT: ' + gamePhaseTimer);
 		} else {
 			console.error('Socket not available or not connected.');
 		}
@@ -55,7 +64,9 @@ const PromptComponent = ({ players, currentRound, gameData, setGameData, lobbyId
 			{showConfirmKeyword && (
 				<ConfirmationModal
 					onConfirm={() => {
-						handleSubmit();
+						if (keyword.length > 0) {
+							handleSubmit();
+						}
 					}}
 					onCancel={() => {
 						setShowConfirmKeyword(false);
@@ -80,7 +91,7 @@ const PromptComponent = ({ players, currentRound, gameData, setGameData, lobbyId
 							maxLength={30}
 							onChange={(e) => setKeyword(e.target.value)}
 							onKeyDown={(e) => {
-								if (e.key === 'Enter') {
+								if (e.key === 'Enter' && keyword.length > 0) {
 									setShowConfirmKeyword(true);
 								}
 							}}
@@ -125,7 +136,7 @@ const PromptComponent = ({ players, currentRound, gameData, setGameData, lobbyId
 
 						<div
 							onClick={() => {
-								if (keyword !== '') {
+								if (keyword.length > 0) {
 									setShowConfirmKeyword(true);
 								}
 							}}

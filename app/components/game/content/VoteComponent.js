@@ -1,11 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { FaArrowRight } from 'react-icons/fa6';
-import VideoEmbed from './modules/VideoEmbed';
+import VideoEmbed from '../modules/VideoEmbed';
 import { useSocket } from '@/app/contexts/socketContext';
 
 const VotingComponent = ({
 	players,
-	currentRound,
 	gameData,
 	phaseData,
 	roundData,
@@ -13,11 +12,15 @@ const VotingComponent = ({
 	lobbyId,
 	currentVideoDisplayed,
 	setCurrentVideoDisplayed,
-	currentVoteUser,
+	currentUserDisplayed,
+	roundIndex,
+	phaseIndex,
+	gamePhaseTimer,
+	setTimeLeftAtSubmit,
 }) => {
 	const [totalVotes, setTotalVotes] = useState(5); // Total votes allowed for clients
 	const [votesUsed, setVotesUsed] = useState(0); // Current client's number of votes used
-	const [linkedCaptionPhaseData, setLinkedCaptionPhaseData] = useState(null);
+	const [LinkedCaptionPhaseData, setLinkedCaptionPhaseData] = useState(null);
 	const [caption, setCaption] = useState('');
 	const [vote, setVote] = useState({});
 	const voteRef = useRef(vote); // Create a ref to track the latest vote state
@@ -38,11 +41,11 @@ const VotingComponent = ({
 	}, [vote]);
 
 	const addVote = () => {
-		if (votesUsed < totalVotes && currentVoteUser) {
+		if (votesUsed < totalVotes && currentUserDisplayed) {
 			setVote((prevVotes) => {
 				const updatedVotes = {
 					...prevVotes,
-					[currentVoteUser]: (prevVotes[currentVoteUser] || 0) + 1,
+					[currentUserDisplayed]: (prevVotes[currentUserDisplayed] || 0) + 1,
 				};
 				voteRef.current = updatedVotes;
 				return updatedVotes;
@@ -52,11 +55,11 @@ const VotingComponent = ({
 	};
 
 	const subtractVote = () => {
-		if (votesUsed > 0 && currentVoteUser && vote[currentVoteUser] > 0) {
+		if (votesUsed > 0 && currentUserDisplayed && vote[currentUserDisplayed] > 0) {
 			setVote((prevVotes) => {
 				const updatedVotes = {
 					...prevVotes,
-					[currentVoteUser]: prevVotes[currentVoteUser] - 1,
+					[currentUserDisplayed]: prevVotes[currentUserDisplayed] - 1,
 				};
 				voteRef.current = updatedVotes;
 				return updatedVotes;
@@ -77,24 +80,28 @@ const VotingComponent = ({
 			key: 'vote',
 			data: { vote: currentVotes },
 		});
+		setTimeLeftAtSubmit(gamePhaseTimer);
+		console.log('TIME LEFT: ' + gamePhaseTimer);
 	};
 
 	useEffect(() => {
-		const videoAssignment = gameData.rounds[currentRound - 1].videoAssignments.find(
-			(assignment) => assignment.userToken === currentVoteUser
-		);
-		if (videoAssignment) {
-			setCurrentVideoDisplayed(videoAssignment.video);
-		}
+		if (roundData) {
+			const videoAssignment = roundData.videoAssignments.find(
+				(assignment) => assignment.userToken === currentUserDisplayed
+			);
+			if (videoAssignment) {
+				setCurrentVideoDisplayed(videoAssignment.video);
+			}
 
-		const captionPhaseData = gameData.rounds[currentRound - 1].phases.find(
-			(phase) => phase.key === 'caption'
-		);
-		const playerData = captionPhaseData.data.find((data) => data.userToken === currentVoteUser);
-		if (playerData) {
-			setCaption(playerData.results.caption);
+			const captionPhaseData = roundData.phases.find((phase) => phase.key === 'caption');
+			const playerData = captionPhaseData.userData.find(
+				(data) => data.userToken === currentUserDisplayed
+			);
+			if (playerData) {
+				setCaption(playerData.results.caption);
+			}
 		}
-	}, [currentRound, gameData, currentVoteUser]);
+	}, [roundIndex, roundData, currentUserDisplayed]);
 
 	return (
 		<>
@@ -112,12 +119,14 @@ const VotingComponent = ({
 					</h1>
 					<h1
 						data-text={`${
-							players.find((player) => player.userToken === currentVoteUser)?.name.toUpperCase() ||
-							'NONE SELECTED'
+							players
+								.find((player) => player.userToken === currentUserDisplayed)
+								?.name.toUpperCase() || 'NONE SELECTED'
 						}'s CAPTION `}
 						className={`text-xl md:text-2xl lg:text-3xl font-manga text-yellow-300 text-nowrap `}>
-						{players.find((player) => player.userToken === currentVoteUser)?.name.toUpperCase() ||
-							'NONE SELECTED'}
+						{players
+							.find((player) => player.userToken === currentUserDisplayed)
+							?.name.toUpperCase() || 'NONE SELECTED'}
 						's CAPTION
 					</h1>
 				</div>
@@ -138,7 +147,7 @@ const VotingComponent = ({
 						{/* <div className={`flex flex-col w-full justify-center items-center py-2`}>
 							<h1
 								className={`text-xl md:text-2xl xxl:text-3xl font-manga text-white text-nowrap px-1 w-fit`}>
-								x{vote[currentVoteUser] || 0} votes{' '}
+								x{vote[currentUserDisplayed] || 0} votes{' '}
 							</h1>
 						</div> */}
 						<div

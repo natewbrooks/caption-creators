@@ -10,8 +10,8 @@ const GamePlayersScrollbar = ({
 	gameData,
 	currentRound,
 	currentPhase,
-	currentVoteUser,
-	setCurrentVoteUser,
+	currentUserDisplayed,
+	setCurrentUserDisplayed,
 	handleComponentDisplay,
 	usersFinished,
 	phaseData,
@@ -25,7 +25,7 @@ const GamePlayersScrollbar = ({
 	const [touchMoveX, setTouchMoveX] = useState(0); // Used to improve scroll functionality in GamePlayersScrollbar
 
 	const updateIndicatorPosition = () => {
-		const activeElement = document.getElementById(`player-${currentVoteUser}`);
+		const activeElement = document.getElementById(`player-${currentUserDisplayed}`);
 
 		if (activeElement && scrollContainerRef.current) {
 			const containerRect = scrollContainerRef.current.getBoundingClientRect();
@@ -41,18 +41,18 @@ const GamePlayersScrollbar = ({
 		window.addEventListener('resize', handleResize);
 
 		return () => window.removeEventListener('resize', handleResize);
-	}, [currentVoteUser, currentPhase === 'vote', players]);
+	}, [currentUserDisplayed, currentPhase === 'vote', players]);
 
 	useEffect(() => {
-		if (currentPhase === 'vote' && currentVoteUser) {
+		if (currentPhase !== 'preview' && currentPhase === 'vote' && currentUserDisplayed) {
 			setAnimateArrow(true);
 			scrollToActiveUser();
 		}
-	}, [currentVoteUser, currentPhase === 'vote']);
+	}, [currentUserDisplayed, currentPhase === 'vote']);
 
 	// Make the scrollTo function center the element
 	const scrollToActiveUser = () => {
-		const activeElement = document.getElementById(`player-${currentVoteUser}`);
+		const activeElement = document.getElementById(`player-${currentUserDisplayed}`);
 		if (activeElement && scrollContainerRef.current) {
 			scrollContainerRef.current.scrollTo({
 				left:
@@ -136,8 +136,8 @@ const GamePlayersScrollbar = ({
 				{players.map((player, index) => {
 					const hasFinished = usersFinished.find((userToken) => userToken === player.userToken);
 					const votesFor =
-						currentPhase === 'vote'
-							? phaseData.find((user) => user.userToken === userToken)?.results.vote?.[
+						currentPhase === 'vote' && phaseData?.userData
+							? phaseData.userData.find((user) => user.userToken === userToken)?.results?.vote?.[
 									player.userToken
 							  ] ?? 0
 							: 0;
@@ -151,7 +151,7 @@ const GamePlayersScrollbar = ({
 							} transition-all duration-300 ease-in-out transform inline-flex flex-none flex-col justify-center items-center pt-2 px-6 md:px-8`}
 							onClick={() => {
 								if (currentPhase === 'vote') {
-									setCurrentVoteUser(player.userToken);
+									setCurrentUserDisplayed(player.userToken);
 									updateIndicatorPosition();
 								}
 							}}>
@@ -161,7 +161,7 @@ const GamePlayersScrollbar = ({
 										<Image
 											src={player.avatar}
 											className={`border-2 rounded-full transition-all ease-in-out delay-100 duration-500 ${
-												currentVoteUser === player.userToken && currentPhase === 'vote'
+												currentUserDisplayed === player.userToken && currentPhase === 'vote'
 													? 'border-yellow-300'
 													: 'border-dark'
 											} ${
@@ -189,7 +189,7 @@ const GamePlayersScrollbar = ({
 												? 'text-darkAccent border-darkAccent'
 												: 'text-dark border-dark'
 										} ${
-											currentVoteUser === player.userToken && currentPhase === 'vote'
+											currentUserDisplayed === player.userToken && currentPhase === 'vote'
 												? 'border-yellow-300'
 												: ' '
 										}

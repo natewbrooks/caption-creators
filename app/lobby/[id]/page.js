@@ -415,7 +415,7 @@ export default function LobbyPage() {
 												id='startTimer'
 												className={` translate-y-4 text-9xl font-manga z-20 ${
 													gameStartCountdown >= 4
-														? 'text-green-300'
+														? 'text-white'
 														: gameStartCountdown <= 3 && gameStartCountdown >= 2
 														? 'text-yellow-300'
 														: 'text-red-300'

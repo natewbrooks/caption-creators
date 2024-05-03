@@ -9,6 +9,7 @@ class Round {
 		this.endRound = endRound;
 		this.roundIndex = roundIndex;
 		this.updatePhaseIndex = updatePhaseIndex;
+		this.multiplier = roundConfig.multiplier;
 
 		this.phases = [];
 		this.currentPhaseIndex = 0;
@@ -25,6 +26,7 @@ class Round {
 
 	start() {
 		this.notifyPlayers('round_start', {
+			multiplier: this.multiplier,
 			roundIndex: this.roundIndex,
 			message: 'ROUND ' + (this.roundIndex + 1) + ' STARTED',
 		});

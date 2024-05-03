@@ -40,6 +40,7 @@ app.prepare().then(() => {
 		socket.on('avatar_selected', (data) => avatarSelected(socket, data, io));
 		socket.on('fetch_lobby_details', (data) => fetchLobbyDetails(socket, data, io));
 		socket.on('leave_lobby', () => leaveLobby(socket, io));
+		socket.on('leave_game', () => leaveGame(socket, io));
 
 		socket.on('reload', (userToken) => {
 			// On reload add the player to disconnect queue to make them eligible for disconnect
@@ -54,6 +55,7 @@ app.prepare().then(() => {
 				console.log('Start timeout for session');
 				// Emit to all clients in the lobby that the disconnect timer has started for this user
 				let lobbyId = findLobbyId(disconnectingUser);
+				let game = activeGames[findLobbyId(disconnectingUser)];
 				if (lobbyId) {
 					io.to(lobbyId).emit('disconnectTimerStarted', {
 						userToken: disconnectingUser,
@@ -69,6 +71,9 @@ app.prepare().then(() => {
 						leaveLobby(socket, io);
 						if (lobbyId) {
 							io.to(lobbyId).emit('disconnectTimerEnded', disconnectingUser);
+						}
+						if (game) {
+							leaveGame(socket, io);
 						}
 					}
 				}, 10000); // Adjust the timeout duration as needed
@@ -285,12 +290,19 @@ function leaveLobby(socket, io) {
 		const index = lobby.members.findIndex((member) => member.id === socket.id);
 		if (index !== -1) {
 			const disconnectedMember = lobby.members.splice(index, 1)[0]; // Remove the player from the lobby.
+			const gameManager = activeGames[lobbyId];
+			gameManager.removePlayer(disconnectedMember.userToken);
 			console.log(
 				(disconnectedMember.isHost ? 'Host' : 'User') + ' disconnected from lobby: ' + lobbyId
 			);
 
 			if (lobby.members.length === 0) {
+				console.log(`Lobby ${lobbyId} is now empty and will be deleted.`);
 				delete lobbies[lobbyId]; // Delete the lobby if it's empty.
+				if (activeGames[lobbyId]) {
+					console.log(`Game ${lobbyId} is deleted.`);
+					delete activeGames[lobbyId];
+				}
 			} else {
 				// Check if the disconnected player was the host
 				if (disconnectedMember.isHost) {
@@ -303,12 +315,6 @@ function leaveLobby(socket, io) {
 			}
 
 			updateLobby(lobbyId, io); // Update all clients with the new lobby details.
-
-			// If there are no members left in the lobby, delete the lobby
-			if (lobby.members.length === 0) {
-				console.log(`Lobby ${lobbyId} is now empty and will be deleted.`);
-				delete lobbies[lobbyId];
-			}
 		}
 	});
 }

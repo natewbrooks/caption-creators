@@ -4,19 +4,21 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { FaArrowRight } from 'react-icons/fa6';
 import AutoSizer from 'react-virtualized-auto-sizer';
-import ConfirmationModal from './modules/ConfirmationModal';
-import VideoEmbed from './modules/VideoEmbed';
+import ConfirmationModal from '../modules/ConfirmationModal';
+import VideoEmbed from '../modules/VideoEmbed';
 import { useSocket } from '@/app/contexts/socketContext';
 
 const CaptionComponent = ({
 	players,
-	currentRound,
+	roundIndex,
+	phaseIndex,
 	captionedThisRound,
 	setCaptionedThisRound,
 	gameData,
 	roundData,
 	phaseData,
-	setGameData,
+	gamePhaseTimer,
+	setTimeLeftAtSubmit,
 	lobbyId,
 	currentVideoDisplayed,
 	setCurrentVideoDisplayed,
@@ -28,15 +30,21 @@ const CaptionComponent = ({
 	const { socket, userToken } = useSocket();
 
 	useEffect(() => {
-		if (gameData.rounds && gameData.rounds[currentRound - 1]) {
-			const videoAssignment = gameData.rounds[currentRound - 1].videoAssignments.find(
+		if (gameData.rounds && gameData.rounds[roundIndex - 1]) {
+			const videoAssignment = gameData.rounds[roundIndex - 1].videoAssignments.find(
 				(assignment) => assignment.userToken === userToken // corrected to use userToken
 			);
 			if (videoAssignment && videoAssignment.video) {
 				setCurrentVideoDisplayed(videoAssignment.video);
 			}
 		}
-	}, [currentRound, gameData, userToken]);
+
+		socket.on('phase_end', ({}) => {});
+
+		return () => {
+			socket.off('phase_end');
+		};
+	}, [roundIndex, gameData, userToken]);
 
 	const handleCaptionSubmit = () => {
 		if (socket) {
@@ -49,6 +57,8 @@ const CaptionComponent = ({
 			});
 			setConfirmedCaption(true);
 			setShowConfirmCaption(false);
+			setTimeLeftAtSubmit(gamePhaseTimer);
+			console.log('TIME LEFT: ' + gamePhaseTimer);
 		} else {
 			console.error('Socket not available');
 		}
@@ -58,7 +68,11 @@ const CaptionComponent = ({
 		<>
 			{showConfirmCaption && (
 				<ConfirmationModal
-					onConfirm={() => handleCaptionSubmit()}
+					onConfirm={() => {
+						if (currentCaption.length > 0) {
+							handleCaptionSubmit();
+						}
+					}}
 					onCancel={() => {
 						setShowConfirmCaption(false);
 					}}
@@ -87,7 +101,7 @@ const CaptionComponent = ({
 							maxLength={64}
 							onChange={(e) => setCurrentCaption(e.target.value)}
 							onKeyDown={(e) => {
-								if (e.key === 'Enter') {
+								if (e.key === 'Enter' && currentCaption.length > 0) {
 									setShowConfirmCaption(true);
 								}
 							}}
@@ -96,7 +110,7 @@ const CaptionComponent = ({
 						/>
 						<div
 							onClick={() => {
-								if (currentCaption !== '') {
+								if (currentCaption.length > 0) {
 									setShowConfirmCaption(true);
 								}
 							}}

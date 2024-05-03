@@ -4,6 +4,7 @@
 			"name": "Standard",
 			"rounds": [
 				{
+					"multiplier": 1,
 					"phases": [
 						{
 							"name": "Prompt Phase",
@@ -16,9 +17,19 @@
 							}
 						},
 						{
+							"name": "Caption Phase Transition",
+							"duration": 4,
+							"key": "transition"
+						},
+						{
 							"name": "Caption Phase",
 							"duration": 10,
 							"key": "caption"
+						},
+						{
+							"name": "Voting Phase Transition",
+							"duration": 4,
+							"key": "transition"
 						},
 						{
 							"name": "Voting Phase",
@@ -27,11 +38,22 @@
 							"options": {
 								"captionLink": "Caption Phase"
 							}
+						},
+						{
+							"name": "Round 1 Outro",
+							"duration": 10,
+							"key": "outro"
 						}
 					]
 				},
 				{
+					"multiplier": 1.5,
 					"phases": [
+						{
+							"name": "Round 2 Intro",
+							"duration": 5,
+							"key": "intro"
+						},
 						{
 							"name": "Prompt Phase",
 							"duration": 10,
@@ -43,9 +65,19 @@
 							}
 						},
 						{
+							"name": "Caption Phase Transition",
+							"duration": 4,
+							"key": "transition"
+						},
+						{
 							"name": "Caption Phase",
 							"duration": 15,
 							"key": "caption"
+						},
+						{
+							"name": "Voting Phase Transition",
+							"duration": 4,
+							"key": "transition"
 						},
 						{
 							"name": "Voting Phase",
@@ -54,11 +86,22 @@
 							"options": {
 								"captionLink": "Caption Phase"
 							}
+						},
+						{
+							"name": "Round 2 Outro",
+							"duration": 10,
+							"key": "outro"
 						}
 					]
 				},
 				{
+					"multiplier": 2,
 					"phases": [
+						{
+							"name": "Round 3 Intro",
+							"duration": 10,
+							"key": "intro"
+						},
 						{
 							"name": "Prompt Phase",
 							"duration": 10,
@@ -70,9 +113,19 @@
 							}
 						},
 						{
+							"name": "Caption Phase Transition",
+							"duration": 4,
+							"key": "transition"
+						},
+						{
 							"name": "Caption Phase",
 							"duration": 15,
 							"key": "caption"
+						},
+						{
+							"name": "Voting Phase Transition",
+							"duration": 4,
+							"key": "transition"
 						},
 						{
 							"name": "Voting Phase",
@@ -81,6 +134,11 @@
 							"options": {
 								"captionLink": "Caption Phase"
 							}
+						},
+						{
+							"name": "Round 3 Outro",
+							"duration": 10,
+							"key": "outro"
 						}
 					]
 				}
