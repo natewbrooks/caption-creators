@@ -2,7 +2,7 @@ const gameModeConfig = require('./gameModes.json');
 const Game = require('./sequence/game');
 
 class GameManager {
-	constructor(lobbyId, io, players, gameMode = 'Standard') {
+	constructor({ lobbyId, io, players, hostUserToken, gameMode = 'Standard' }) {
 		this.lobbyId = lobbyId;
 		this.io = io;
 		this.players = players;
@@ -20,8 +20,10 @@ class GameManager {
 		this.gameData = {
 			gameMode: gameMode,
 			lobbyId: lobbyId,
+			hostUserToken: hostUserToken,
 			timeElapsed: 0,
 			winner: null,
+			finalScores: [],
 			rounds: [],
 		};
 
@@ -58,12 +60,14 @@ class GameManager {
 
 			const roundData = {
 				round: roundIndex + 1,
+				multiplier: roundConfig.multiplier,
 				scores: {},
 				videoAssignments: this.players.map((player) => ({
 					userToken: player.userToken,
 					prompterUserToken: null,
 					prompt: '',
 					video: null,
+					videoDuration: 0,
 				})),
 				phases: phaseData,
 			};
@@ -89,8 +93,8 @@ class GameManager {
 
 	startNewGame() {
 		this.initGameData();
-		this.notifyPlayers('navigate', { path: `/game/${this.lobbyId}` });
 		this.notifyPlayers('game_start', {
+			hostUserToken: this.gameData.hostUserToken,
 			gameData: this.gameData,
 			roundData: this.roundData,
 			phaseData: this.phaseData,
@@ -102,7 +106,8 @@ class GameManager {
 			this.players,
 			this.notifyPlayers.bind(this),
 			this.updateCurrentRoundIndex.bind(this),
-			this.updateCurrentPhaseIndex.bind(this)
+			this.updateCurrentPhaseIndex.bind(this),
+			this.calculateFinalScores.bind(this)
 		);
 		this.game.start();
 	}
@@ -183,15 +188,39 @@ class GameManager {
 				roundData.scores[userToken].pityPartyBonus = { received: true, ptsReceived: 10 };
 				roundData.scores[userToken].pointsEarned += 10;
 			}
-		});
 
-		// Apply multiplier to total points earned
-		roundData.scores[userToken].pointsEarned *= multiplier;
+			// Apply multiplier to total points earned
+			roundData.scores[userToken].pointsEarned *= multiplier;
+		});
 
 		console.log('GAME ROUND SCORE DATA: ' + JSON.stringify(roundData.scores));
 		this.notifyPlayers('score_data_update', {
 			roundScoreData: roundData.scores,
 		});
+	}
+
+	calculateFinalScores() {
+		// Initialize the final scores array
+		const finalScores = this.players.map((player) => ({
+			userToken: player.userToken,
+			totalPoints: 0,
+		}));
+
+		// Iterate through all rounds to aggregate each player's points
+		this.gameData.rounds.forEach((round) => {
+			Object.keys(round.scores).forEach((userToken) => {
+				const playerScore = finalScores.find((score) => score.userToken === userToken);
+				if (playerScore) {
+					playerScore.totalPoints += round.scores[userToken].pointsEarned;
+				}
+			});
+		});
+
+		// Assign the aggregated scores to the gameData.finalScores array
+		this.gameData.finalScores = finalScores;
+
+		console.log('FINAL SCORES:', this.gameData.finalScores);
+		this.updateRoundAndPhaseData();
 	}
 
 	handlePlayerAction(key, userToken, isFinished, data) {
@@ -243,15 +272,19 @@ class GameManager {
 					// Randomly pick one unassigned player to assign a video
 					let randomIndex = Math.floor(Math.random() * unassignedPlayers.length);
 					let selectedPlayer = unassignedPlayers[randomIndex];
-					selectedPlayer.video = generatedVideo;
 					selectedPlayer.prompterUserToken = userToken;
 					selectedPlayer.prompt = data.prompt;
+					selectedPlayer.video = generatedVideo;
+					selectedPlayer.videoDuration = 20; // ARBITRARY VALUE FOR NOW
 				}
 				console.log('VIDEO ASSIGNMENTS: ' + JSON.stringify(this.roundData.videoAssignments));
 				break;
 			case 'caption':
 				console.log(userToken + ' USER CAPTIONED: ' + data.caption);
 				playerData.results.caption = data.caption;
+				break;
+			case 'preview':
+				console.log(userToken + ' USER FINISHED PREVIEWING VIDEOS');
 				break;
 			case 'vote':
 				console.log(userToken + ' USER VOTED: ' + JSON.stringify(data.vote));
@@ -269,33 +302,16 @@ class GameManager {
 		console.log('currentPhaseData: ' + JSON.stringify(this.phaseData));
 	}
 
-	removePlayer(userToken) {
-		// Find the index of the player to remove based on userToken
-		const playerIndex = this.players.findIndex((player) => player.userToken === userToken);
-
-		// If the player is found, remove them from the array
-		if (playerIndex !== -1) {
-			this.players.splice(playerIndex, 1);
-			console.log(`Removed player with userToken ${userToken} from game ${this.lobbyId}`);
-		} else {
-			console.error(`Player with userToken ${userToken} not found`);
-		}
-
-		this.notifyPlayers('update_lobby', {
-			players: this.players,
-		});
-	}
-
 	fetchYouTubeVideo(keyword) {
-		if (keyword === '') {
-			keyword = this.getAIKeyword();
-		}
+		// if (keyword === '') {
+		// 	keyword = this.getAIKeyword();
+		// }
 		const videos = [
-			'https://www.youtube.com/embed/x6iwZSURP44',
-			'https://www.youtube.com/embed/NsMKvVdEPkw',
-			'https://www.youtube.com/embed/dFg8Nu2X5Mo',
-			'https://www.youtube.com/embed/0tyNraIglgc',
-			'https://www.youtube.com/embed/9L7Y681bKz8',
+			'https://www.youtube.com/embed/x6iwZSURP44?&autoplay=1',
+			'https://www.youtube.com/embed/NsMKvVdEPkw?&autoplay=1',
+			'https://www.youtube.com/embed/dFg8Nu2X5Mo?&autoplay=1',
+			'https://www.youtube.com/embed/0tyNraIglgc?&autoplay=1',
+			'https://www.youtube.com/embed/9L7Y681bKz8?&autoplay=1',
 		];
 
 		return videos[Math.floor(Math.random() * videos.length)];

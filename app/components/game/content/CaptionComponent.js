@@ -22,6 +22,7 @@ const CaptionComponent = ({
 	lobbyId,
 	currentVideoDisplayed,
 	setCurrentVideoDisplayed,
+	currentUserDisplayed,
 }) => {
 	const [currentCaption, setCurrentCaption] = useState('');
 	const [showConfirmCaption, setShowConfirmCaption] = useState(false);
@@ -30,21 +31,27 @@ const CaptionComponent = ({
 	const { socket, userToken } = useSocket();
 
 	useEffect(() => {
-		if (gameData.rounds && gameData.rounds[roundIndex - 1]) {
-			const videoAssignment = gameData.rounds[roundIndex - 1].videoAssignments.find(
-				(assignment) => assignment.userToken === userToken // corrected to use userToken
+		console.log('ROUND DATA CAPTION: ' + JSON.stringify(roundData));
+
+		if (roundData) {
+			const videoAssignment = roundData.videoAssignments.find(
+				(assignment) => assignment.userToken === userToken
 			);
-			if (videoAssignment && videoAssignment.video) {
+			if (videoAssignment) {
 				setCurrentVideoDisplayed(videoAssignment.video);
 			}
+
+			console.log('VIDEO ASSIGNMENT CAPTION: ' + videoAssignment);
+
+			// const captionPhaseData = roundData.phases.find((phase) => phase.key === 'caption');
+			// const playerData = captionPhaseData.userData.find(
+			// 	(data) => data.userToken === currentUserDisplayed
+			// );
+			// if (playerData) {
+			// 	setCaption(playerData.results.caption);
+			// }
 		}
-
-		socket.on('phase_end', ({}) => {});
-
-		return () => {
-			socket.off('phase_end');
-		};
-	}, [roundIndex, gameData, userToken]);
+	}, [roundIndex, roundData, currentUserDisplayed]);
 
 	const handleCaptionSubmit = () => {
 		if (socket) {

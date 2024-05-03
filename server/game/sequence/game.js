@@ -7,7 +7,8 @@ class Game {
 		players,
 		notifyPlayers,
 		updateRoundIndex,
-		updatePhaseIndex
+		updatePhaseIndex,
+		calculateFinalScores
 	) {
 		this.gameData = gameData;
 		this.gameModeConfig = gameModeConfig;
@@ -20,6 +21,7 @@ class Game {
 		this.rounds = [];
 		this.updateRoundIndex = updateRoundIndex;
 		this.updatePhaseIndex = updatePhaseIndex;
+		this.calculateFinalScores = calculateFinalScores;
 
 		this.currentRoundIndex = 0;
 	}
@@ -80,14 +82,11 @@ class Game {
 	end() {
 		console.log('GAME ENDED FOR LOBBY ' + this.gameData.lobbyId);
 		console.log('FINAL GAME DATA ' + JSON.stringify(this.gameData));
+		this.calculateFinalScores();
 		this.stopGameTimer();
 		this.notifyPlayers('game_end', {
 			message: 'GAME FOR LOBBY ' + this.gameData.lobbyId + ' ENDED',
 		});
-	}
-
-	calculateScores() {
-		return {};
 	}
 }
 

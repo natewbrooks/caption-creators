@@ -50,6 +50,7 @@ class Phase {
 
 	stopPhase() {
 		this.stopPhaseTimer();
+
 		this.endPhase(this.key);
 	}
 }

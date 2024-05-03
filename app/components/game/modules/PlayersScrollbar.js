@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from 'react';
 import { TiArrowSortedDown } from 'react-icons/ti';
 import { useSocket } from '@/app/contexts/socketContext';
 
-const GamePlayersScrollbar = ({
+const PlayersScrollbar = ({
 	players,
 	gameData,
 	currentRound,
@@ -16,13 +16,13 @@ const GamePlayersScrollbar = ({
 	usersFinished,
 	phaseData,
 }) => {
-	const scrollContainerRef = useRef(null); // Used in the GamePlayersScrollbar at the bottom
+	const scrollContainerRef = useRef(null); // Used in the PlayersScrollbar at the bottom
 	const [activeElementPosition, setActiveElementPosition] = useState(0);
 	const [animateArrow, setAnimateArrow] = useState(false);
 	const { userToken } = useSocket();
 
-	const [touchStartX, setTouchStartX] = useState(0); // Used to improve scroll functionality in GamePlayersScrollbar
-	const [touchMoveX, setTouchMoveX] = useState(0); // Used to improve scroll functionality in GamePlayersScrollbar
+	const [touchStartX, setTouchStartX] = useState(0); // Used to improve scroll functionality in PlayersScrollbar
+	const [touchMoveX, setTouchMoveX] = useState(0); // Used to improve scroll functionality in PlayersScrollbar
 
 	const updateIndicatorPosition = () => {
 		const activeElement = document.getElementById(`player-${currentUserDisplayed}`);
@@ -41,14 +41,14 @@ const GamePlayersScrollbar = ({
 		window.addEventListener('resize', handleResize);
 
 		return () => window.removeEventListener('resize', handleResize);
-	}, [currentUserDisplayed, currentPhase === 'vote', players]);
+	}, [currentUserDisplayed, players]);
 
 	useEffect(() => {
-		if (currentPhase !== 'preview' && currentPhase === 'vote' && currentUserDisplayed) {
+		if ((currentPhase === 'preview' || currentPhase === 'vote') && currentUserDisplayed) {
 			setAnimateArrow(true);
 			scrollToActiveUser();
 		}
-	}, [currentUserDisplayed, currentPhase === 'vote']);
+	}, [currentUserDisplayed, currentPhase]);
 
 	// Make the scrollTo function center the element
 	const scrollToActiveUser = () => {
@@ -111,7 +111,7 @@ const GamePlayersScrollbar = ({
 	return (
 		<div className={`relative flex flex-col justify-center items-center h-fit w-full `}>
 			{/* Arrow pointing to the active element */}
-			{currentPhase === 'vote' && (
+			{(currentPhase === 'vote' || currentPhase === 'preview') && (
 				<div
 					className={`absolute -top-2 z-20 ${
 						animateArrow ? 'transition-all duration-[400ms] ease-in-out transform' : ''
@@ -146,9 +146,11 @@ const GamePlayersScrollbar = ({
 						<div
 							key={player.userToken}
 							id={`player-${player.userToken}`}
-							className={`${
-								index % 2 === 0 ? 'bg-dark' : 'bg-darkAccent'
-							} transition-all duration-300 ease-in-out transform inline-flex flex-none flex-col justify-center items-center pt-2 px-6 md:px-8`}
+							className={`${index % 2 === 0 ? 'bg-dark' : 'bg-darkAccent'} ${
+								currentUserDisplayed === player.userToken
+									? 'border-yellow-300/40 border-opacity-20 rounded-md border-2'
+									: ''
+							} transition-colors duration-300 ease-in-out transform inline-flex flex-none flex-col justify-center items-center pt-2 px-6 md:px-8`}
 							onClick={() => {
 								if (currentPhase === 'vote') {
 									setCurrentUserDisplayed(player.userToken);
@@ -161,7 +163,8 @@ const GamePlayersScrollbar = ({
 										<Image
 											src={player.avatar}
 											className={`border-2 rounded-full transition-all ease-in-out delay-100 duration-500 ${
-												currentUserDisplayed === player.userToken && currentPhase === 'vote'
+												currentUserDisplayed === player.userToken &&
+												(currentPhase === 'vote' || currentPhase === 'preview')
 													? 'border-yellow-300'
 													: 'border-dark'
 											} ${
@@ -182,19 +185,32 @@ const GamePlayersScrollbar = ({
 										)}
 									</div>
 								) : (
-									<FaUserCircle
-										size={48}
-										className={`${
-											index % 2 === 0
-												? 'text-darkAccent border-darkAccent'
-												: 'text-dark border-dark'
-										} ${
-											currentUserDisplayed === player.userToken && currentPhase === 'vote'
-												? 'border-yellow-300'
-												: ' '
-										}
+									<div className={`relative`}>
+										<FaUserCircle
+											size={48}
+											className={`${
+												index % 2 === 0
+													? 'text-darkAccent border-darkAccent'
+													: 'text-dark border-dark'
+											}  ${
+												currentUserDisplayed === player.userToken &&
+												(currentPhase === 'vote' || currentPhase === 'preview')
+													? 'border-yellow-300'
+													: ' '
+											} ${
+												hasFinished
+													? 'opacity-40 outline-green-300 border-green-300'
+													: 'opacity-100'
+											}
                         border-2 rounded-full transition-all ease-in-out delay-100 duration-500`}
-									/>
+										/>
+										{hasFinished && (
+											<FaCheck
+												size={18}
+												className={`absolute top-4 right-4 text-green-300`}
+											/>
+										)}
+									</div>
 								)}
 								<h1 className='font-manga text-xl md:text-2xl'>{player.name}</h1>
 								{currentPhase === 'vote' && (
@@ -227,4 +243,4 @@ const GamePlayersScrollbar = ({
 	);
 };
 
-export default GamePlayersScrollbar;
+export default PlayersScrollbar;

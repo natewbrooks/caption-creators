@@ -27,6 +27,11 @@
 							"key": "caption"
 						},
 						{
+							"name": "Preview Phase",
+							"duration": 20,
+							"key": "preview"
+						},
+						{
 							"name": "Voting Phase Transition",
 							"duration": 4,
 							"key": "transition"

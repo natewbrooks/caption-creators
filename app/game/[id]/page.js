@@ -7,11 +7,13 @@ import PromptComponent from '@/app/components/game/content/PromptComponent';
 import BackButton from '@/app/components/BackButton';
 import { FaClock } from 'react-icons/fa6';
 import VotingComponent from '@/app/components/game/content/VoteComponent';
-import GamePlayersScrollbar from '@/app/components/game/modules/GamePlayersScrollbar';
+import PlayersScrollbar from '@/app/components/game/modules/PlayersScrollbar';
 import { useSocket } from '@/app/contexts/socketContext';
 import TransitionComponent from '@/app/components/game/transition/TransitionComponent';
 import IntroComponent from '@/app/components/game/transition/IntroComponent';
 import OutroComponent from '@/app/components/game/transition/OutroComponent';
+import GameResultsComponent from '@/app/components/game/transition/GameResultsComponent';
+import PreviewComponent from '@/app/components/game/content/PreviewComponent';
 
 export default function GamePage() {
 	const { id: lobbyId } = useParams(); // Current Lobby ID!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -39,6 +41,7 @@ export default function GamePage() {
 	const [phaseData, setPhaseData] = useState([]); // Keeps track of current phase data
 	const [roundScoreData, setRoundScoreData] = useState({}); // Keeps track of current round's score data when outro key is detected
 
+	const [gameStartCountdown, setGameStartCountdown] = useState(null);
 	const [gamePhaseTimer, setGamePhaseTimer] = useState(0); // Keeps track of the current phase's
 	const [timeLeftAtSubmit, setTimeLeftAtSubmit] = useState(0);
 	const [currentPhase, setCurrentPhase] = useState('prompt'); // Keeps track of the current phase
@@ -46,6 +49,10 @@ export default function GamePage() {
 	const [roundIndex, setRoundIndex] = useState(0); // Keep track of current round INDEX (reconstructed on client)
 	const [usersFinished, setUsersFinished] = useState([]); // Keeps track of the userTokens that are finished current phase
 	const [roundMultiplier, setRoundMultiplier] = useState(1); // Keeps track of current round multiplier
+	const [gameStarted, setGameStarted] = useState(false);
+	const [gameEnded, setGameEnded] = useState(false);
+	const [hostUserToken, setHostUserToken] = useState('');
+	const [usersLoadedGamePage, setUsersLoadedGamePage] = useState([]);
 
 	const [currentUserDisplayed, setCurrentUserDisplayed] = useState(null); // The userToken of the player the client is currently looking at in the voting component
 	const [currentVideoDisplayed, setCurrentVideoDisplayed] = useState(null);
@@ -153,20 +160,52 @@ export default function GamePage() {
 	// }
 
 	useEffect(() => {
+		// If haven't already been registered as game page loaded by server
+		if (!usersLoadedGamePage.includes(userToken)) {
+			console.log('GAME PAGE LOADED');
+			socket.emit('game_page_loaded', {
+				lobbyId: lobbyId,
+				userToken: userToken,
+			});
+		}
+	}, []);
+
+	useEffect(() => {
+		// Everything sent by the server directly
 		socket.on('lobby_details', ({ members }) => {
 			setPlayers(members);
 		});
 
+		socket.on('update_lobby', ({ members, hostUserToken }) => {
+			setPlayers(members);
+			setHostUserToken(hostUserToken);
+			console.log('HOST USER TOKEN: ' + hostUserToken);
+		});
+
+		socket.on('users_loaded_game_page', (usersArray) => setUsersLoadedGamePage(usersArray));
+
+		// Shows countdown til start of game
+		socket.on('game_start_countdown', (count) => {
+			setGameStartCountdown(count);
+			setGamePhaseTimer(count);
+			if (count < 1) {
+				setGameStartCountdown(null); // Reset countdown after it finishes
+			}
+		});
+
+		// Everything handled in the GAME, sent by gameManager
 		socket.on('notify_players', ({ event, data }) => {
 			switch (event) {
 				case 'game_start':
-					console.log(JSON.stringify(data.gameData));
+					setHostUserToken(data.hostUserToken);
 					setGameData(data.gameData);
 					setRoundData(data.roundData);
 					setPhaseData(data.phaseData);
 					setRoundIndex(0);
 					setPhaseIndex(0);
 					setUsersFinished([]);
+					setGameEnded(false);
+					setGameStarted(true);
 					break;
 				case 'round_start':
 					setRoundIndex(data.roundIndex);
@@ -184,7 +223,6 @@ export default function GamePage() {
 				case 'player_action_response':
 					console.log('PLAYER ACTION: ' + JSON.stringify(data));
 					setUsersFinished(data.usersFinished);
-
 					console.log('USERS FINISHED: ' + data.usersFinished);
 					break;
 				case 'game_data_update':
@@ -202,9 +240,13 @@ export default function GamePage() {
 					setUsersFinished(data.usersFinished);
 					console.log('USERS FINISHED: ' + data.usersFinished);
 					break;
-				case 'update_lobby':
-					console.log('PLAYERS UPDATED: ' + data.players);
-					setPlayers(data.players);
+				case 'game_end':
+					setCurrentPhase('');
+					setGameEnded(true);
+					setGameStarted(false);
+					setGamePhaseTimer(0);
+					setUsersFinished([]);
+					console.log('GAME ENDED');
 					break;
 			}
 		});
@@ -212,7 +254,10 @@ export default function GamePage() {
 		socket.emit('fetch_lobby_details', { lobbyId });
 
 		return () => {
+			socket.off('users_loaded_game_page');
+			socket.off('game_start_countdown');
 			socket.off('lobby_details');
+			socket.off('update_lobby');
 			socket.off('notify_players');
 		};
 	}, [socket, lobbyId]);
@@ -234,10 +279,17 @@ export default function GamePage() {
 	}, [roundIndex, phaseIndex, gameData]);
 
 	useEffect(() => {
-		if (currentPhase === 'vote' && players.length > 0) {
-			setCurrentUserDisplayed(players[0].userToken);
+		// Triggered on phase update
+		if (players.length > 0 && userToken) {
+			// If the current phase is 'vote' or 'preview', set to the first player's userToken
+			if (currentPhase === 'vote' || currentPhase === 'preview') {
+				setCurrentUserDisplayed(players[0].userToken);
+			} else {
+				// Otherwise, set to the client's own userToken
+				setCurrentUserDisplayed(userToken);
+			}
 		}
-	}, [currentPhase]);
+	}, [currentPhase, players, userToken]);
 
 	return (
 		<div className={`w-full h-full flex flex-col items-center`}>
@@ -249,6 +301,50 @@ export default function GamePage() {
 					showProfileIfNotLoggedIn={false}
 				/>
 			</div>
+			{usersLoadedGamePage.length === players.length || gameStarted ? (
+				gameStartCountdown > 0 && (
+					<div
+						className={`absolute top-0 bg-dark/80 z-50 w-full h-full flex justify-center items-center`}>
+						<div
+							className={`w-fit h-fit flex justify-center p-12 bg-green-300 outline outline-6 outline-dark rounded-full`}>
+							<div className={`flex flex-col items-center justify-center `}>
+								<h1
+									data-text='GAME STARTS IN...'
+									className={`font-sunny text-3xl text-dark`}>
+									GAME STARTS IN...
+								</h1>
+								<h1
+									data-text={`${gameStartCountdown}`}
+									id='startTimer'
+									className={` translate-y-4 text-9xl font-manga z-20 ${
+										gameStartCountdown >= 4
+											? 'text-white'
+											: gameStartCountdown <= 3 && gameStartCountdown >= 2
+											? 'text-yellow-300'
+											: 'text-red-300'
+									}`}>
+									{gameStartCountdown || 'GO!'}
+								</h1>
+							</div>
+						</div>
+					</div>
+				)
+			) : (
+				<div
+					className={`absolute top-0 bg-dark/80 z-50 w-full h-full flex justify-center items-center`}>
+					<div
+						className={`w-fit h-fit flex justify-center p-12 bg-green-300 outline outline-6 outline-dark rounded-full`}>
+						<div className={`flex flex-col items-center justify-center `}>
+							<h1
+								data-text='GAME STARTS IN...'
+								className={`font-sunny text-3xl text-dark`}>
+								WAITING FOR {usersLoadedGamePage?.length || 0} / {players?.length || 0} PLAYERS TO
+								LOAD PAGE
+							</h1>
+						</div>
+					</div>
+				</div>
+			)}
 			<div
 				className={`flex flex-col w-full items-center h-full space-y-2 leading-none text-center`}>
 				<div
@@ -347,13 +443,15 @@ export default function GamePage() {
 				</div>
 
 				<div className={`max-w-[600px] w-full h-full flex flex-col justify-between items-center`}>
-					{players && gameData && (
+					{players && roundData && (
 						<>
 							{currentPhase === 'prompt' && (
 								<PromptComponent
 									lobbyId={lobbyId}
 									players={players}
 									gameData={gameData}
+									roundData={roundData}
+									phaseData={phaseData}
 									setGameData={setGameData}
 									gamePhaseTimer={gamePhaseTimer}
 									setTimeLeftAtSubmit={setTimeLeftAtSubmit}
@@ -366,12 +464,34 @@ export default function GamePage() {
 									roundIndex={roundIndex}
 									phaseIndex={phaseIndex}
 									gameData={gameData}
+									roundData={roundData}
+									phaseData={phaseData}
 									setGameData={setGameData}
 									lobbyId={lobbyId}
 									gamePhaseTimer={gamePhaseTimer}
 									setTimeLeftAtSubmit={setTimeLeftAtSubmit}
 									currentVideoDisplayed={currentVideoDisplayed}
+									currentUserDisplayed={currentUserDisplayed}
 									setCurrentVideoDisplayed={setCurrentVideoDisplayed}
+								/>
+							)}
+
+							{currentPhase === 'preview' && (
+								<PreviewComponent
+									players={players}
+									roundIndex={roundIndex}
+									phaseIndex={phaseIndex}
+									gameData={gameData}
+									roundData={roundData}
+									phaseData={phaseData}
+									setGameData={setGameData}
+									lobbyId={lobbyId}
+									currentUserDisplayed={currentUserDisplayed}
+									currentVideoDisplayed={currentVideoDisplayed}
+									setCurrentUserDisplayed={setCurrentUserDisplayed}
+									setCurrentVideoDisplayed={setCurrentVideoDisplayed}
+									gamePhaseTimer={gamePhaseTimer}
+									setTimeLeftAtSubmit={setTimeLeftAtSubmit}
 								/>
 							)}
 
@@ -380,9 +500,9 @@ export default function GamePage() {
 									players={players}
 									roundIndex={roundIndex}
 									phaseIndex={phaseIndex}
+									gameData={gameData}
 									roundData={roundData}
 									phaseData={phaseData}
-									gameData={gameData}
 									setGameData={setGameData}
 									lobbyId={lobbyId}
 									currentUserDisplayed={currentUserDisplayed}
@@ -440,7 +560,20 @@ export default function GamePage() {
 						</>
 					)}
 
-					<GamePlayersScrollbar
+					{gameEnded && (
+						<GameResultsComponent
+							hostUserToken={hostUserToken}
+							players={players}
+							roundData={roundData}
+							phaseData={phaseData}
+							gameData={gameData}
+							phaseIndex={phaseIndex}
+							roundIndex={roundIndex}
+							lobbyId={lobbyId}
+						/>
+					)}
+
+					<PlayersScrollbar
 						players={players}
 						currentPhase={currentPhase}
 						gameData={gameData}

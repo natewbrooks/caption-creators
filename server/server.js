@@ -117,29 +117,60 @@ app.prepare().then(() => {
 			const lobby = lobbies[lobbyId];
 			if (lobby && lobby.hostUserToken === userToken) {
 				if (!activeGames[lobbyId]) {
+					// Send players to game page
+					io.to(lobbyId).emit('navigate_to_game', {
+						path: `/game/${lobbyId}`,
+					});
+				} else {
+					console.log(`Game for lobby ${lobbyId} is already active.`);
+					io.to(lobbyId).emit('start_game_error', 'Game is already active.');
+				}
+			} else {
+				io.to(lobbyId).emit('start_game_error', 'Only the host can start the game.');
+			}
+		});
+
+		socket.on('game_page_loaded', ({ lobbyId, userToken }) => {
+			const lobby = lobbies[lobbyId];
+			const game = activeGames[lobbyId];
+			// If lobby exists and game doesn't already exist
+			if (lobby && !game) {
+				const user = lobby.members.find((member) => member.userToken === userToken);
+				io.to(lobbyId).emit('users_loaded_game_page', lobby.gamePageLoaded);
+
+				if (!user || lobby.gamePageLoaded.includes(userToken)) {
+					io.to(lobbyId).emit(
+						'game_page_loaded_error',
+						'Provided user is not in lobby: ' + lobbyId
+					);
+					return;
+				}
+
+				lobby.gamePageLoaded.push(userToken);
+				// If all players have loaded the game page
+				if (lobby.gamePageLoaded.length === lobby.members.length) {
 					// Start a countdown before initializing the game
-					let countdown = 5;
+					let countdown = 3;
 					const countdownInterval = setInterval(() => {
 						io.to(lobbyId).emit('game_start_countdown', countdown);
 						countdown--;
 						if (countdown < 0) {
 							clearInterval(countdownInterval);
-							const gameManager = new GameManager(
-								lobbyId,
-								io,
-								lobbies[lobbyId].members,
-								'Standard'
-							);
+							const gameManager = new GameManager({
+								lobbyId: lobbyId,
+								io: io,
+								players: lobby.members,
+								hostUserToken: lobby.hostUserToken,
+								gameMode: 'Standard',
+							});
 							activeGames[lobbyId] = gameManager;
 							gameManager.startNewGame();
 						}
 					}, 1000);
-				} else {
-					console.log(`Game for lobby ${lobbyId} is already active.`);
-					socket.emit('start_game_error', 'Game is already active.');
 				}
 			} else {
-				socket.emit('start_game_error', 'Only the host can start the game.');
+				socket.emit('game_page_loaded_error', 'Lobby does not exist');
+				return;
 			}
 		});
 
@@ -211,6 +242,7 @@ function createLobby(socket, { hostUserToken, playerName, email }, io) {
 
 		lobbies[lobbyId] = {
 			hostUserToken: hostUserToken, // Store the host's user token.
+			gamePageLoaded: [], // Store array of players who have successfully loaded game page
 			members: [
 				{
 					id: socket.id,
@@ -273,12 +305,16 @@ function joinLobby(socket, { lobbyId, playerName, userToken, email }, io) {
 // Sends updated lobby details to all clients in the lobby.
 function updateLobby(lobbyId, io) {
 	const lobby = lobbies[lobbyId];
+	const game = activeGames[lobbyId];
 	if (!lobby) return; // Do nothing if the lobby doesn't exist.
 	io.to(lobbyId).emit('update_lobby', {
 		members: lobby.members,
 		hostUserToken: lobby.hostUserToken,
 		takenAvatars: lobby.takenAvatars,
 	});
+
+	if (!game) return;
+	game.gameData.hostUserToken = lobby.hostUserToken;
 
 	console.log('lobby ' + lobbyId + ' taken: ' + JSON.stringify(lobby.takenAvatars));
 }
@@ -290,8 +326,6 @@ function leaveLobby(socket, io) {
 		const index = lobby.members.findIndex((member) => member.id === socket.id);
 		if (index !== -1) {
 			const disconnectedMember = lobby.members.splice(index, 1)[0]; // Remove the player from the lobby.
-			const gameManager = activeGames[lobbyId];
-			gameManager.removePlayer(disconnectedMember.userToken);
 			console.log(
 				(disconnectedMember.isHost ? 'Host' : 'User') + ' disconnected from lobby: ' + lobbyId
 			);

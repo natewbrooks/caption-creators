@@ -143,12 +143,11 @@ export default function LobbyPage() {
 	const [showLinkCopied, setShowLinkCopied] = useState(false);
 	const [disconnectingUsers, setDisconnectingUsers] = useState({});
 	const [hostUserToken, setHostUserToken] = useState(null);
-	const [gameStartCountdown, setGameStartCountdown] = useState(null);
 	const [avatars, setAvatars] = useState([]);
 	const [takenAvatars, setTakenAvatars] = useState({});
 	const [currentAvatar, setCurrentAvatar] = useState('');
 	const [showEntryPrompt, setShowEntryPrompt] = useState(true);
-	const [gameStarted, setGameStarted] = useState(false);
+	const [hasGameStarted, setHasGameStarted] = useState(false);
 	const [error, setError] = useState('');
 	const { currentUser } = useAuth();
 	const router = useRouter();
@@ -187,39 +186,29 @@ export default function LobbyPage() {
 			}
 		};
 		fetchData();
+
+		return () => {
+			socket.off('lobby_details');
+			socket.off('update_lobby');
+		};
 	}, [lobbyId, userToken, setTakenAvatars]);
 
 	useEffect(() => {
 		if (lobbyId && socket) {
 			// Navigate to /game/[id] when game start
-			socket.on('notify_players', ({ event, data }) => {
-				switch (event) {
-					case 'navigate':
-						let path = data.path;
-						console.log(`Navigating to ${path}`);
-						router.push(path);
-						break;
+			socket.on('navigate_to_game', ({ path }) => {
+				if (path) {
+					console.log(`Navigating to ${path}`);
+					router.push(path);
+					setHasGameStarted(true);
 				}
 			});
 
-			// Shows countdown til start of game
-			socket.on('game_start_countdown', (count) => {
-				setGameStartCountdown(count);
-				if (count < 1) {
-					setGameStarted(true);
-					setGameStartCountdown(null); // Reset countdown after it finishes
-				}
-			});
-
-			// Cleanup function removes event listeners
 			return () => {
-				socket.off('lobby_details');
-				socket.off('update_lobby');
-				socket.off('notify_players');
-				socket.off('game_start_countdown');
+				socket.off('navigate_to_game');
 			};
 		}
-	}, [lobbyId, userToken]);
+	}, []);
 
 	useEffect(() => {
 		if (socket) {
@@ -240,7 +229,7 @@ export default function LobbyPage() {
 				// Immediately set the initial duration
 				setDisconnectingUsers((prev) => ({ ...prev, [userToken]: duration }));
 
-				// Start a new gameStartCountdown interval for this user
+				// Start a new countdown interval for this user
 				intervalIds[userToken] = setInterval(() => {
 					setDisconnectingUsers((prev) => {
 						const currentTime = prev[userToken];
@@ -360,6 +349,26 @@ export default function LobbyPage() {
 				backButtonText={'EXIT LOBBY'}
 				showProfileIfNotLoggedIn={false}
 			/>
+			{hasGameStarted && (
+				<div
+					className={`absolute top-0 bg-dark/80 z-50 w-full h-full flex justify-center items-center`}>
+					<div
+						className={`w-fit h-fit flex justify-center p-12 bg-green-300 outline outline-6 outline-dark rounded-full`}>
+						<div className={`flex flex-col items-center justify-center `}>
+							<h1
+								data-text='HOST STARTED GAME'
+								className={`font-sunny text-3xl text-dark`}>
+								HOST STARTED GAME
+							</h1>
+							<h1
+								data-text={`Moving you to the game...`}
+								className={` translate-y-4 text-7xl font-manga z-20 `}>
+								{'Moving you to the game...'}
+							</h1>
+						</div>
+					</div>
+				</div>
+			)}
 			<div
 				id='lobby-header '
 				className={`flex flex-col space-y-1 mt-2 mb-2 md:mb-4 leading-none justify-center text-center`}>
@@ -397,51 +406,6 @@ export default function LobbyPage() {
 
 			{!showEntryPrompt ? (
 				<>
-					{(gameStartCountdown > 0 || gameStarted) && (
-						<div
-							className={`absolute top-0 bg-dark/80 z-50 w-full h-full flex justify-center items-center`}>
-							<div
-								className={`w-fit h-fit flex justify-center p-12 bg-green-300 outline outline-6 outline-dark rounded-full`}>
-								<div className={`flex flex-col items-center justify-center `}>
-									{!gameStarted ? (
-										<>
-											<h1
-												data-text='GAME STARTS IN...'
-												className={`font-sunny text-3xl text-dark`}>
-												GAME STARTS IN...
-											</h1>
-											<h1
-												data-text={`${gameStartCountdown}`}
-												id='startTimer'
-												className={` translate-y-4 text-9xl font-manga z-20 ${
-													gameStartCountdown >= 4
-														? 'text-white'
-														: gameStartCountdown <= 3 && gameStartCountdown >= 2
-														? 'text-yellow-300'
-														: 'text-red-300'
-												}`}>
-												{gameStartCountdown || 'GO!'}
-											</h1>
-										</>
-									) : (
-										<>
-											<h1
-												data-text='GAME STARTING...'
-												className={`font-sunny text-3xl text-dark`}>
-												GAME STARTING...
-											</h1>
-											<h1
-												data-text={`GO!`}
-												id='startTimer'
-												className={` translate-y-4 text-9xl font-manga z-20 text-red-300`}>
-												{'GO!'}
-											</h1>
-										</>
-									)}
-								</div>
-							</div>
-						</div>
-					)}
 					<div
 						className={`flex flex-col w-full max-w-[600px] max-h-[800px] h-full p-2 bg-dark rounded-md outline outline-2 outline-darkAccent`}>
 						<div className={`h-full w-full `}>
