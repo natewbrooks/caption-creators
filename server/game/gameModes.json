@@ -1,11 +1,69 @@
 {
 	"gameModes": [
 		{
+			"name": "Dev",
+			"rounds": [
+				{
+					"multiplier": 1,
+					"phases": [
+						{
+							"name": "Prompt Phase",
+							"duration": 1,
+							"key": "prompt",
+							"options": {
+								"promptGeneration": "human",
+								"videoQuantity": "players",
+								"videoDistribution": "even"
+							}
+						},
+						{
+							"name": "Caption Phase Transition",
+							"duration": 1,
+							"key": "transition"
+						},
+						{
+							"name": "Caption Phase",
+							"duration": 1,
+							"key": "caption"
+						},
+						{
+							"name": "Preview Phase",
+							"duration": 1,
+							"key": "preview"
+						},
+						{
+							"name": "Voting Phase Transition",
+							"duration": 1,
+							"key": "transition"
+						},
+						{
+							"name": "Voting Phase",
+							"duration": 1,
+							"key": "vote",
+							"options": {
+								"captionLink": "Caption Phase"
+							}
+						},
+						{
+							"name": "Round 1 Outro",
+							"duration": 10,
+							"key": "outro"
+						}
+					]
+				}
+			]
+		},
+		{
 			"name": "Standard",
 			"rounds": [
 				{
 					"multiplier": 1,
 					"phases": [
+						{
+							"name": "Round 1 Intro",
+							"duration": 6,
+							"key": "intro"
+						},
 						{
 							"name": "Prompt Phase",
 							"duration": 15,

@@ -90,7 +90,7 @@ const CaptionComponent = ({
 				/>
 			)}
 			<div className={`relative flex flex-col w-full h-full justify-between `}>
-				<VideoEmbed embedURL={currentVideoDisplayed} />
+				<VideoEmbed url={currentVideoDisplayed} />
 
 				{confirmedCaption ? (
 					<div className='relative top-1 w-full flex justify-center'>
@@ -101,7 +101,8 @@ const CaptionComponent = ({
 						</h1>
 					</div>
 				) : (
-					<div className={`flex z-20 bg-dark h-fit w-full`}>
+					<div
+						className={`flex z-20 bg-dark border-2 border-darkAccent rounded-b-md p-1 h-fit w-full`}>
 						<input
 							type='text'
 							value={currentCaption}
@@ -113,7 +114,7 @@ const CaptionComponent = ({
 								}
 							}}
 							placeholder='Enter caption for this video...'
-							className='border-l-2 border-y-2 border-dark focus:outline-none  font-manga text-white text-3xl text-center bg-darkAccent w-full p-2 md:p-3 placeholder:text-white/50'
+							className='border-l-2 border-y-2 border-dark focus:outline-none rounded-l-md font-manga text-white text-3xl text-center bg-darkAccent w-full p-2 md:p-3 placeholder:text-white/50'
 						/>
 						<div
 							onClick={() => {

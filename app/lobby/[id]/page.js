@@ -2,7 +2,7 @@
 import { FixedSizeList as List } from 'react-window';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useCallback } from 'react';
-import { FaPencil, FaCheck, FaCopy } from 'react-icons/fa6';
+import { FaPencil, FaCheck, FaCopy, FaPersonWalking } from 'react-icons/fa6';
 import { LuUnplug } from 'react-icons/lu';
 import TopBar from '@/app/components/login/topBar';
 import Image from 'next/image';
@@ -353,17 +353,21 @@ export default function LobbyPage() {
 				<div
 					className={`absolute top-0 bg-dark/80 z-50 w-full h-full flex justify-center items-center`}>
 					<div
-						className={`w-fit h-fit flex justify-center p-12 bg-green-300 outline outline-6 outline-dark rounded-full`}>
-						<div className={`flex flex-col items-center justify-center `}>
+						className={`w-fit h-fit flex justify-center p-12 bg-green-300 outline outline-6 aspect-square outline-dark rounded-full`}>
+						<div className={`flex flex-col text-center space-y-2 items-center justify-center `}>
 							<h1
 								data-text='HOST STARTED GAME'
-								className={`font-sunny text-3xl text-dark`}>
+								className={`font-sunny text-2xl md:text-3xl text-dark`}>
 								HOST STARTED GAME
 							</h1>
+							<FaPersonWalking
+								size={108}
+								className={`hidden xs:block text-dark`}
+							/>
 							<h1
-								data-text={`Moving you to the game...`}
-								className={` translate-y-4 text-7xl font-manga z-20 `}>
-								{'Moving you to the game...'}
+								data-text='MOVING TO LOBBY...'
+								className={`font-sunny text-2xl md:text-3xl text-dark`}>
+								MOVING TO PAGE...
 							</h1>
 						</div>
 					</div>

@@ -1,28 +1,48 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import YouTube from 'react-youtube';
+import getYouTubeId from 'get-youtube-id';
 import AutoSizer from 'react-virtualized-auto-sizer';
 
-const VideoEmbed = ({ embedURL }) => {
+const VideoEmbed = ({ url, handleVideoEnd }) => {
+	const [videoId, setVideoId] = useState('');
+	const [ended, setEnded] = useState(false);
+
+	useEffect(() => {
+		if (url) {
+			const id = getYouTubeId(url);
+			if (id) {
+				setVideoId(id);
+			}
+		}
+	}, [url]);
+
 	return (
 		<div
 			style={{ flexGrow: 1, minHeight: 0 }}
-			className='h-full w-full'>
-			<AutoSizer>
-				{({ height, width }) => (
-					<div
-						style={{ height, width }}
-						className={`flex justify-center items-center aspect-[2/3] bg-darkAccent border-2 border-t-[6px] border-dark`}>
-						<iframe
-							height={height}
-							width={width}
-							src={`${embedURL}`}
-							title={`TITLE OF VIDEO`}
-							frameBorder='0'
-							allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen'
-							referrerPolicy='strict-origin-when-cross-origin'
-							allowFullScreen></iframe>
-					</div>
-				)}
-			</AutoSizer>
+			className='h-full w-full select-none'>
+			{ended && <div className={`bg-green-300 p-4 rounded-md text-dark`}>ended!!</div>}
+			{videoId ? (
+				<AutoSizer>
+					{({ height, width }) => (
+						<YouTube
+							videoId={videoId}
+							opts={{
+								height: height,
+								width: width,
+								playerVars: {
+									autoplay: 1,
+								},
+							}}
+							onPlay={() => setEnded(false)}
+							onEnd={() => setEnded(true)}
+						/>
+					)}
+				</AutoSizer>
+			) : (
+				<>
+					<div className={`w-full h-full flex justify-center items-center`}>NO VIDEO ID</div>
+				</>
+			)}
 		</div>
 	);
 };

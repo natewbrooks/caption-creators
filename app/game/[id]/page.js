@@ -5,7 +5,7 @@ import TopBar from '@/app/components/login/topBar';
 import CaptionComponent from '../../components/game/content/CaptionComponent';
 import PromptComponent from '@/app/components/game/content/PromptComponent';
 import BackButton from '@/app/components/BackButton';
-import { FaClock } from 'react-icons/fa6';
+import { FaClock, FaHourglassStart } from 'react-icons/fa6';
 import VotingComponent from '@/app/components/game/content/VoteComponent';
 import PlayersScrollbar from '@/app/components/game/modules/PlayersScrollbar';
 import { useSocket } from '@/app/contexts/socketContext';
@@ -56,31 +56,6 @@ export default function GamePage() {
 
 	const [currentUserDisplayed, setCurrentUserDisplayed] = useState(null); // The userToken of the player the client is currently looking at in the voting component
 	const [currentVideoDisplayed, setCurrentVideoDisplayed] = useState(null);
-
-	const handleComponentDisplay = (key) => {
-		switch (key) {
-			case 'prompt':
-				setCurrentPhase(key);
-				break;
-			case 'video':
-				setCurrentPhase(key);
-				break;
-			case 'vote':
-				setCurrentPhase(key);
-				break;
-			case 'transition':
-				setCurrentPhase(key);
-				break;
-			case 'intro':
-				setCurrentPhase(key);
-				break;
-			case 'outro':
-				setCurrentPhase(key);
-				break;
-			default:
-				break;
-		}
-	};
 
 	// const handleCaptionSubmit = (caption) => {
 	//
@@ -184,14 +159,14 @@ export default function GamePage() {
 
 		socket.on('users_loaded_game_page', (usersArray) => setUsersLoadedGamePage(usersArray));
 
-		// Shows countdown til start of game
-		socket.on('game_start_countdown', (count) => {
-			setGameStartCountdown(count);
-			setGamePhaseTimer(count);
-			if (count < 1) {
-				setGameStartCountdown(null); // Reset countdown after it finishes
-			}
-		});
+		// // Shows countdown til start of game
+		// socket.on('game_start_countdown', (count) => {
+		// 	setGameStartCountdown(count);
+		// 	setGamePhaseTimer(count);
+		// 	if (count < 1) {
+		// 		setGameStartCountdown(null); // Reset countdown after it finishes
+		// 	}
+		// });
 
 		// Everything handled in the GAME, sent by gameManager
 		socket.on('notify_players', ({ event, data }) => {
@@ -301,7 +276,7 @@ export default function GamePage() {
 					showProfileIfNotLoggedIn={false}
 				/>
 			</div>
-			{usersLoadedGamePage.length === players.length || gameStarted ? (
+			{/* {usersLoadedGamePage.length === players.length || gameStarted ? (
 				gameStartCountdown > 0 && (
 					<div
 						className={`absolute top-0 bg-dark/80 z-50 w-full h-full flex justify-center items-center`}>
@@ -333,7 +308,7 @@ export default function GamePage() {
 				<div
 					className={`absolute top-0 bg-dark/80 z-50 w-full h-full flex justify-center items-center`}>
 					<div
-						className={`w-fit h-fit flex justify-center p-12 bg-green-300 outline outline-6 outline-dark rounded-full`}>
+						className={`w-fit h-fit flex justify-center p-12 bg-green-300 aspect-square max-w-[400px] outline outline-6 outline-dark rounded-full`}>
 						<div className={`flex flex-col items-center justify-center `}>
 							<h1
 								data-text='GAME STARTS IN...'
@@ -344,7 +319,27 @@ export default function GamePage() {
 						</div>
 					</div>
 				</div>
+			)} */}
+
+			{!usersLoadedGamePage.length === players.length && (
+				<div
+					className={`absolute top-0 bg-dark/80 z-50 w-full h-full flex justify-center items-center`}>
+					<div
+						className={`w-fit h-fit flex justify-center p-12 bg-green-300 aspect-square max-w-[300px] outline outline-6 outline-dark rounded-full`}>
+						<div className={`flex flex-col space-y-2 items-center justify-center `}>
+							<h1 className={`font-sunny text-3xl text-dark`}>
+								WAITING FOR {usersLoadedGamePage.length - players.length} MORE
+							</h1>
+							<FaHourglassStart
+								size={108}
+								className={`text-dark`}
+							/>
+							<h1 className={`font-sunny text-3xl text-dark`}>TO LOAD THIS PAGE</h1>
+						</div>
+					</div>
+				</div>
 			)}
+
 			<div
 				className={`flex flex-col w-full items-center h-full space-y-2 leading-none text-center`}>
 				<div
@@ -441,7 +436,6 @@ export default function GamePage() {
 						</div>
 					</div>
 				</div>
-
 				<div className={`max-w-[600px] w-full h-full flex flex-col justify-between items-center`}>
 					{players && roundData && (
 						<>
@@ -533,6 +527,7 @@ export default function GamePage() {
 									roundData={roundData}
 									phaseData={phaseData}
 									gameData={gameData}
+									currentPhase={currentPhase}
 									setGameData={setGameData}
 									lobbyId={lobbyId}
 									usersFinished={usersFinished}
@@ -577,7 +572,6 @@ export default function GamePage() {
 						players={players}
 						currentPhase={currentPhase}
 						gameData={gameData}
-						handleComponentDisplay={handleComponentDisplay}
 						currentUserDisplayed={currentUserDisplayed}
 						setCurrentUserDisplayed={setCurrentUserDisplayed}
 						usersFinished={usersFinished || []}

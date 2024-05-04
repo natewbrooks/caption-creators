@@ -120,22 +120,25 @@ class GameManager {
 			return;
 		}
 
-		// Ensure the scores object is initialized
-		roundData.scores = roundData.scores;
+		this.scores = this.scores;
+
+		const votesToPts = 100; // Conversion rate: 1 vote = 100 points
 		const multiplier = roundData.multiplier;
 
-		// Initialize scores for each player
 		this.players.forEach((player) => {
 			const userToken = player.userToken;
 
-			// Initialize player's score data structure
 			roundData.scores[userToken] = {
 				pointsEarned: 0,
+				votePointsEarned: 0,
+				votesReceived: 0,
+				bonusPointsEarned: 0,
 				majorityBonus: { received: false, ptsReceived: 0 },
 				diversityBonus: { received: false, ptsReceived: 0 },
 				consistencyBonus: { received: false, ptsReceived: 0 },
 				winnerBonus: { received: false, ptsReceived: 0 },
 				pityPartyBonus: { received: false, ptsReceived: 0 },
+				selflessBonus: { received: false, ptsReceived: 0 },
 			};
 
 			// Base points for votes received (excluding self-votes)
@@ -145,52 +148,70 @@ class GameManager {
 				return;
 			}
 
-			const votesReceived = votePhase.userData.filter(
-				(vote) => vote.results.vote && vote.userToken !== userToken
+			const votesReceivedData = votePhase.userData.filter(
+				(userVote) => userVote.results.vote && userVote.userToken !== userToken // excluding self-votes
 			);
-			const basePoints = votesReceived.length * 100;
-			roundData.scores[userToken].pointsEarned += basePoints;
+			console.log('VOTES RECIEVED DATA (GAMEMANAGER)' + JSON.stringify(votePhase));
+			const votesReceived = votesReceivedData.length;
+			roundData.scores[userToken].votesReceived = votesReceived;
+			const votePoints = votesReceived * votesToPts;
+			roundData.scores[userToken].votePointsEarned = votePoints;
+
+			// Bonuses
+			let bonusPoints = 0;
 
 			// Majority Bonus
-			if (votesReceived.length > this.players.length / 2) {
+			if (votesReceived > this.players.length / 2) {
 				roundData.scores[userToken].majorityBonus = { received: true, ptsReceived: 100 };
-				roundData.scores[userToken].pointsEarned += 100;
+				bonusPoints += 100;
 			}
 
 			// Diversity Bonus
-			const uniqueVoters = [...new Set(votesReceived.map((vote) => vote.userToken))];
-			if (uniqueVoters.length === this.players.length - 1) {
+			const uniqueVoters = [...new Set(votesReceivedData.map((vote) => vote.userToken))];
+			const mostUniqueVoters = Math.max(
+				...Object.values(roundData.scores).map((score) => score.votesReceived)
+			);
+			if (uniqueVoters.length === mostUniqueVoters) {
 				roundData.scores[userToken].diversityBonus = { received: true, ptsReceived: 100 };
-				roundData.scores[userToken].pointsEarned += 100;
+				bonusPoints += 100;
 			}
 
 			// Consistency Bonus
 			const previousRoundData = this.gameData.rounds[this.currentRoundIndex - 1];
 			if (previousRoundData && previousRoundData.scores && previousRoundData.scores[userToken]) {
 				const previousPoints = previousRoundData.scores[userToken].pointsEarned;
-				if (previousPoints && previousPoints >= basePoints) {
+				if (previousPoints && previousPoints >= votePoints) {
 					roundData.scores[userToken].consistencyBonus = { received: true, ptsReceived: 50 };
-					roundData.scores[userToken].pointsEarned += 50;
+					bonusPoints += 50;
 				}
 			}
 
 			// Winner Bonus
 			const highestVotes = Math.max(
-				...Object.values(roundData.scores).map((score) => score.pointsEarned)
+				...Object.values(roundData.scores).map((score) => score.votesReceived)
 			);
-			if (roundData.scores[userToken].pointsEarned === highestVotes) {
+			if (votesReceived === highestVotes) {
 				roundData.scores[userToken].winnerBonus = { received: true, ptsReceived: 200 };
-				roundData.scores[userToken].pointsEarned += 200;
+				bonusPoints += 200;
 			}
 
 			// Pity Party Bonus
-			if (votesReceived.length === 0) {
+			if (votesReceived === 0) {
 				roundData.scores[userToken].pityPartyBonus = { received: true, ptsReceived: 10 };
-				roundData.scores[userToken].pointsEarned += 10;
+				bonusPoints += 10;
 			}
 
-			// Apply multiplier to total points earned
-			roundData.scores[userToken].pointsEarned *= multiplier;
+			// Selfless Bonus
+			const hasSelfVotes = votePhase.userData.some(
+				(vote) => vote.results.vote && vote.userToken === userToken
+			);
+			if (!hasSelfVotes) {
+				roundData.scores[userToken].selflessBonus = { received: true, ptsReceived: 25 };
+				bonusPoints += 25;
+			}
+
+			roundData.scores[userToken].bonusPointsEarned = bonusPoints;
+			roundData.scores[userToken].pointsEarned = (votePoints + bonusPoints) * multiplier;
 		});
 
 		console.log('GAME ROUND SCORE DATA: ' + JSON.stringify(roundData.scores));
@@ -224,6 +245,7 @@ class GameManager {
 	}
 
 	handlePlayerAction(key, userToken, isFinished, data) {
+		this.updateRoundAndPhaseData();
 		if (!this.phaseData) {
 			console.error('gameManager ERROR - No phase data found in handlePlayerAction()');
 			return;
@@ -306,15 +328,16 @@ class GameManager {
 		// if (keyword === '') {
 		// 	keyword = this.getAIKeyword();
 		// }
-		const videos = [
-			'https://www.youtube.com/embed/x6iwZSURP44?&autoplay=1',
-			'https://www.youtube.com/embed/NsMKvVdEPkw?&autoplay=1',
-			'https://www.youtube.com/embed/dFg8Nu2X5Mo?&autoplay=1',
-			'https://www.youtube.com/embed/0tyNraIglgc?&autoplay=1',
-			'https://www.youtube.com/embed/9L7Y681bKz8?&autoplay=1',
-		];
 
-		return videos[Math.floor(Math.random() * videos.length)];
+		const shortURLS = [
+			'https://www.youtube.com/shorts/x6iwZSURP44',
+			'https://www.youtube.com/shorts/z7-5tzA1XUM',
+			'https://www.youtube.com/watch?v=VqOu4QYQpu0',
+		];
+		const selected = shortURLS[Math.floor(Math.random() * shortURLS.length)];
+		console.log('SELECTED VIDEO: ' + selected);
+
+		return selected;
 	}
 
 	async getAIKeyword() {
@@ -358,6 +381,7 @@ class GameManager {
 			this.calculatePoints(this.roundData);
 		}
 
+		this.updateRoundAndPhaseData();
 		this.notifyPlayers('users_finished', {
 			usersFinished: [...this.usersFinishedCurrentPhase],
 		});

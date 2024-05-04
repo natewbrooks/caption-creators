@@ -150,23 +150,23 @@ app.prepare().then(() => {
 				// If all players have loaded the game page
 				if (lobby.gamePageLoaded.length === lobby.members.length) {
 					// Start a countdown before initializing the game
-					let countdown = 3;
-					const countdownInterval = setInterval(() => {
-						io.to(lobbyId).emit('game_start_countdown', countdown);
-						countdown--;
-						if (countdown < 0) {
-							clearInterval(countdownInterval);
-							const gameManager = new GameManager({
-								lobbyId: lobbyId,
-								io: io,
-								players: lobby.members,
-								hostUserToken: lobby.hostUserToken,
-								gameMode: 'Standard',
-							});
-							activeGames[lobbyId] = gameManager;
-							gameManager.startNewGame();
-						}
-					}, 1000);
+					// let countdown = 3;
+					// const countdownInterval = setInterval(() => {
+					// 	io.to(lobbyId).emit('game_start_countdown', countdown);
+					// 	countdown--;
+					// 	if (countdown < 0) {
+					// 		clearInterval(countdownInterval);
+					const gameManager = new GameManager({
+						lobbyId: lobbyId,
+						io: io,
+						players: lobby.members,
+						hostUserToken: lobby.hostUserToken,
+						gameMode: 'Standard',
+					});
+					activeGames[lobbyId] = gameManager;
+					gameManager.startNewGame();
+					// 	}
+					// }, 1000);
 				}
 			} else {
 				socket.emit('game_page_loaded_error', 'Lobby does not exist');
@@ -329,6 +329,14 @@ function leaveLobby(socket, io) {
 			console.log(
 				(disconnectedMember.isHost ? 'Host' : 'User') + ' disconnected from lobby: ' + lobbyId
 			);
+
+			// To remove disconnected user from players who have game rendered (so other players don't have the waiting to load screen)
+			const gamePageLoadedMemberIndex = lobby.gamePageLoaded.findIndex((user) => {
+				user.userToken === disconnectedMember.userToken;
+			});
+			if (gamePageLoadedMemberIndex !== -1) {
+				lobby.gamePageLoaded.splice(gamePageLoadedMemberIndex, 1);
+			}
 
 			if (lobby.members.length === 0) {
 				console.log(`Lobby ${lobbyId} is now empty and will be deleted.`);

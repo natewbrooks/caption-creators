@@ -51,31 +51,26 @@ const PreviewComponent = ({
 				setCaption(playerData.results.caption);
 			}
 		}
+	}, [currentIndex, players, roundData, hasWatchedAllVideos]);
 
-		// Get video duration, defaulting to 10s if not specified
-		const videoDuration = videoAssignment?.duration || 10;
-
-		// Set a timeout to switch to the next player after the video duration
-		const timer = setTimeout(() => {
-			if (currentIndex + 1 < players.length) {
-				setCurrentIndex((prevIndex) => prevIndex + 1); // Move to the next player
-			} else {
-				// SUBMISSION
-				if (!hasWatchedAllVideos) {
-					if (currentIndex === players.length) {
-						socket.emit('game_action', {
-							key: 'preview',
-							userToken: userToken,
-							isFinished: true,
-						});
-						setHasWatchedAllVideos(true);
-					}
+	const handleVideoEnd = () => {
+		//Switch to the next player on video end
+		if (currentIndex + 1 < players.length) {
+			setCurrentIndex((prevIndex) => prevIndex + 1); // Move to the next player
+		} else {
+			// SUBMISSION
+			if (!hasWatchedAllVideos) {
+				if (currentIndex === players.length) {
+					socket.emit('game_action', {
+						key: 'preview',
+						userToken: userToken,
+						isFinished: true,
+					});
+					setHasWatchedAllVideos(true);
 				}
 			}
-		}, videoDuration * 1000);
-
-		return () => clearTimeout(timer);
-	}, [currentIndex, players, roundData, hasWatchedAllVideos]);
+		}
+	};
 
 	return (
 		<>
@@ -96,7 +91,10 @@ const PreviewComponent = ({
 					</h1>
 				</div>
 
-				<VideoEmbed embedURL={currentVideoDisplayed} />
+				<VideoEmbed
+					url={currentVideoDisplayed}
+					handleVideoEnd={handleVideoEnd}
+				/>
 				<div className='flex w-full leading-none  p-3 h-fit  overflow-y-hidden  px-3 md:px-2 md:justify-center bg-darkAccent  border-x-2 border-t-2 border-dark font-manga text-xl md:text-2xl xxl:text-3xl whitespace-nowrap overflow-x-auto'>
 					{caption}
 				</div>

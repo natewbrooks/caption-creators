@@ -10,6 +10,7 @@
 	},
 	"dependencies": {
 		"firebase": "^10.8.1",
+		"get-youtube-id": "^1.0.1",
 		"google-auth-library": "^9.9.0",
 		"googleapis": "^134.0.0",
 		"mysql2": "^3.9.4",
@@ -22,6 +23,7 @@
 		"react-icons": "^5.0.1",
 		"react-virtualized-auto-sizer": "^1.0.24",
 		"react-window": "^1.8.10",
+		"react-youtube": "^10.1.0",
 		"socket.io": "^4.7.4",
 		"socket.io-client": "^4.7.4",
 		"uuid": "^9.0.1",

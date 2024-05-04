@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { FaArrowRight } from 'react-icons/fa6';
 import VideoEmbed from '../modules/VideoEmbed';
 import { useSocket } from '@/app/contexts/socketContext';
+import TimerInline from '../modules/TimerInline';
 
 const GameResultsComponent = ({
 	hostUserToken,
@@ -21,12 +22,23 @@ const GameResultsComponent = ({
 			<div className={`relative flex flex-col w-full h-full justify-center items-center `}>
 				<div
 					className={`bg-dark rounded-md p-1  border-2 border-darkAccent justify-between flex h-full w-full flex-col items-center `}>
-					<div className={`w-full h-full flex justify-center items-center`}>
+					<div className={`w-full h-fit py-2 flex flex-col justify-center items-center`}>
 						<h1
 							data-text={'GAME END'}
-							className={`font-manga z-10 text-purple-300 text-2xl`}>
+							className={`font-sunny text-5xl md:text-6xl z-10 text-yellow-300`}>
 							GAME END
 						</h1>
+						<div className={`flex flex-row space-x-2 w-full justify-center `}>
+							<h1
+								data-text={'GAME END'}
+								className={`font-manga text-2xl l z-10 text-white`}>
+								TIME ELAPSED
+							</h1>
+							<div className={`flex font-manga text-2xl`}>
+								<TimerInline timer={gameData.timeElapsed} />
+								<span>s</span>
+							</div>
+						</div>
 					</div>
 
 					<div

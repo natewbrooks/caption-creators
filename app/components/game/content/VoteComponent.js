@@ -131,7 +131,7 @@ const VotingComponent = ({
 					</h1>
 				</div>
 
-				<VideoEmbed embedURL={currentVideoDisplayed} />
+				<VideoEmbed url={currentVideoDisplayed} />
 				<div className='flex w-full leading-none  p-3 h-fit  overflow-y-hidden  px-3 md:px-2 md:justify-center bg-darkAccent  border-x-2 border-t-2 border-dark font-manga text-xl md:text-2xl xxl:text-3xl whitespace-nowrap overflow-x-auto'>
 					{caption}
 				</div>
