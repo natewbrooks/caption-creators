@@ -4,12 +4,20 @@ const Game = require('./sequence/game');
 // import { updateLeaderboardScore } from '../../app/api/leaderboard/route';
 
 class GameManager {
-	constructor({ lobbyId, io, players, hostUserToken, gameMode = 'Standard' }) {
+	constructor({
+		lobbyId,
+		io,
+		players,
+		hostUserToken,
+		gameMode = 'Standard',
+		updateLeaderboardScore,
+	}) {
 		this.lobbyId = lobbyId;
 		this.io = io;
 		this.players = players;
 		this.videos = {};
 
+		this.updateLeaderboardScore = updateLeaderboardScore;
 		this.game = null;
 		this.gameActive = false;
 		this.currentPhaseKey = '';
@@ -325,7 +333,7 @@ class GameManager {
 		});
 	}
 
-	calculateFinalScores() {
+	async calculateFinalScores() {
 		this.updateRoundAndPhaseData();
 		if (!this.gameData || !this.gameData.finalScores) {
 			console.error('Invalid gameData or missing final scores:', this.gameData);
@@ -363,22 +371,22 @@ class GameManager {
 					}
 
 					// add score to leaderboard database if they have an account
-					// const player = this.players.find((player) => player.userToken === userToken);
-					// const email = player?.email || null;
+					const player = this.players.find((player) => player.userToken === userToken);
+					const email = player?.email || null;
 
-					// if (email) {
-					// 	updateLeaderboardScore(email, points)
-					// 		.then((success) => {
-					// 			if (success) {
-					// 				console.log(`Score updated for player with email ${email}`);
-					// 			} else {
-					// 				console.error(`Failed to update score for ${email}`);
-					// 			}
-					// 		})
-					// 		.catch((error) => {
-					// 			console.error(`Error updating score for ${email}:`, error);
-					// 		});
-					// }
+					if (email) {
+						this.updateLeaderboardScore(email, points)
+							.then((success) => {
+								if (success) {
+									console.log(`Score updated for player with email ${email}`);
+								} else {
+									console.error(`Failed to update score for ${email}`);
+								}
+							})
+							.catch((error) => {
+								console.error(`Error updating score for ${email}:`, error);
+							});
+					}
 				}
 			});
 		});

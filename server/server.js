@@ -174,6 +174,7 @@ app.prepare().then(() => {
 						players: lobby.members,
 						hostUserToken: lobby.hostUserToken,
 						gameMode: 'Dev',
+						updateLeaderboardScore: updateLeaderboardScore,
 					});
 					activeGames[lobbyId] = gameManager;
 					gameManager.startNewGame();
@@ -516,4 +517,20 @@ function updateUserSocketId(lobbyId, userToken, newSocketId, io) {
 	} else {
 		console.log(`User with userToken ${userToken} not found in lobby ${lobbyId}.`);
 	}
+}
+
+async function updateLeaderboardScore(email, points) {
+	const fetch = (await import('node-fetch')).default;
+
+	return fetch('http://localhost:3000/api/leaderboard', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ email, score: points }),
+	})
+		.then((response) => response.json())
+		.then((data) => data.success)
+		.catch((error) => {
+			console.error('Error updating leaderboard score:', error);
+			return false;
+		});
 }
