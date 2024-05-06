@@ -1,8 +1,8 @@
-import { useAuth } from '../../contexts/userAuthContext';
+import { useAuth } from '../../../contexts/userAuthContext';
 import { FaUserCircle } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import DropdownNotification from '../game/modules/DropdownNotification';
+import DropdownNotification from './DropdownNotification';
 
 export default function UserDisplay({ onClickEnabled, showLoginOption }) {
 	const { currentUser } = useAuth();
@@ -61,7 +61,9 @@ export default function UserDisplay({ onClickEnabled, showLoginOption }) {
 				) : (
 					showLoginOption && (
 						<>
-							<FaUserCircle className={`w-[16px] h-[16px] lg:h-[18px] lg:w-[18px]`} />
+							<div className={`bg-dark p-1 rounded-full`}>
+								<FaUserCircle className={`w-[16px] h-[16px] lg:h-[18px] lg:w-[18px]`} />
+							</div>
 							<h1
 								data-text='LOGIN'
 								className={`translate-y-[0.15rem] font-manga text-xl lg:text-2xl`}>

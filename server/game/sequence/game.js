@@ -36,7 +36,9 @@ class Game {
 					this.notifyPlayers,
 					index,
 					this.updatePhaseIndex,
-					this.endRound.bind(this)
+					this.endRound.bind(this),
+					this.pause.bind(this),
+					this.resume.bind(this)
 				)
 			);
 		}
@@ -48,10 +50,37 @@ class Game {
 		this.rounds[this.currentRoundIndex].start();
 	}
 
+	pause() {
+		this.pauseGameTimer();
+		if (this.currentRoundIndex < this.rounds.length) {
+			this.rounds[this.currentRoundIndex].pauseTimer();
+		}
+		this.paused = true;
+	}
+
+	resume() {
+		this.resumeGameTimer();
+		if (this.currentRoundIndex < this.rounds.length) {
+			this.rounds[this.currentRoundIndex].resumeTimer();
+		}
+		this.paused = false;
+	}
+
 	startGameTimer() {
 		this.gameTimer = setInterval(() => {
 			this.gameData.timeElapsed += 1;
 		}, 1000);
+	}
+
+	pauseGameTimer() {
+		if (this.gameTimer) {
+			clearInterval(this.gameTimer);
+			this.gameTimer = null;
+		}
+	}
+
+	resumeGameTimer() {
+		this.startGameTimer();
 	}
 
 	stopGameTimer() {

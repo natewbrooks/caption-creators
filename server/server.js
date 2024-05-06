@@ -38,8 +38,9 @@ app.prepare().then(() => {
 		socket.on('update_player_name', (data) =>
 			updatePlayerName(data.lobbyId, data.userToken, data.socket, data.playerName, io)
 		);
-		socket.on('avatar_selected', (data) => avatarSelected(socket, data, io));
 		socket.on('fetch_lobby_details', (data) => fetchLobbyDetails(socket, data, io));
+		socket.on('user_fetching_video', (data) => userFetchingVideo(data));
+		socket.on('avatar_selected', (data) => avatarSelected(socket, data, io));
 		socket.on('leave_lobby', () => leaveLobby(socket, io));
 		socket.on('leave_game', () => leaveGame(socket, io));
 
@@ -128,8 +129,18 @@ app.prepare().then(() => {
 						activeGames[lobbyId].startNewGame();
 						activeGames[lobbyId].hostUserToken = userToken;
 					} else {
-						console.log(`Game for lobby ${lobbyId} is already active.`);
-						io.to(lobbyId).emit('start_game_error', 'Game is already active.');
+						// If the user was participating in the game, reconnect them
+						if (
+							activeGames[lobbyId].roundData[0]?.userData.find(
+								(user) => user.userToken === userToken
+							)
+						) {
+							io.lobbyId.to(lobbyId).emit('navigate_to_game', {
+								path: `/game/${lobbyId}`,
+							});
+
+							updateLobby(lobbyId, io);
+						}
 					}
 				}
 			} else {
@@ -248,7 +259,7 @@ function createLobby(socket, { hostUserToken, playerName, email }, io) {
 		lobbyId = nanoid();
 	}
 
-	getAvatarRange(12, (err, range) => {
+	getRandomAvatars(12, (err, range) => {
 		if (err) {
 			socket.emit('error', 'Failed to initialize avatar range.');
 			return;
@@ -267,9 +278,10 @@ function createLobby(socket, { hostUserToken, playerName, email }, io) {
 					avatar: null,
 				},
 			],
-			avatarRange: range,
+			avatars: range,
 			takenAvatars: {},
 		};
+		console.log(lobbies[lobbyId].avatars);
 		socket.join(lobbyId); // Add the host's socket to the lobby room.
 		updateLobby(lobbyId, io); // Update all clients with the new lobby details.
 		socket.emit('lobby_created', { lobbyId, hostUserToken }); // Notify the host that the lobby has been created.
@@ -302,18 +314,37 @@ function joinLobby(socket, { lobbyId, playerName, userToken, email }, io) {
 	}
 
 	// Add the new player to the lobby members list.
-	lobby.members.push({
+	addLobbyMember(socket, {
 		id: socket.id,
+		lobbyId: lobbyId,
 		name: playerName,
-		isHost: userToken === lobby.hostUserToken,
 		userToken: userToken,
 		email: email,
-		avatar: null,
+		avatar: lobby.avatar,
 	});
+
 	socket.join(lobbyId); // Add the player's socket to the lobby room.
 	updateLobby(lobbyId, io); // Update all clients with the new lobby details.
 	socket.emit('lobby_joined', { lobbyId }); // Notify the player that they have joined the lobby.
 	console.log('User connected to lobby: ' + lobbyId);
+}
+
+function addLobbyMember(socket, { lobbyId, name, userToken, email, avatar }) {
+	const lobby = lobbies[lobbyId];
+	try {
+		lobby.members.push({
+			id: socket.id,
+			name: name,
+			isHost: userToken === lobby.hostUserToken,
+			userToken: userToken,
+			email: email || null,
+			avatar: avatar || null,
+		});
+	} catch (error) {
+		socket.emit('lobby_error', {
+			message: `Error adding user ${userToken} to lobby:  ${error},`,
+		});
+	}
 }
 
 function bringPartyToLobby(socket, { lobbyId, userToken }, io) {
@@ -411,12 +442,12 @@ function fetchLobbyDetails(socket, { lobbyId }, io) {
 	socket.emit('lobby_details', {
 		members: lobby.members,
 		hostUserToken: lobby.hostUserToken,
-		avatarRange: lobby.avatarRange,
+		avatars: lobby.avatars,
 		takenAvatars: lobby.takenAvatars,
 	});
 }
 
-function getAvatarRange(gap, callback) {
+function getRandomAvatars(count, callback) {
 	const avatarDirectory = path.join(__dirname, '..', 'public', 'avatars');
 
 	fs.readdir(avatarDirectory, (err, files) => {
@@ -426,18 +457,24 @@ function getAvatarRange(gap, callback) {
 			return;
 		}
 
-		const totalAvatars = files.length;
-		if (totalAvatars < gap) {
-			console.error('Not enough avatars to create a range.');
-			callback(new Error('Not enough avatars to create a range.'));
+		// filter only .png files
+		const pngFiles = files.filter((file) => file.endsWith('.png'));
+
+		const totalAvatars = pngFiles.length;
+		if (totalAvatars < count) {
+			console.error('Not enough avatars to select from.');
+			callback(new Error('Not enough avatars to select from.'));
 			return;
 		}
 
-		const maxStartIndex = Math.max(1, totalAvatars - gap + 1);
-		const start = Math.floor(Math.random() * maxStartIndex) + 1;
-		const end = start + gap - 1;
+		// accounts for client /public/ path
+		const publicFilePath = pngFiles.map((file) => `/avatars/${file}`);
 
-		callback(null, [start, end]); // plus one to adjust range starting from 1
+		// shuffle and pick `count` avatars
+		const shuffledFiles = publicFilePath.sort(() => 0.5 - Math.random());
+		const selectedAvatars = shuffledFiles.slice(0, count);
+
+		callback(null, selectedAvatars);
 	});
 }
 
@@ -445,33 +482,24 @@ function getAvatarRange(gap, callback) {
 function avatarSelected(socket, { lobbyId, userToken, avatarSrc }, io) {
 	const lobby = lobbies[lobbyId];
 	if (!lobby) {
-		socket.emit('avatar_selection_response', { success: false, message: 'Lobby does not exist.' });
+		socket.emit('error', 'Lobby not found.');
 		return;
 	}
 
-	// Prevent selection if the avatar is already taken by another user
-	if (lobby.takenAvatars[avatarSrc] && lobby.takenAvatars[avatarSrc] !== userToken) {
-		socket.emit('avatar_selection_response', {
-			success: false,
-			message: 'Avatar is already taken by another user.',
-		});
-		return;
-	}
-
-	// If the user is updating their avatar, first remove the old entry
-	Object.entries(lobby.takenAvatars).forEach(([key, value]) => {
-		if (value === userToken) {
-			delete lobby.takenAvatars[key];
+	// Update taken avatars in the server-side state
+	const takenAvatars = lobby.takenAvatars || {};
+	// Remove previous avatar selection
+	for (const key in takenAvatars) {
+		if (takenAvatars[key] === userToken) {
+			delete takenAvatars[key];
 		}
-	});
-
-	const player = findPlayerInLobby(lobbyId, userToken);
-
-	// Assign the new avatar to this user
-	if (player) {
-		player.avatar = avatarSrc;
 	}
-	lobby.takenAvatars[avatarSrc] = userToken;
+
+	// Assign the new avatar
+	takenAvatars[avatarSrc] = userToken;
+	lobby.takenAvatars = takenAvatars;
+	lobby.members.find((player) => player.userToken === userToken).avatar = avatarSrc;
+
 	updateLobby(lobbyId, io);
 
 	socket.emit('avatar_selection_response', {
@@ -516,6 +544,29 @@ function updateUserSocketId(lobbyId, userToken, newSocketId, io) {
 		updateLobby(lobbyId, io); // Reflect this change to all members of the lobby
 	} else {
 		console.log(`User with userToken ${userToken} not found in lobby ${lobbyId}.`);
+	}
+}
+
+async function fetchYouTubeVideo(prompt) {
+	return fetch('http://localhost:3000/api/youtube', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ prompt }),
+	})
+		.then((response) => response.json())
+		.then((data) => data.success)
+		.catch((error) => {
+			console.error('Error fetching youtube video:', error);
+			return false;
+		});
+}
+
+function userFetchingVideo({ lobbyId, userToken, prompt }) {
+	const lobby = lobbies[lobbyId];
+	const game = activeGames[lobbyId];
+	if (game && !game.playersFetchingVideos.includes(userToken)) {
+		console.log('USER ', userToken, ' IS FETCHING VIDEO!');
+		game.playersFetchingVideos.push(userToken);
 	}
 }
 

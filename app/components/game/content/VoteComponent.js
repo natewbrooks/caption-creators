@@ -71,7 +71,6 @@ const VotingComponent = ({
 			voteObject[key] = value;
 		}
 
-		console.log('VOTE @ SUBMIT: ' + Array.from(vote));
 		socket.emit('game_action', {
 			lobbyId: lobbyId,
 			userToken: userToken,
@@ -80,7 +79,6 @@ const VotingComponent = ({
 			data: { vote: voteObject },
 		});
 		setTimeLeftAtSubmit(gamePhaseTimer);
-		console.log('TIME LEFT: ' + gamePhaseTimer);
 	};
 
 	useEffect(() => {
@@ -88,9 +86,7 @@ const VotingComponent = ({
 			const videoAssignment = roundData.videoAssignments.find(
 				(assignment) => assignment.userToken === currentUserDisplayed
 			);
-			if (videoAssignment) {
-				setCurrentVideoDisplayed(videoAssignment.video);
-			}
+			setCurrentVideoDisplayed(videoAssignment?.video || '');
 
 			const captionPhaseData = roundData.phases.find((phase) => phase.key === 'caption');
 			const playerData = captionPhaseData.userData.find(

@@ -52,8 +52,9 @@ function LobbyAvatarSelect({ avatars, takenAvatars, userToken, players, handleAv
 															handleAvatarSelect(src);
 														}
 													}}
+													sizes='(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw'
 													layout='fill'
-													objectFit='cover' // Adjust as needed
+													style={{ objectFit: 'cover' }}
 													className={`rounded-full transform transition-colors duration-500 ease-in-out outline outline-2 ${
 														isTaken
 															? `opacity-40 ${
@@ -62,7 +63,7 @@ function LobbyAvatarSelect({ avatars, takenAvatars, userToken, players, handleAv
 															: 'lg:hover:outline-white outline-darkAccent  active:scale-95 cursor-pointer'
 													}`}
 													alt={`${isTaken ? 'Taken' : ''} Avatar ${index + 1}`}
-													unoptimized
+													priority={true}
 												/>
 											</div>
 										</div>

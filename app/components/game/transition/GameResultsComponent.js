@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { FaArrowRight, FaClock, FaMedal, FaTrophy } from 'react-icons/fa6';
-import { FaCrown, FaUserCircle } from 'react-icons/fa';
+import { FaCrown, FaHourglass, FaUserCircle } from 'react-icons/fa';
 import VideoEmbed from '../modules/VideoEmbed';
 import { useSocket } from '@/app/contexts/socketContext';
 import TimerInline from '../modules/TimerInline';
@@ -8,7 +8,7 @@ import AutoSizer from 'react-virtualized-auto-sizer';
 import Image from 'next/image';
 import { FixedSizeList as List } from 'react-window';
 import { useRouter } from 'next/navigation';
-import HostActionAlert from '../modules/HostActionAlert';
+import ActionAlertModal from '../modules/ActionAlertModal';
 
 const PlayerListRow = ({ index, style, data }) => {
 	const { players } = data;
@@ -34,7 +34,6 @@ const PlayerListRow = ({ index, style, data }) => {
 								alt={`Recap Avatar ${index + 1}`}
 								width={48}
 								height={48}
-								unoptimized
 							/>
 						</div>
 					) : (
@@ -77,7 +76,7 @@ const GameResultsComponent = ({
 	const formattedTimeElapsed = formatTimeElapsed(gameData.timeElapsed);
 	const [hostActionHeader, setHostActionHeader] = useState('');
 	const [hostActionSubtext, setHostActionSubtext] = useState('');
-	const [showHostActionAlert, setShowHostActionAlert] = useState(false);
+	const [showActionAlertModal, setShowActionAlertModal] = useState(false);
 
 	function formatTimeElapsed(totalSeconds) {
 		const minutes = Math.floor(totalSeconds / 60);
@@ -207,7 +206,6 @@ const GameResultsComponent = ({
 																		alt={`Podium Avatar BRONZE`}
 																		width={42}
 																		height={42}
-																		unoptimized
 																	/>
 																</div>
 															) : (
@@ -248,7 +246,6 @@ const GameResultsComponent = ({
 																		alt={`Podium Avatar GOLD`}
 																		width={42}
 																		height={42}
-																		unoptimized
 																	/>
 																</div>
 															) : (
@@ -288,7 +285,6 @@ const GameResultsComponent = ({
 																		alt={`Podium Avatar SILVER`}
 																		width={42}
 																		height={42}
-																		unoptimized
 																	/>
 																</div>
 															) : (
@@ -426,10 +422,11 @@ const GameResultsComponent = ({
 					)}
 				</div>
 			</div>
-			{showHostActionAlert && (
-				<HostActionAlert
+			{showActionAlertModal && (
+				<ActionAlertModal
 					header={hostActionHeader}
 					subtext={hostActionSubtext}
+					Icon={FaHourglass}
 				/>
 			)}
 		</>

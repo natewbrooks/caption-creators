@@ -1,9 +1,12 @@
 class Phase {
-	constructor(gameData, phaseConfig, notifyPlayers, phaseIndex, endPhase) {
+	constructor(gameData, phaseConfig, notifyPlayers, phaseIndex, endPhase, resume, pause) {
 		this.name = phaseConfig.name;
 		this.duration = phaseConfig.duration;
 		this.key = phaseConfig.key;
 		this.phaseIndex = phaseIndex;
+
+		this.resume = resume;
+		this.pause = pause;
 
 		this.endPhase = endPhase;
 		this.phaseTimer = null;
@@ -11,6 +14,7 @@ class Phase {
 
 		this.notifyPlayers = notifyPlayers;
 		this.gameData = gameData;
+		this.paused = false; // Add a paused flag
 	}
 
 	start() {
@@ -29,29 +33,29 @@ class Phase {
 			clearInterval(this.phaseTimer);
 		}
 
-		if (this.duration === -1) {
-			// Count up indefinitely if duration -1
-			this.phaseTimer = setInterval(() => {
+		this.phaseTimer = setInterval(() => {
+			if (!this.paused) {
+				// Skip counting if paused
 				this.timeElapsed++;
-				this.notifyPlayers('phase_countdown', {
-					key: this.key,
-					time: this.timeElapsed,
-				});
-			}, 1000);
-		} else {
-			// Count down
-			this.phaseTimer = setInterval(() => {
-				this.timeElapsed++;
-				if (this.timeElapsed >= this.duration) {
-					this.stopPhase();
-				} else {
+				if (this.duration === -1) {
+					// Count up indefinitely if duration is -1
 					this.notifyPlayers('phase_countdown', {
 						key: this.key,
-						time: this.duration - this.timeElapsed,
+						time: this.timeElapsed,
 					});
+				} else {
+					// Count down
+					if (this.timeElapsed >= this.duration) {
+						this.stopPhase();
+					} else {
+						this.notifyPlayers('phase_countdown', {
+							key: this.key,
+							time: this.duration - this.timeElapsed,
+						});
+					}
 				}
-			}, 1000);
-		}
+			}
+		}, 1000);
 	}
 
 	stopPhaseTimer() {
@@ -63,8 +67,29 @@ class Phase {
 
 	stopPhase() {
 		this.stopPhaseTimer();
-
 		this.endPhase(this.key);
+	}
+
+	// Pause the timer
+	pauseTimer() {
+		this.paused = true;
+		this.notifyPlayers('phase_paused', {
+			key: this.key,
+			remainingTime: this.duration === -1 ? this.timeElapsed : this.duration - this.timeElapsed,
+		});
+		this.pause();
+	}
+
+	// Resume the timer from the paused state
+	resumeTimer() {
+		if (this.paused) {
+			this.paused = false;
+			this.notifyPlayers('phase_resumed', {
+				key: this.key,
+				remainingTime: this.duration === -1 ? this.timeElapsed : this.duration - this.timeElapsed,
+			});
+			this.resume();
+		}
 	}
 }
 

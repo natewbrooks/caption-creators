@@ -6,7 +6,7 @@ import { FaSearch, FaUserCircle } from 'react-icons/fa';
 import { IoFilter } from 'react-icons/io5';
 import { FixedSizeList as List } from 'react-window';
 import { FaCrown, FaMedal, FaTrophy } from 'react-icons/fa6';
-import TopBar from '../components/login/topBar.js';
+import TopBar from '../components/game/modules/TopBar.js';
 import AutoSizer from 'react-virtualized-auto-sizer';
 
 export default function LeaderboardPage() {
@@ -203,7 +203,7 @@ export default function LeaderboardPage() {
 									className={`bg-dark rounded-md w-full flex justify-center`}
 									style={{ height: '90%' }}>
 									<h1
-										className={`w-fit h-fit z-20 mt-8 font-manga text-red-300 text-2xl lg:text-5xl`}>
+										className={`w-fit h-fit z-20 mt-8 font-manga text-red-300 text-2xl lg:text-3xl`}>
 										NO MATCHING USER ENTRIES!
 									</h1>
 								</div>

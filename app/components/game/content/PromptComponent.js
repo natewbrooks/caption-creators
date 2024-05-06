@@ -1,11 +1,9 @@
-import { FaCheck } from 'react-icons/fa';
-import { FaUserCircle } from 'react-icons/fa';
+import { FaCheck, FaHourglass } from 'react-icons/fa';
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
-import { FaArrowRight } from 'react-icons/fa6';
 import { IoDice } from 'react-icons/io5';
 import ConfirmationModal from '../modules/ConfirmationModal';
 import { useSocket } from '@/app/contexts/socketContext';
+import ActionAlertModal from '../modules/ActionAlertModal';
 
 const PromptComponent = ({
 	players,
@@ -19,6 +17,7 @@ const PromptComponent = ({
 	const [showConfirmKeyword, setShowConfirmKeyword] = useState(false);
 	const [submitted, setSubmitted] = useState(false);
 	const [isGenerating, setIsGenerating] = useState(false);
+	const [isFetchingVideo, setIsFetchingVideo] = useState(false);
 
 	const { socket, userToken } = useSocket();
 
@@ -41,16 +40,50 @@ const PromptComponent = ({
 		setIsGenerating(false);
 	};
 
-	const handleSubmit = () => {
+	// Let the server know you are actively fetching video and then get the video
+	const fetchVideoForKeyword = async (keyword) => {
+		setIsFetchingVideo(true); // Set fetching video state
+		socket.emit('player_fetching_video', { lobbyId, userToken, prompt }); // Emit signal to server
+
+		try {
+			// Emit a socket signal to let the server know
+			socket.emit('player_fetching_video', { lobbyId, userToken, prompt: keyword });
+
+			// Call the server-side API to fetch the video
+			const response = await fetch('/api/youtube', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ prompt: keyword }),
+			});
+
+			// Parse the JSON response
+			if (response.ok) {
+				const data = await response.json();
+				setIsFetchingVideo(false); // Reset fetching video state
+				return data.videoURL;
+			} else {
+				setIsFetchingVideo(false);
+				throw new Error('Failed to fetch video');
+			}
+		} catch (error) {
+			console.error('Error fetching video:', error);
+			setIsFetchingVideo(false);
+			return null;
+		}
+	};
+
+	const handleSubmit = async () => {
+		const videoURL = await fetchVideoForKeyword(keyword);
 		setShowConfirmKeyword(false);
 		setSubmitted(true);
+
 		if (socket) {
 			socket.emit('game_action', {
 				lobbyId: lobbyId,
 				userToken: userToken,
 				isFinished: true,
 				key: 'prompt',
-				data: { prompt: keyword },
+				data: { prompt: keyword, videoURL: videoURL || '' },
 			});
 			setTimeLeftAtSubmit(gamePhaseTimer);
 			console.log('TIME LEFT: ' + gamePhaseTimer);
@@ -74,7 +107,16 @@ const PromptComponent = ({
 					confirmText='CONFIRM'
 					cancelText='CANCEL'
 					message='You will not be able to change it after this point.'
-					title='CONFIRM KEYWORD / PHRASE'
+					title='CONFIRM KEYWORD'
+				/>
+			)}
+
+			{isFetchingVideo && (
+				<ActionAlertModal
+					header={`FETCHING A VIDEO`}
+					subtext={`"${keyword.toUpperCase()}"`}
+					bgColorClass={`bg-yellow-300`}
+					Icon={FaHourglass}
 				/>
 			)}
 
@@ -83,12 +125,12 @@ const PromptComponent = ({
 				{submitted === false ? (
 					<>
 						<div className='font-manga text-xl md:text-2xl text-yellow-300 w-full text-start'>
-							ENTER SHORT KEYWORD / PHRASE:
+							ENTER VIDEO KEYWORDS:
 						</div>
 						<input
 							type='text'
 							value={keyword}
-							maxLength={30}
+							maxLength={24}
 							onChange={(e) => setKeyword(e.target.value)}
 							onKeyDown={(e) => {
 								if (e.key === 'Enter' && keyword.length > 0) {
@@ -130,7 +172,7 @@ const PromptComponent = ({
 										? 'text-yellow-300'
 										: 'text-red-300'
 								}`}>
-								{keyword.length}/30
+								{keyword.length}/24
 							</div>
 						</div>
 

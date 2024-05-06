@@ -2,7 +2,7 @@
 import { useAuth } from '../contexts/userAuthContext';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import BackButton from '../components/BackButton';
+import BackButton from '../components/game/modules/BackButton';
 import { ImExit } from 'react-icons/im';
 import { FaEdit } from 'react-icons/fa';
 import { FaArrowRight, FaEyeSlash, FaEye, FaXmark } from 'react-icons/fa6';
@@ -94,7 +94,7 @@ export default function ProfilePage() {
 						<div className='w-full flex justify-center text-center'>
 							<h1
 								data-text='PROFILE'
-								className='w-fit xs:text-5xl 2xxl:text-8xl font-sunny text-center'>
+								className='w-fit text-5xl md:text-6xl font-sunny text-center'>
 								PROFILE
 							</h1>
 						</div>
@@ -146,11 +146,11 @@ export default function ProfilePage() {
 												<FaXmark size={20} />
 											</div>
 											<div className={``}>
-												<h1 className='w-full justify-center text-2xl font-manga text-center text-yellow-300 leading-none'>
+												<h1 className='w-full justify-center text-3xl font-sunny text-center text-yellow-300 leading-none'>
 													FORGOT PASSWORD
 												</h1>
 												<h1 className={`text-2xl text-center text-white font-manga`}>
-													To confirm password reset, re-enter your account email:{' '}
+													CONFIRM RESET EMAIL:{' '}
 													<span className={`text-yellow-300`}>{currentUser.email}</span>.
 												</h1>
 											</div>
@@ -168,7 +168,7 @@ export default function ProfilePage() {
 																setCurrentEmail(e.target.value);
 															}
 														}}
-														className='outline-none w-[240px] font-manga text-3xl text-center placeholder:text-md bg-darkAccent text-white px-2 rounded-md'
+														className='outline-none w-[240px] font-manga text-2xl text-center placeholder:text-md bg-darkAccent text-white px-2 rounded-md'
 													/>
 													<button
 														type='submit'
@@ -198,11 +198,11 @@ export default function ProfilePage() {
 											<FaXmark size={20} />
 										</div>
 										<div className='flex flex-col w-full items-center'>
-											<h1 className='w-fit text-2xl font-manga text-center text-yellow-300 '>
+											<h1 className='w-fit text-3xl font-sunny text-center text-yellow-300 '>
 												ENTER CURRENT PASSWORD
 											</h1>
-											<h1 className='w-fit text-2xl font-manga text-center'>
-												Reauthenticate to edit your account information.
+											<h1 className='w-fit text-xl font-manga text-center'>
+												REAUTHENTICATE TO EDIT ACCOUNT INFO
 											</h1>
 										</div>
 										<form
@@ -219,7 +219,7 @@ export default function ProfilePage() {
 															handleReauthenticate(currentPassword);
 														}
 													}}
-													className='outline-none w-[280px] text-center font-manga text-3xl placeholder:text-md bg-darkAccent text-white px-2 pr-8 rounded-md'
+													className='outline-none w-[280px] text-center font-manga text-2xl placeholder:text-md bg-darkAccent text-white px-2 pr-8 rounded-md'
 												/>
 												<div className='absolute inset-y-0 right-0 pr-2 flex items-center'>
 													{passwordShown ? (
@@ -255,7 +255,7 @@ export default function ProfilePage() {
 								)
 							) : editingProfile && reauthenticatedPassword ? (
 								<>
-									<div className='font-sunny text-2xl flex space-x-2 items-center'>
+									<div className='font-manga text-2xl flex space-x-2 items-center'>
 										<FaLock
 											size={24}
 											className={`-translate-y-[0.15rem]`}
@@ -263,19 +263,19 @@ export default function ProfilePage() {
 										<span className='text-yellow-300'>EMAIL:</span>
 										<span className='font-manga'>{currentUser.email}</span>
 									</div>
-									<div className='font-sunny text-2xl flex space-x-2 items-center'>
+									<div className='font-manga text-2xl flex space-x-2 items-center'>
 										<span className='text-yellow-300'>USERNAME:</span>
 										<input
 											type='text'
 											placeholder={currentUser.displayName}
 											value={editUsername}
 											onChange={(e) => setEditUsername(e.target.value)}
-											className='outline-none w-[240px] font-manga text-md placeholder:text-md bg-darkAccent text-white px-2 rounded-md'
+											className='outline-none w-[240px] font-manga text-2xl placeholder:text-md bg-darkAccent text-white px-2 rounded-md'
 										/>
 									</div>
 									<form
 										onSubmit={(e) => e.preventDefault()}
-										className='font-sunny text-2xl flex space-x-2 items-center'>
+										className='font-manga text-2xl flex space-x-2 items-center'>
 										<span className='text-yellow-300'>PASSWORD:</span>
 										<div className='relative w-[240px]'>
 											<input
@@ -283,7 +283,7 @@ export default function ProfilePage() {
 												placeholder='New password'
 												value={editPassword}
 												onChange={(e) => setEditPassword(e.target.value)}
-												className='outline-none w-full font-manga text-xl placeholder:text-md bg-darkAccent text-white px-2 pr-8 rounded-md'
+												className='outline-none w-full font-manga text-2xl placeholder:text-md bg-darkAccent text-white px-2 pr-8 rounded-md'
 											/>
 											<div className='absolute inset-y-0 right-0 pr-2 flex items-center'>
 												{passwordShown ? (

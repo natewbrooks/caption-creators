@@ -1,7 +1,7 @@
-import { useAuth } from '../../contexts/userAuthContext';
+import { useAuth } from '../../../contexts/userAuthContext';
 import { useRouter } from 'next/navigation';
-import BackButton from '../BackButton';
-import UserDisplay from './userDisplay';
+import BackButton from './BackButton';
+import UserDisplay from './UserDisplay';
 
 export default function TopBar({
 	userOnClickEnabled,

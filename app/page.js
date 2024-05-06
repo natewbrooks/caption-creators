@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { FaArrowRight, FaTrophy } from 'react-icons/fa6';
-import UserDisplay from './components/login/userDisplay';
+import UserDisplay from './components/game/modules/UserDisplay';
 import { useAuth } from './contexts/userAuthContext';
 import { useSocket } from './contexts/socketContext';
 
@@ -76,11 +76,11 @@ export default function Home() {
 					showLoginOption={true}
 				/>
 			</div>
-			<div className='relative h-fit flex flex-col items-center leading-none  pb-2 sm:pb-8 md:pb-14 lg:pb-20'>
+			<div className='relative h-fit flex flex-col items-center justify-start  leading-none  pb-2'>
 				<div className={`flex items-center justify-center text-center`}>
 					<h1
 						data-text='Caption Creators'
-						className={`text-yellow-300 font-sunny leading-none text-[4rem] xs:text-[4rem] sm:text-[6rem] md:text-[8rem] xxl:text-[12rem]`}>
+						className={`text-yellow-300 font-sunny leading-none text-[4rem] xs:text-[5rem] sm:text-[7rem] md:text-[8rem] xxl:text-[12rem]`}>
 						Caption Creators
 					</h1>
 					{/* <MdVideoLibrary
@@ -89,16 +89,16 @@ export default function Home() {
 					/> */}
 				</div>
 				<span
-					className={`bg-dark outline outline-2  outline-darkAccent max-w-[280px] md:max-w-[340px] lg:max-w-[600px] px-4 py-1 rounded-md font-manga text-md text-[0.75rem] xs:text-[1.25rem] lg:text-[1.55rem] text-yellow-300 text-center whitespace-normal`}>
+					className={`hidden sm:block bg-dark outline outline-2  outline-darkAccent max-w-[280px] md:max-w-[340px] lg:max-w-[600px] px-4 py-1 rounded-md font-manga text-md text-[0.75rem] xs:text-[1.25rem] lg:text-[1.55rem] text-yellow-300 text-center whitespace-normal`}>
 					HOW TO PLAY:{' '}
 					<span className={`text-white`}>
-						A STANDARD GAME IS 3 ROUNDS WITH 4 PHASES: PROMPTING, CAPTIONING, PREVIEWING, AND
-						VOTING.
+						SUBMIT KEYWORDS TO GENERATE A VIDEO. CAPTION YOUR RANDOMLY ASSIGNED VIDEO. PREVIEW OTHER
+						ASSIGNED VIDEOS. DISTRIBUTE VOTES ON THE FUNNIEST CAPTIONS!
 					</span>
 				</span>
 			</div>
 
-			<div className='h-fit w-fit flex flex-col space-y-2  items-center text-center'>
+			<div className='h-full md:h-fit w-fit flex flex-col space-y-2  items-center justify-center text-center'>
 				<>
 					<button
 						onClick={handleCreateLobby}

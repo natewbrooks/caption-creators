@@ -33,7 +33,6 @@ const PlayerListRow = ({ index, style, data }) => {
 								alt={`Recap Avatar ${index + 1}`}
 								width={48}
 								height={48}
-								unoptimized
 							/>
 						</div>
 					) : (

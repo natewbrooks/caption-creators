@@ -184,7 +184,6 @@ const PlayersScrollbar = ({
 											alt={`Selected Avatar ${index + 1}`}
 											width={48}
 											height={48}
-											unoptimized
 										/>
 										{hasClientSeenPlayersVideo && !hasFinished && (
 											<div

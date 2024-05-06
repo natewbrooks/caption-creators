@@ -13,7 +13,7 @@
 						},
 						{
 							"name": "Prompt Phase",
-							"duration": 10,
+							"duration": 100,
 							"key": "prompt",
 							"options": {
 								"promptGeneration": "human",

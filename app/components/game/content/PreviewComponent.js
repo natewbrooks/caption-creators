@@ -51,7 +51,7 @@ const PreviewComponent = ({
 			setCurrentUserDisplayed(
 				roundData.videoAssignments[firstUniqueVideoAssignmentIndex].userToken
 			);
-			setCurrentVideoDisplayed(roundData.videoAssignments[firstUniqueVideoAssignmentIndex].video);
+			// setCurrentVideoDisplayed(roundData.videoAssignments[firstUniqueVideoAssignmentIndex].video);
 		}
 	}, []);
 
@@ -148,22 +148,21 @@ const PreviewComponent = ({
 					url={currentVideoDisplayed}
 					handleVideoEnd={handleVideoEnd}
 				/>
-				{hasWatchedAllVideos && (
-					<div className={`flex flex-col w-full top-2 relative h-fit justify-center items-center`}>
-						<h1
-							data-text={`YOU'VE WATCHED ALL VIDEOS!`}
-							className='text-xl md:text-2xl font-manga text-yellow-300 text-nowrap'>
-							YOU'VE WATCHED ALL VIDEOS!
-						</h1>
-						<h1
-							data-text={`WAITING FOR ${
-								players.length - usersFinished.length
-							} MORE TO START VOTE...`}
-							className='text-xl md:text-2xl font-manga text-yellow-300 text-nowrap'>
-							WAITING FOR {players.length - usersFinished.length} MORE TO START VOTE...
-						</h1>
-					</div>
-				)}
+				<div
+					className={`${
+						hasWatchedAllVideos ? '' : 'hidden'
+					} flex flex-col w-full top-2 relative h-fit justify-center items-center`}>
+					<h1
+						data-text={`YOU'VE WATCHED ALL VIDEOS!`}
+						className='text-xl md:text-2xl font-manga text-yellow-300 text-nowrap'>
+						YOU'VE WATCHED ALL VIDEOS!
+					</h1>
+					<h1
+						data-text={`WAITING FOR ${players.length - usersFinished.length} MORE TO START VOTE...`}
+						className='text-xl md:text-2xl font-manga text-yellow-300 text-nowrap'>
+						WAITING FOR {players.length - usersFinished.length} MORE TO START VOTE...
+					</h1>
+				</div>
 			</div>
 		</>
 	);

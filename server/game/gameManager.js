@@ -16,8 +16,10 @@ class GameManager {
 		this.io = io;
 		this.players = players;
 		this.videos = {};
+		this.playersFetchingVideo = [];
 
 		this.updateLeaderboardScore = updateLeaderboardScore;
+
 		this.game = null;
 		this.gameActive = false;
 		this.currentPhaseKey = '';
@@ -96,7 +98,6 @@ class GameManager {
 					prompterUserToken: null,
 					prompt: '',
 					video: null,
-					videoDuration: 0,
 				})),
 				phases: phaseData,
 			};
@@ -426,12 +427,15 @@ class GameManager {
 		switch (key) {
 			case 'prompt':
 				console.log(userToken + ' USER KEYWORD: ' + data.prompt);
-				const generatedVideo = this.fetchYouTubeVideo(data.prompt);
+				let generatedVideo = data.videoURL;
+				if (!generatedVideo) {
+					// TODO: If there was not a video provided by the client then have the server try
+					generatedVideo = this.fetchYouTubeVideo(data.prompt);
+				}
+
 				playerData.results.prompt = data.prompt;
 				playerData.results.generatedVideo = generatedVideo;
-				// base the assignment off the gameMode config
-				// async fetch youtube video with keyword - give 1 of random array for testing
-				//
+				// TODO: base the video assignment off the gameMode config
 				let unassignedPlayers = this.roundData.videoAssignments.filter((v) => v.video === null);
 				if (unassignedPlayers.length > 0) {
 					// Randomly pick one unassigned player to assign a video
@@ -440,7 +444,6 @@ class GameManager {
 					selectedPlayer.prompterUserToken = userToken;
 					selectedPlayer.prompt = data.prompt;
 					selectedPlayer.video = generatedVideo;
-					selectedPlayer.videoDuration = 20; // ARBITRARY VALUE FOR NOW
 				}
 				console.log('VIDEO ASSIGNMENTS: ' + JSON.stringify(this.roundData.videoAssignments));
 				break;
@@ -534,6 +537,13 @@ class GameManager {
 		this.currentPhaseIndex = index;
 		this.updateRoundAndPhaseData();
 		this.currentPhaseKey = this.phaseData.key;
+
+		if (
+			this.gameData.usersFetchingVideos?.length !== 0 &&
+			this.roundData?.phases[index - 1]?.key === 'prompt'
+		) {
+			console.log('THERES STILL SOMEONE SEARCHING FOR A VIDEO');
+		}
 
 		// If its a transition phase key then don't reset usersFinishedCurrentPhaseArray so those phases can utilize its data
 		console.log('NEW PHASE NAME: ' + this.currentPhaseKey);

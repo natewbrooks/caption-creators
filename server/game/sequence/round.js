@@ -1,7 +1,16 @@
 const Phase = require('./phase');
 
 class Round {
-	constructor(gameData, roundConfig, notifyPlayers, roundIndex, updatePhaseIndex, endRound) {
+	constructor(
+		gameData,
+		roundConfig,
+		notifyPlayers,
+		roundIndex,
+		updatePhaseIndex,
+		endRound,
+		resume,
+		pause
+	) {
 		this.gameData = gameData;
 		this.roundConfig = roundConfig;
 		this.notifyPlayers = notifyPlayers;
@@ -11,6 +20,9 @@ class Round {
 		this.updatePhaseIndex = updatePhaseIndex;
 		this.multiplier = roundConfig.multiplier;
 
+		this.resume = resume;
+		this.pause = pause;
+
 		this.phases = [];
 		this.currentPhaseIndex = 0;
 	}
@@ -19,7 +31,15 @@ class Round {
 		for (let index = 0; index < this.roundConfig.phases.length; index++) {
 			const phaseConfig = this.roundConfig.phases[index];
 			this.phases.push(
-				new Phase(this.gameData, phaseConfig, this.notifyPlayers, index, this.endPhase.bind(this))
+				new Phase(
+					this.gameData,
+					phaseConfig,
+					this.notifyPlayers,
+					index,
+					this.endPhase.bind(this),
+					this.pause.bind(this),
+					this.resume.bind(this)
+				)
 			);
 		}
 	}

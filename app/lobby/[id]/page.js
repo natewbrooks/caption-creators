@@ -4,15 +4,15 @@ import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useCallback } from 'react';
 import { FaPencil, FaCheck, FaCopy } from 'react-icons/fa6';
 import { LuUnplug } from 'react-icons/lu';
-import TopBar from '@/app/components/login/topBar';
+import TopBar from '@/app/components/game/modules/TopBar';
 import Image from 'next/image';
 import { useAuth } from '@/app/contexts/userAuthContext';
 import LobbyInfoSelectModal from '@/app/components/lobby/LobbyInfoSelectModal';
-import LobbyAvatarSelect from '@/app/components/lobby/LobbyAvatarSelect';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import DropdownNotification from '@/app/components/game/modules/DropdownNotification';
 import { useSocket } from '@/app/contexts/socketContext';
-import HostActionAlert from '@/app/components/game/modules/HostActionAlert';
+import ActionAlertModal from '@/app/components/game/modules/ActionAlertModal';
+import { FaWalking } from 'react-icons/fa';
 
 function PlayerRow({ index, style, data }) {
 	const player = data.players[index];
@@ -22,7 +22,6 @@ function PlayerRow({ index, style, data }) {
 	const editingName = data.editingName;
 	const setPlayerName = data.setPlayerName;
 	const handlePlayerNameSubmit = data.handlePlayerNameSubmit;
-	const handleAvatarSelect = data.handleAvatarSelect;
 	const setEditingName = data.setEditingName;
 	const playerName = data.playerName;
 	const takenAvatars = data.takenAvatars;
@@ -55,25 +54,13 @@ function PlayerRow({ index, style, data }) {
 						<div className='relative w-[40px] h-[40px] md:w-[42px] md:h-[42px]'>
 							<Image
 								src={playerAvatar}
-								layout='responsive'
-								width={100} // These width and height serve as aspect ratio
-								height={100}
+								fill={true}
 								className={`outline-dark outline-2 outline rounded-full`}
 								alt={`Selected Player Avatar ${index + 1}`}
-								unoptimized
+								priority={true}
 							/>
 						</div>
 					)}
-
-					{/* <div className={`absolute w-[480px] top-0`}>
-						<LobbyAvatarSelect
-							avatars={avatars}
-							takenAvatars={takenAvatars}
-							userToken={data.userToken}
-							players={data.players}
-							handleAvatarSelect={handleAvatarSelect}
-						/>
-					</div> */}
 
 					<div
 						style={{ width: !playerAvatar ? 48 : '', height: !playerAvatar ? 48 : '' }}
@@ -172,25 +159,19 @@ export default function LobbyPage() {
 		};
 	}, []);
 
-	const fetchAvatars = async (start, end) => {
-		const loadedAvatars = [];
-		for (let i = start; i <= end; i++) {
-			const avatarPath = `/avatars/${i}.png`; // Path should reflect where the images are stored
-			loadedAvatars.push(avatarPath);
-		}
-		setAvatars(loadedAvatars);
-	};
-
 	useEffect(() => {
 		const fetchData = async () => {
 			if (lobbyId && socket) {
 				socket.emit('fetch_lobby_details', { lobbyId });
-				socket.on('lobby_details', ({ members, hostUserToken, avatarRange, takenAvatars }) => {
+				socket.on('lobby_details', ({ members, hostUserToken, avatars, takenAvatars }) => {
 					setPlayers(members);
 					setHostUserToken(hostUserToken);
 					setTakenAvatars(takenAvatars);
-					if (avatarRange) {
-						fetchAvatars(avatarRange[0], avatarRange[1]);
+					setAvatars(avatars);
+
+					let playerAvatar = members.find((player) => player.userToken === userToken).avatar;
+					if (playerAvatar) {
+						setCurrentAvatar(playerAvatar);
 					}
 				});
 
@@ -198,10 +179,6 @@ export default function LobbyPage() {
 					setPlayers(members);
 					setHostUserToken(hostUserToken);
 					setTakenAvatars(takenAvatars);
-					try {
-						const myAvatar = Object.values(takenAvatars).find(takenAvatars[userToken]);
-						setCurrentAvatar(myAvatar);
-					} catch (error) {}
 				});
 			}
 		};
@@ -329,25 +306,23 @@ export default function LobbyPage() {
 	};
 
 	const handleAvatarSelect = (avatarSrc) => {
-		// Check if the avatar is already taken by another user
 		if (takenAvatars[avatarSrc] && takenAvatars[avatarSrc] !== userToken) {
 			alert('This avatar is already taken. Please choose another.');
 			return;
 		}
 
-		// If selecting a new avatar that is not taken, update locally and emit to server
-		let updatedTakenAvatars = { ...takenAvatars };
-
-		// Remove old avatar selection if it exists
-		Object.keys(updatedTakenAvatars).forEach((key) => {
+		// Create a copy of taken avatars and update it
+		const updatedTakenAvatars = { ...takenAvatars };
+		// Remove previous avatar selection of the current user
+		for (const key in updatedTakenAvatars) {
 			if (updatedTakenAvatars[key] === userToken) {
 				delete updatedTakenAvatars[key];
 			}
-		});
+		}
 
 		updatedTakenAvatars[avatarSrc] = userToken;
-		setTakenAvatars(updatedTakenAvatars);
-		setCurrentAvatar(avatarSrc);
+		setTakenAvatars(updatedTakenAvatars); // Update the state with the new avatars
+		setCurrentAvatar(avatarSrc); // Update the current avatar state
 
 		socket.emit('avatar_selected', {
 			lobbyId,
@@ -370,9 +345,10 @@ export default function LobbyPage() {
 				showProfileIfNotLoggedIn={false}
 			/>
 			{hasGameStarted && (
-				<HostActionAlert
+				<ActionAlertModal
 					header={'HOST STARTED GAME'}
 					subtext={'MOVING TO PAGE...'}
+					Icon={FaWalking}
 				/>
 			)}
 			<div
@@ -431,7 +407,6 @@ export default function LobbyPage() {
 												editingName,
 												setPlayerName,
 												handlePlayerNameSubmit,
-												handleAvatarSelect,
 												setEditingName,
 												userToken,
 												playerName,

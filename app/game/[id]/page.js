@@ -1,11 +1,12 @@
 'use client';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
-import TopBar from '@/app/components/login/topBar';
+import TopBar from '@/app/components/game/modules/TopBar';
 import CaptionComponent from '../../components/game/content/CaptionComponent';
 import PromptComponent from '@/app/components/game/content/PromptComponent';
-import BackButton from '@/app/components/BackButton';
+import BackButton from '@/app/components/game/modules/BackButton';
 import { FaClock, FaHourglassStart } from 'react-icons/fa6';
+import { BiSolidTrafficCone } from 'react-icons/bi';
 import VotingComponent from '@/app/components/game/content/VoteComponent';
 import PlayersScrollbar from '@/app/components/game/modules/PlayersScrollbar';
 import { useSocket } from '@/app/contexts/socketContext';
@@ -14,6 +15,7 @@ import IntroComponent from '@/app/components/game/transition/IntroComponent';
 import OutroComponent from '@/app/components/game/transition/OutroComponent';
 import GameResultsComponent from '@/app/components/game/transition/GameResultsComponent';
 import PreviewComponent from '@/app/components/game/content/PreviewComponent';
+import ActionAlertModal from '@/app/components/game/modules/ActionAlertModal';
 
 export default function GamePage() {
 	const { id: lobbyId } = useParams(); // Current Lobby ID!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -45,7 +47,7 @@ export default function GamePage() {
 	const [gameStartCountdown, setGameStartCountdown] = useState(null);
 	const [gamePhaseTimer, setGamePhaseTimer] = useState(0); // Keeps track of the current phase's
 	const [timeLeftAtSubmit, setTimeLeftAtSubmit] = useState(0);
-	const [currentPhase, setCurrentPhase] = useState('prompt'); // Keeps track of the current phase
+	const [currentPhase, setCurrentPhase] = useState(''); // Keeps track of the current phase
 	const [phaseIndex, setPhaseIndex] = useState(0); // Keep track of current phase INDEX (reconstructed on client)
 	const [roundIndex, setRoundIndex] = useState(0); // Keep track of current round INDEX (reconstructed on client)
 	const [usersFinished, setUsersFinished] = useState([]); // Keeps track of the userTokens that are finished current phase
@@ -283,6 +285,17 @@ export default function GamePage() {
 		}
 	}, [currentPhase, players, userToken]);
 
+	useEffect(() => {
+		if (roundData) {
+			const videoAssignment = roundData.videoAssignments?.find(
+				(assignment) => assignment.userToken === currentUserDisplayed
+			);
+			if (videoAssignment) {
+				setCurrentVideoDisplayed(videoAssignment?.video || '');
+			}
+		}
+	}, [roundIndex, roundData, currentUserDisplayed]);
+
 	return (
 		<div className={`w-full h-full flex flex-col items-center`}>
 			<div className={`w-full hidden md:block`}>
@@ -293,6 +306,7 @@ export default function GamePage() {
 					showProfileIfNotLoggedIn={false}
 				/>
 			</div>
+
 			{/* {usersLoadedGamePage.length === players.length || gameStarted ? (
 				gameStartCountdown > 0 && (
 					<div
@@ -338,24 +352,35 @@ export default function GamePage() {
 				</div>
 			)} */}
 
-			{!usersLoadedGamePage.length === players.length && (
-				<div
-					className={`absolute top-0 bg-dark/80 z-50 w-full h-full flex justify-center items-center`}>
+			{(!usersLoadedGamePage.length === players.length || (!gameStarted && !gameEnded)) &&
+				(players.length > 0 ? (
 					<div
-						className={`w-fit h-fit flex justify-center p-12 bg-green-300 aspect-square max-w-[300px] outline outline-6 outline-dark rounded-full`}>
-						<div className={`flex flex-col space-y-2 items-center justify-center `}>
-							<h1 className={`font-sunny text-3xl text-dark`}>
-								WAITING FOR {usersLoadedGamePage.length - players.length} MORE
-							</h1>
-							<FaHourglassStart
-								size={108}
-								className={`text-dark`}
-							/>
-							<h1 className={`font-sunny text-3xl text-dark`}>TO LOAD THIS PAGE</h1>
+						className={`absolute top-0 bg-dark/80 z-50 w-full h-full flex justify-center items-center`}>
+						<div
+							className={`w-fit h-fit flex justify-center p-12 bg-green-300 aspect-square max-w-[300px] outline outline-6 outline-dark rounded-full`}>
+							<div className={`flex flex-col space-y-2 items-center justify-center `}>
+								<h1 className={`font-sunny text-3xl text-dark`}>
+									WAITING FOR {usersLoadedGamePage.length - players.length} MORE
+								</h1>
+								<FaHourglassStart
+									size={108}
+									className={`text-dark`}
+								/>
+								<h1 className={`font-sunny text-3xl text-dark`}>TO LOAD THIS PAGE</h1>
+							</div>
 						</div>
 					</div>
-				</div>
-			)}
+				) : (
+					<ActionAlertModal
+						header={`GAME NOT FOUND`}
+						subtext={`RETURN HOME`}
+						Icon={BiSolidTrafficCone}
+						bgColorClass={`bg-red-300`}
+						onClick={() => {
+							router.push('/');
+						}}
+					/>
+				))}
 
 			<div
 				className={`flex flex-col w-full items-center h-full space-y-2 leading-none text-center`}>
