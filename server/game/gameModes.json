@@ -66,12 +66,12 @@
 					"phases": [
 						{
 							"name": "Round 1 Intro",
-							"duration": 6,
+							"duration": 10,
 							"key": "intro"
 						},
 						{
 							"name": "Prompt Phase",
-							"duration": 15,
+							"duration": 45,
 							"key": "prompt",
 							"options": {
 								"promptGeneration": "human",
@@ -81,12 +81,12 @@
 						},
 						{
 							"name": "Caption Phase Transition",
-							"duration": 4,
+							"duration": 6,
 							"key": "transition"
 						},
 						{
 							"name": "Caption Phase",
-							"duration": 10,
+							"duration": 80,
 							"key": "caption"
 						},
 						{
@@ -96,12 +96,12 @@
 						},
 						{
 							"name": "Voting Phase Transition",
-							"duration": 4,
+							"duration": 6,
 							"key": "transition"
 						},
 						{
 							"name": "Voting Phase",
-							"duration": 15,
+							"duration": 120,
 							"key": "vote",
 							"options": {
 								"captionLink": "Caption Phase"
@@ -119,12 +119,12 @@
 					"phases": [
 						{
 							"name": "Round 2 Intro",
-							"duration": 5,
+							"duration": 10,
 							"key": "intro"
 						},
 						{
 							"name": "Prompt Phase",
-							"duration": 10,
+							"duration": 45,
 							"key": "prompt",
 							"options": {
 								"promptGeneration": "ai",
@@ -134,22 +134,27 @@
 						},
 						{
 							"name": "Caption Phase Transition",
-							"duration": 4,
+							"duration": 6,
 							"key": "transition"
 						},
 						{
 							"name": "Caption Phase",
-							"duration": 15,
+							"duration": 80,
 							"key": "caption"
 						},
 						{
+							"name": "Preview Phase",
+							"duration": -1,
+							"key": "preview"
+						},
+						{
 							"name": "Voting Phase Transition",
-							"duration": 4,
+							"duration": 6,
 							"key": "transition"
 						},
 						{
 							"name": "Voting Phase",
-							"duration": 10,
+							"duration": 120,
 							"key": "vote",
 							"options": {
 								"captionLink": "Caption Phase"
@@ -172,7 +177,7 @@
 						},
 						{
 							"name": "Prompt Phase",
-							"duration": 10,
+							"duration": 45,
 							"key": "prompt",
 							"options": {
 								"promptGeneration": "ai",
@@ -182,22 +187,27 @@
 						},
 						{
 							"name": "Caption Phase Transition",
-							"duration": 4,
+							"duration": 6,
 							"key": "transition"
 						},
 						{
 							"name": "Caption Phase",
-							"duration": 15,
+							"duration": 80,
 							"key": "caption"
 						},
 						{
+							"name": "Preview Phase",
+							"duration": -1,
+							"key": "preview"
+						},
+						{
 							"name": "Voting Phase Transition",
-							"duration": 4,
+							"duration": 6,
 							"key": "transition"
 						},
 						{
 							"name": "Voting Phase",
-							"duration": 5,
+							"duration": 120,
 							"key": "vote",
 							"options": {
 								"captionLink": "Caption Phase"

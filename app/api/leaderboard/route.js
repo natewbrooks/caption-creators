@@ -33,32 +33,31 @@ export async function GET(req) {
 }
 
 export async function POST(req) {
-	const { email, scoreToAdd } = req.body;
-
-	if (!email || scoreToAdd == null) {
-		return new Response(
-			JSON.stringify({
-				success: false,
-				error: 'Missing email or score',
-			}),
-			{
-				status: 400,
-				headers: {
-					'Content-Type': 'application/json',
-				},
-			}
-		);
-	}
-
 	try {
-		// Update the user's score. Adds the provided score to the existing score
+		const { email, score } = await req.json();
+
+		if (!email || score == null) {
+			return new Response(
+				JSON.stringify({
+					success: false,
+					error: 'Missing email or score',
+				}),
+				{
+					status: 400,
+					headers: {
+						'Content-Type': 'application/json',
+					},
+				}
+			);
+		}
+
 		const results = await query(
 			`
-            UPDATE users 
-            SET score = score + ?
-            WHERE email = ?
-        `,
-			[scoreToAdd, email]
+	        UPDATE users
+	        SET score = score + ?
+	        WHERE email = ?
+	    `,
+			[score, email]
 		);
 
 		// Check if the update was successful
@@ -75,34 +74,18 @@ export async function POST(req) {
 					},
 				}
 			);
-		} else {
-			return new Response(
-				JSON.stringify({
-					success: false,
-					error: 'User not found',
-				}),
-				{
-					status: 404,
-					headers: {
-						'Content-Type': 'application/json',
-					},
-				}
-			);
 		}
+
+		return new Response(JSON.stringify(result), {
+			status: 200,
+			headers: { 'Content-Type': 'application/json' },
+		});
 	} catch (error) {
-		console.error('Database error:', error);
-		return new Response(
-			JSON.stringify({
-				success: false,
-				error: 'Database error',
-			}),
-			{
-				status: 500,
-				headers: {
-					'Content-Type': 'application/json',
-				},
-			}
-		);
+		console.error('Error with YouTube API:', error);
+		return new Response(JSON.stringify({ error: error.message }), {
+			status: 500,
+			headers: { 'Content-Type': 'application/json' },
+		});
 	}
 }
 

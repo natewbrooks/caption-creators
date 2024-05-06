@@ -203,7 +203,7 @@ app.prepare().then(() => {
 			const gameManager = activeGames[lobbyId];
 			if (gameManager) {
 				try {
-					console.log('GAME ACTION DATA BB (SERVER): ' + JSON.stringify(data));
+					console.log('GAME ACTION DATA (SERVER): ' + JSON.stringify(data));
 					gameManager.handlePlayerAction(key, userToken, isFinished, data);
 				} catch (error) {
 					console.error('Error handling action:', error);
@@ -570,16 +570,17 @@ function userFetchingVideo({ lobbyId, userToken, prompt }) {
 	}
 }
 
-async function updateLeaderboardScore(email, points) {
+async function updateLeaderboardScore(email, score) {
 	const fetch = (await import('node-fetch')).default;
+	console.log('(SERVER) EMAIL: ', email, ' SCORE: ', score);
 
 	return fetch('http://localhost:3000/api/leaderboard', {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ email, score: points }),
+		body: JSON.stringify({ email, score }),
 	})
 		.then((response) => response.json())
-		.then((data) => data.success)
+		.then((data) => console.log(JSON.stringify(data)))
 		.catch((error) => {
 			console.error('Error updating leaderboard score:', error);
 			return false;

@@ -155,29 +155,30 @@ const GameResultsComponent = ({
 					className={`bg-dark rounded-md p-2  border-2 border-darkAccent justify-between flex h-full w-full flex-col `}>
 					<div
 						className={`border-b-2 border-b-darkAccent w-full h-fit py-2 flex flex-col justify-center items-center`}>
-						<h1
-							data-text={'GAME ENDED'}
-							className={`font-sunny text-5xl md:text-6xl z-10 text-purple-300`}>
-							GAME ENDED
-						</h1>
-						<div
-							className={`w-full flex justify-center flex-col xs:flex-row items-center space-x-2`}>
-							<div className={`flex flex-row space-x-2 w-[100px] justify-center `}>
-								<FaCrown
-									size={18}
-									className={`text-yellow-300 translate-y-[0.15rem]`}
-								/>
-								<h1 className={`font-manga text-xl l z-10 text-white`}>
-									{finalScores[0]?.name.toUpperCase()}
-								</h1>
-							</div>
-							<div className={`w-[100px] flex flex-row space-x-1 justify-center `}>
-								<div className={`flex font-manga text-xl items-center space-x-2`}>
-									<FaClock
-										size={15}
-										className={`-translate-y-[0.1rem] text-yellow-300`}
+						<div className={`flex flex-col w-fit`}>
+							<h1
+								data-text={'GAME ENDED'}
+								className={`font-sunny text-5xl md:text-6xl z-10 text-purple-300`}>
+								GAME ENDED
+							</h1>
+							<div className={`w-full flex justify-between flex-col xs:flex-row  space-x-2`}>
+								<div className={`flex flex-row space-x-2 w-[100px] justify-start `}>
+									<FaCrown
+										size={18}
+										className={`text-yellow-300 translate-y-[0.15rem]`}
 									/>
-									<span>{formattedTimeElapsed}</span>
+									<h1 className={`font-manga text-xl l z-10 text-white`}>
+										{finalScores[0]?.name.toUpperCase()}
+									</h1>
+								</div>
+								<div className={`w-[100px] flex flex-row space-x-1 justify-end `}>
+									<div className={`flex font-manga text-xl items-center space-x-2`}>
+										<FaClock
+											size={15}
+											className={`-translate-y-[0.1rem] text-yellow-300`}
+										/>
+										<span>{formattedTimeElapsed}</span>
+									</div>
 								</div>
 							</div>
 						</div>

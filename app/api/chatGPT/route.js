@@ -15,7 +15,7 @@ export async function POST(req) {
 				},
 			],
 			model: 'gpt-3.5-turbo',
-			max_tokens: 24,
+			max_tokens: 20,
 		});
 
 		const message = completion.choices[0].message.content.replace(/"/g, '').trim();

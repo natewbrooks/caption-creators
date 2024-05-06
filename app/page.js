@@ -98,7 +98,7 @@ export default function Home() {
 				</span>
 			</div>
 
-			<div className='h-full md:h-fit w-fit flex flex-col space-y-2  items-center justify-center text-center'>
+			<div className='h-fit w-fit flex flex-col space-y-2 md:pt-4 lg:pt-8 items-center justify-center text-center'>
 				<>
 					<button
 						onClick={handleCreateLobby}
