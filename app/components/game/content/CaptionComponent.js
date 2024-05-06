@@ -93,16 +93,16 @@ const CaptionComponent = ({
 				<VideoEmbed url={currentVideoDisplayed} />
 
 				{confirmedCaption ? (
-					<div className='relative top-1 w-full flex justify-center'>
+					<div className='relative top-2 w-full flex justify-center'>
 						<h1
-							data-text='Waiting for others to caption...'
-							className={`w-fit font-sunny text-3xl md:text-4xl text-yellow-300`}>
-							Waiting for others to caption...
+							data-text='WAITING FOR OTHERS TO CAPTION...'
+							className={`w-fit font-manga text-2xl text-yellow-300`}>
+							WAITING FOR OTHERS TO CAPTION...
 						</h1>
 					</div>
 				) : (
 					<div
-						className={`flex z-20 bg-dark border-2 border-darkAccent rounded-b-md p-1 h-fit w-full`}>
+						className={`flex z-20 bg-dark outline outline-2 outline-darkAccent rounded-b-md p-1 h-fit w-full`}>
 						<input
 							type='text'
 							value={currentCaption}

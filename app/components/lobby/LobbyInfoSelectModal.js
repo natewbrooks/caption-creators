@@ -25,7 +25,7 @@ function LobbyInfoSelectModal({
 					handlePlayerNameSubmit();
 				}
 			}}
-			className='flex flex-col items-center justify-between bg-dark outline outline-2 outline-darkAccent p-2 md:p-4 rounded-md w-full h-full'>
+			className='flex flex-col items-center justify-between bg-dark outline outline-2 outline-darkAccent p-2 rounded-md w-full h-full'>
 			<div className={`w-full`}>
 				<div className='font-manga text-xl xl:text-3xl text-yellow-300 w-full text-start'>
 					ENTER GAME NAME:
@@ -36,15 +36,27 @@ function LobbyInfoSelectModal({
 						playerName ||
 						(hostUserToken === userToken ? 'HOST' : 'ANONYMOUS')
 					}
-					className='font-sunny w-full text-3xl sm:text-4xl lg:text-5xl leading-none text-center bg-darkAccent rounded-md outline-none text-white cursor-pointer'
+					className='font-manga w-full text-4xl md:text-5xl leading-none text-center bg-darkAccent rounded-md outline-none text-white cursor-pointer'
 					maxLength={12}
 					value={playerName}
 					onChange={(e) => setPlayerName(e.target.value)}
 				/>
 			</div>
 
-			<div className='flex justify-center font-manga text-md md:text-xl text-white/20 w-full text-center'>
-				* YOU CAN CHANGE YOUR NAME IN THE LOBBY *
+			<div className='flex justify-end xs:justify-between font-manga text-md md:text-xl text-white/20 w-full text-center pt-1'>
+				<div className={`hidden sm:flex w-full space-x-1`}>
+					<span>* YOU CAN CHANGE YOUR NAME IN THE LOBBY</span>
+				</div>
+				<span
+					className={`flex text-nowrap ${
+						playerName.length < 5
+							? 'text-white'
+							: playerName.length <= 8
+							? 'text-yellow-300'
+							: 'text-red-300'
+					} manga w-fit h-fit`}>
+					{playerName.length}/12
+				</span>
 			</div>
 			<LobbyAvatarSelect
 				avatars={avatars}

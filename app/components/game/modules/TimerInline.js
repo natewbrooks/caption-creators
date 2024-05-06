@@ -13,7 +13,7 @@ export default function TimerInline({ timer }) {
 			</div>
 			<h1
 				data-text={`${timer} seconds left.`}
-				className={`font-manga text-2xl ${
+				className={`font-manga ${
 					timer > 10 ? 'text-white' : timer <= 10 && timer >= 5 ? 'text-yellow-300' : 'text-red-300'
 				}
 `}>

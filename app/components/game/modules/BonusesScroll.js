@@ -1,32 +1,43 @@
-import { useState, useEffect, useRef } from 'react';
+import { useRef } from 'react';
 
 const BonusesScroll = ({ playerScoreData, index }) => {
 	const scrollRef = useRef(null);
 
+	// Map bonus keys to their corresponding text descriptions
+	const bonusDescriptions = {
+		majority: 'MAJORITY BONUS',
+		diversity: 'DIVERSITY BONUS',
+		consistency: 'CONSISTENCY BONUS',
+		winner: 'WINNER BONUS',
+		pityParty: 'PITY PARTY BONUS',
+		selfless: 'SELFLESS BONUS',
+	};
+
 	return (
 		<div
 			ref={scrollRef}
-			className={`w-full h-fit flex overflow-x-auto overflow-y-hidden ${
-				index % 2 === 0 ? 'bg-dark' : 'bg-dark'
-			} rounded-md px-2`}
+			className={`w-full h-fit flex overflow-x-auto overflow-y-hidden text-start items-start ${
+				index % 2 === 0 ? 'bg-darkAccent' : 'bg-dark'
+			} rounded-md`}
 			style={{ whiteSpace: 'nowrap' }} // Prevent text wrapping for horizontal scrolling
 		>
-			<div className='py-2 flex w-full font-manga leading-none text-md text-white space-x-6'>
+			<div className='pt-2 min-h-[3ch] flex w-full space-x-4 font-manga leading-none text-md items-start text-white text-start space-x-1'>
 				{/* Check if each field is available before rendering */}
-				{playerScoreData.majorityBonus?.received && (
-					<p className={``}>MAJORITY BONUS +{playerScoreData.majorityBonus.ptsReceived}</p>
-				)}
-				{playerScoreData.diversityBonus?.received && (
-					<p className={``}>DIVERSITY BONUS +{playerScoreData.diversityBonus.ptsReceived}</p>
-				)}
-				{playerScoreData.consistencyBonus?.received && (
-					<p>CONSISTENCY BONUS +{playerScoreData.consistencyBonus.ptsReceived}</p>
-				)}
-				{playerScoreData.winnerBonus?.received && (
-					<p>WINNER BONUS +{playerScoreData.winnerBonus.ptsReceived}</p>
-				)}
-				{playerScoreData.pityPartyBonus?.received && (
-					<p>PITY PARTY BONUS +{playerScoreData.pityPartyBonus.ptsReceived}</p>
+				{playerScoreData && (
+					<>
+						{Object.entries(playerScoreData.bonuses).map(
+							([bonusKey, bonusData]) =>
+								bonusData.received && (
+									<p
+										key={bonusKey}
+										className={``}>
+										<>
+											{bonusDescriptions[bonusKey]} +{bonusData.pts}
+										</>
+									</p>
+								)
+						)}
+					</>
 				)}
 			</div>
 		</div>

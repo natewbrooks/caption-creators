@@ -3,10 +3,12 @@ const { Server } = require('socket.io');
 const next = require('next');
 const { customAlphabet } = require('nanoid');
 const { join } = require('path');
-const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'; // No hyphens or underscores (default has them)
-const nanoid = customAlphabet(alphabet, 4);
 const fs = require('fs');
 const path = require('path');
+const GameManager = require('./game/gameManager');
+
+const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+const nanoid = customAlphabet(alphabet, 4);
 
 const port = process.env.PORT || 3000;
 const dev = process.env.NODE_ENV !== 'production';
@@ -16,8 +18,6 @@ const handle = app.getRequestHandler();
 const lobbies = {}; // Maps lobby IDs to lobby details
 const disconnectQueue = []; // Add users to this list before disconnecting them so they have time to restore their session.
 const activeGames = {}; // Maps lobby IDs to active GameManager instances
-
-const GameManager = require('./game/gameManager');
 
 app.prepare().then(() => {
 	const server = createServer((req, res) => handle(req, res));
@@ -34,6 +34,7 @@ app.prepare().then(() => {
 
 		socket.on('create_lobby', (data) => createLobby(socket, data, io));
 		socket.on('join_lobby', (data) => joinLobby(socket, data, io));
+		socket.on('return_to_lobby', (data) => bringPartyToLobby(socket, data, io));
 		socket.on('update_player_name', (data) =>
 			updatePlayerName(data.lobbyId, data.userToken, data.socket, data.playerName, io)
 		);
@@ -122,8 +123,14 @@ app.prepare().then(() => {
 						path: `/game/${lobbyId}`,
 					});
 				} else {
-					console.log(`Game for lobby ${lobbyId} is already active.`);
-					io.to(lobbyId).emit('start_game_error', 'Game is already active.');
+					// If there is a winner (meaning the game is over) allow restart
+					if (!activeGames[lobbyId].gameActive) {
+						activeGames[lobbyId].startNewGame();
+						activeGames[lobbyId].hostUserToken = userToken;
+					} else {
+						console.log(`Game for lobby ${lobbyId} is already active.`);
+						io.to(lobbyId).emit('start_game_error', 'Game is already active.');
+					}
 				}
 			} else {
 				io.to(lobbyId).emit('start_game_error', 'Only the host can start the game.');
@@ -137,6 +144,11 @@ app.prepare().then(() => {
 			if (lobby && !game) {
 				const user = lobby.members.find((member) => member.userToken === userToken);
 				io.to(lobbyId).emit('users_loaded_game_page', lobby.gamePageLoaded);
+
+				// Send signal to /lobby/${lobbyId} to move pages if a player missed the first signal
+				io.to(lobbyId).emit('navigate_to_game', {
+					path: `/game/${lobbyId}`,
+				});
 
 				if (!user || lobby.gamePageLoaded.includes(userToken)) {
 					io.to(lobbyId).emit(
@@ -161,7 +173,7 @@ app.prepare().then(() => {
 						io: io,
 						players: lobby.members,
 						hostUserToken: lobby.hostUserToken,
-						gameMode: 'Standard',
+						gameMode: 'Dev',
 					});
 					activeGames[lobbyId] = gameManager;
 					gameManager.startNewGame();
@@ -179,6 +191,7 @@ app.prepare().then(() => {
 			const gameManager = activeGames[lobbyId];
 			if (gameManager) {
 				try {
+					console.log('GAME ACTION DATA BB (SERVER): ' + JSON.stringify(data));
 					gameManager.handlePlayerAction(key, userToken, isFinished, data);
 				} catch (error) {
 					console.error('Error handling action:', error);
@@ -302,6 +315,24 @@ function joinLobby(socket, { lobbyId, playerName, userToken, email }, io) {
 	console.log('User connected to lobby: ' + lobbyId);
 }
 
+function bringPartyToLobby(socket, { lobbyId, userToken }, io) {
+	const lobby = lobbies[lobbyId];
+	if (lobby) {
+		const isRequestByHost = lobby.hostUserToken === userToken;
+		if (!isRequestByHost) return;
+
+		if (activeGames[lobbyId]) {
+			io.to(lobbyId).emit('navigate_to_lobby', {
+				path: `/lobby/${lobbyId}`,
+			});
+
+			lobby.gamePageLoaded = [];
+			delete activeGames[lobbyId];
+		}
+	}
+	return null; // Return null if the lobby is not found
+}
+
 // Sends updated lobby details to all clients in the lobby.
 function updateLobby(lobbyId, io) {
 	const lobby = lobbies[lobbyId];
@@ -329,6 +360,13 @@ function leaveLobby(socket, io) {
 			console.log(
 				(disconnectedMember.isHost ? 'Host' : 'User') + ' disconnected from lobby: ' + lobbyId
 			);
+
+			// Free up disconnected users avatar
+			Object.entries(lobby.takenAvatars).forEach(([key, value]) => {
+				if (value === disconnectedMember.userToken) {
+					delete lobby.takenAvatars[key];
+				}
+			});
 
 			// To remove disconnected user from players who have game rendered (so other players don't have the waiting to load screen)
 			const gamePageLoadedMemberIndex = lobby.gamePageLoaded.findIndex((user) => {

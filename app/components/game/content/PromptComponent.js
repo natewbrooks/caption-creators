@@ -173,9 +173,10 @@ const PromptComponent = ({
 			{submitted && (
 				<div className='full h-full w-full flex items-end justify-center'>
 					<h1
-						data-text='Waiting for others to finish...'
-						className={`w-fit font-sunny text-3xl md:text-4xl text-yellow-300`}>
-						Waiting for others to finish...
+						data-text='WAITING FOR OTHERS TO FINISH...
+'
+						className={`w-fit font-sunny text-2xl text-yellow-300`}>
+						WAITING FOR OTHERS TO FINISH...
 					</h1>
 				</div>
 			)}

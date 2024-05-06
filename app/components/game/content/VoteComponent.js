@@ -17,20 +17,21 @@ const VotingComponent = ({
 	phaseIndex,
 	gamePhaseTimer,
 	setTimeLeftAtSubmit,
+	vote,
+	setVote,
 }) => {
 	const [totalVotes, setTotalVotes] = useState(5); // Total votes allowed for clients
 	const [votesUsed, setVotesUsed] = useState(0); // Current client's number of votes used
 	const [LinkedCaptionPhaseData, setLinkedCaptionPhaseData] = useState(null);
 	const [caption, setCaption] = useState('');
-	const [vote, setVote] = useState({});
 	const voteRef = useRef(vote); // Create a ref to track the latest vote state
 
 	const { socket, userToken } = useSocket();
 
 	useEffect(() => {
-		const initialVotes = {};
+		const initialVotes = new Map();
 		players.forEach((player) => {
-			initialVotes[player.userToken] = 0;
+			initialVotes.set(player.userToken, 0);
 		});
 		setVote(initialVotes);
 		voteRef.current = initialVotes;
@@ -38,47 +39,45 @@ const VotingComponent = ({
 
 	useEffect(() => {
 		handleSubmit();
+
+		if (totalVotes === votesUsed) {
+			console.log('USER ' + userToken + ' SUBMITTED VOTE!! ' + Array.from(vote));
+		}
 	}, [vote]);
 
 	const addVote = () => {
 		if (votesUsed < totalVotes && currentUserDisplayed) {
-			setVote((prevVotes) => {
-				const updatedVotes = {
-					...prevVotes,
-					[currentUserDisplayed]: (prevVotes[currentUserDisplayed] || 0) + 1,
-				};
-				voteRef.current = updatedVotes;
-				return updatedVotes;
-			});
+			const updatedVote = new Map(vote);
+			updatedVote.set(currentUserDisplayed, (updatedVote.get(currentUserDisplayed) || 0) + 1);
+			console.log('ADDED VOTE, NEW TOTAL:' + updatedVote.get(currentUserDisplayed));
+			setVote(updatedVote);
 			setVotesUsed(votesUsed + 1);
 		}
 	};
 
 	const subtractVote = () => {
-		if (votesUsed > 0 && currentUserDisplayed && vote[currentUserDisplayed] > 0) {
-			setVote((prevVotes) => {
-				const updatedVotes = {
-					...prevVotes,
-					[currentUserDisplayed]: prevVotes[currentUserDisplayed] - 1,
-				};
-				voteRef.current = updatedVotes;
-				return updatedVotes;
-			});
+		if (votesUsed > 0 && currentUserDisplayed && vote.get(currentUserDisplayed) > 0) {
+			const updatedVote = new Map(vote);
+			updatedVote.set(currentUserDisplayed, (updatedVote.get(currentUserDisplayed) || 0) - 1);
+			console.log('SUBTRACTED VOTE, NEW TOTAL:' + updatedVote.get(currentUserDisplayed));
+			setVote(updatedVote);
 			setVotesUsed(votesUsed - 1);
 		}
 	};
 
 	const handleSubmit = () => {
-		const currentVotes = voteRef.current;
-		if (!currentVotes) {
-			return;
+		const voteObject = {};
+		for (let [key, value] of vote.entries()) {
+			voteObject[key] = value;
 		}
+
+		console.log('VOTE @ SUBMIT: ' + Array.from(vote));
 		socket.emit('game_action', {
 			lobbyId: lobbyId,
 			userToken: userToken,
 			isFinished: votesUsed === totalVotes,
 			key: 'vote',
-			data: { vote: currentVotes },
+			data: { vote: voteObject },
 		});
 		setTimeLeftAtSubmit(gamePhaseTimer);
 		console.log('TIME LEFT: ' + gamePhaseTimer);
@@ -132,8 +131,11 @@ const VotingComponent = ({
 				</div>
 
 				<VideoEmbed url={currentVideoDisplayed} />
-				<div className='flex w-full leading-none  p-3 h-fit  overflow-y-hidden  px-3 md:px-2 md:justify-center bg-darkAccent  border-x-2 border-t-2 border-dark font-manga text-xl md:text-2xl xxl:text-3xl whitespace-nowrap overflow-x-auto'>
-					{caption}
+				<div
+					className={`flex z-20 bg-dark border-2 border-darkAccent rounded-b-md p-1 h-fit w-full`}>
+					<div className='border-2 border-dark focus:outline-none rounded-md font-manga text-white text-3xl text-center bg-darkAccent w-full p-2 md:p-3 placeholder:text-white/50'>
+						{caption ?? 'NO CAPTION SUBMITTED'}
+					</div>
 				</div>
 
 				<div className={`w-full h-fit flex justify-center`}>

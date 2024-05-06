@@ -1,20 +1,24 @@
 import React from 'react';
 import Image from 'next/image';
-import { FaUserCircle, FaCheck } from 'react-icons/fa';
+import { FaUserCircle, FaCheck, FaEye } from 'react-icons/fa';
 import { useState, useEffect, useRef } from 'react';
 import { TiArrowSortedDown } from 'react-icons/ti';
 import { useSocket } from '@/app/contexts/socketContext';
 
 const PlayersScrollbar = ({
 	players,
+	hostUserToken,
+	gameEnded,
 	gameData,
+	roundData,
 	currentRound,
 	currentPhase,
 	currentUserDisplayed,
 	setCurrentUserDisplayed,
-	handleComponentDisplay,
 	usersFinished,
 	phaseData,
+	seenVideos,
+	vote,
 }) => {
 	const scrollContainerRef = useRef(null); // Used in the PlayersScrollbar at the bottom
 	const [activeElementPosition, setActiveElementPosition] = useState(0);
@@ -109,7 +113,7 @@ const PlayersScrollbar = ({
 	};
 
 	return (
-		<div className={`relative flex flex-col justify-center items-center h-fit w-full `}>
+		<div className={`relative flex flex-col justify-center items-center h-fit w-full z-20`}>
 			{/* Arrow pointing to the active element */}
 			{(currentPhase === 'vote' || currentPhase === 'preview') && (
 				<div
@@ -134,13 +138,16 @@ const PlayersScrollbar = ({
 				className='flex bg-dark outline outline-2 outline-darkAccent max-w-[600px] rounded-t-md overflow-x-auto overflow-y-hidden whitespace-nowrap mt-2 justify-start w-full h-fit font-manga text-xl'
 				onScroll={updateIndicatorPosition}>
 				{players.map((player, index) => {
+					const isMe = player.userToken === userToken;
+					const isHost = hostUserToken === player.userToken;
 					const hasFinished = usersFinished.find((userToken) => userToken === player.userToken);
-					const votesFor =
-						currentPhase === 'vote' && phaseData?.userData
-							? phaseData.userData.find((user) => user.userToken === userToken)?.results?.vote?.[
-									player.userToken
-							  ] ?? 0
-							: 0;
+					const votesFor = vote.get(player.userToken);
+
+					const videoAssignment = roundData.videoAssignments?.find(
+						(assignment) => assignment.userToken === player.userToken
+					);
+					const hasClientSeenPlayersVideo =
+						seenVideos.has(videoAssignment?.video) && currentPhase === 'preview';
 
 					return (
 						<div
@@ -148,16 +155,16 @@ const PlayersScrollbar = ({
 							id={`player-${player.userToken}`}
 							className={`${index % 2 === 0 ? 'bg-dark' : 'bg-darkAccent'} ${
 								currentUserDisplayed === player.userToken
-									? 'border-yellow-300/40 border-opacity-20 rounded-md border-2'
+									? 'border-yellow-300/40 border-opacity-20 rounded-t-md rounded-x-md border-2'
 									: ''
-							} transition-colors duration-300 ease-in-out transform inline-flex flex-none flex-col justify-center items-center pt-2 px-6 md:px-8`}
+							}  transition-colors duration-300 ease-in-out transform inline-flex flex-none flex-col justify-center items-center pt-2 px-6 md:px-8`}
 							onClick={() => {
 								if (currentPhase === 'vote') {
 									setCurrentUserDisplayed(player.userToken);
 									updateIndicatorPosition();
 								}
 							}}>
-							<div className={`flex flex-col items-center`}>
+							<div className={`flex flex-col items-center `}>
 								{player.avatar ? (
 									<div className={`relative`}>
 										<Image
@@ -166,10 +173,12 @@ const PlayersScrollbar = ({
 												currentUserDisplayed === player.userToken &&
 												(currentPhase === 'vote' || currentPhase === 'preview')
 													? 'border-yellow-300'
-													: 'border-dark'
+													: `border-dark`
 											} ${
 												hasFinished
 													? 'opacity-40 outline-green-300 border-green-300'
+													: hasClientSeenPlayersVideo
+													? 'opacity-40'
 													: 'opacity-100'
 											}`}
 											alt={`Selected Avatar ${index + 1}`}
@@ -177,6 +186,19 @@ const PlayersScrollbar = ({
 											height={48}
 											unoptimized
 										/>
+										{hasClientSeenPlayersVideo && !hasFinished && (
+											<div
+												className={`absolute top-[0.65rem] right-[.65rem] bg-dark outline-2 outline  p-1 rounded-full`}>
+												<FaEye
+													size={18}
+													className={`${
+														index % 2 === 0
+															? 'text-white outline-dark'
+															: 'text-white outline-darkAccent'
+													}`}
+												/>
+											</div>
+										)}
 										{hasFinished && (
 											<FaCheck
 												size={18}
@@ -201,9 +223,23 @@ const PlayersScrollbar = ({
 												hasFinished
 													? 'opacity-40 outline-green-300 border-green-300'
 													: 'opacity-100'
-											}
-                        border-2 rounded-full transition-all ease-in-out delay-100 duration-500`}
+											}  ${
+												hasClientSeenPlayersVideo && 'opacity-40'
+											}   border-2 rounded-full transition-all ease-in-out delay-100 duration-500`}
 										/>
+										{hasClientSeenPlayersVideo && !hasFinished && (
+											<div
+												className={`absolute top-3 right-3 bg-dark outline-2 outline  p-1 rounded-full`}>
+												<FaEye
+													size={18}
+													className={`${
+														index % 2 === 0
+															? 'text-dark outline-dark'
+															: 'text-darkAccent outline-darkAccent'
+													}`}
+												/>
+											</div>
+										)}
 										{hasFinished && (
 											<FaCheck
 												size={18}
@@ -213,8 +249,21 @@ const PlayersScrollbar = ({
 									</div>
 								)}
 								<h1 className='font-manga text-xl md:text-2xl'>{player.name}</h1>
+								{isMe && (
+									<h1 className='absolute -top-[3px] z-50 left-[3px] font-manga text-yellow-300 text-xs sm:text-lg'>
+										YOU
+									</h1>
+								)}
+								{isHost && !isMe && gameEnded && (
+									<h1 className='absolute -top-[3px] z-50 left-[3px] font-manga text-green-300 text-xs sm:text-lg'>
+										HOST
+									</h1>
+								)}
+
 								{currentPhase === 'vote' && (
-									<h1 className='absolute top-0 z-50 right-1 font-manga text-xl'>x{votesFor}</h1>
+									<h1 className='absolute -top-[3px] z-50 right-[3px] font-manga text-lg'>
+										x{votesFor}
+									</h1>
 								)}
 							</div>
 						</div>

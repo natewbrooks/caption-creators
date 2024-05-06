@@ -105,3 +105,26 @@ export async function POST(req) {
 		);
 	}
 }
+
+export async function updateLeaderboardScore(email, scoreToAdd) {
+	if (!email || scoreToAdd == null) {
+		throw new Error('Missing email or score');
+	}
+
+	try {
+		// Update the user's score
+		const results = await query(`UPDATE users SET score = score + ? WHERE email = ?`, [
+			scoreToAdd,
+			email,
+		]);
+
+		if (results.affectedRows > 0) {
+			return { success: true, message: 'Score updated successfully' };
+		} else {
+			return { success: false, error: 'User not found' };
+		}
+	} catch (error) {
+		console.error('Database error:', error);
+		return { success: false, error: 'Database error' };
+	}
+}

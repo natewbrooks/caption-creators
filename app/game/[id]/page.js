@@ -1,5 +1,5 @@
 'use client';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import TopBar from '@/app/components/login/topBar';
 import CaptionComponent from '../../components/game/content/CaptionComponent';
@@ -32,6 +32,7 @@ export default function GamePage() {
 	*/
 
 	const [playerName, setPlayerName] = useState(''); // Clients game name
+	const router = useRouter();
 	const { socket, userToken } = useSocket(); // Clients websocket and userToken
 
 	const [disconnectingUsers, setDisconnectingUsers] = useState({}); // Players who disconnected or swapped tabs within the last 10 seconds
@@ -56,6 +57,8 @@ export default function GamePage() {
 
 	const [currentUserDisplayed, setCurrentUserDisplayed] = useState(null); // The userToken of the player the client is currently looking at in the voting component
 	const [currentVideoDisplayed, setCurrentVideoDisplayed] = useState(null);
+	const [seenVideos, setSeenVideos] = useState(new Set()); // Keeps track of the video URLS that have been seen by the client in preview phase
+	const [vote, setVote] = useState(new Map()); //Keeps track of the client's vote hashmap
 
 	// const handleCaptionSubmit = (caption) => {
 	//
@@ -146,9 +149,33 @@ export default function GamePage() {
 	}, []);
 
 	useEffect(() => {
-		// Everything sent by the server directly
-		socket.on('lobby_details', ({ members }) => {
-			setPlayers(members);
+		const fetchData = async () => {
+			if (lobbyId && socket) {
+				socket.emit('fetch_lobby_details', { lobbyId });
+				socket.on('lobby_details', ({ members, hostUserToken }) => {
+					setPlayers(members);
+					setHostUserToken(hostUserToken);
+				});
+
+				socket.on('update_lobby', ({ members, hostUserToken }) => {
+					setPlayers(members);
+					setHostUserToken(hostUserToken);
+				});
+			}
+		};
+		fetchData();
+
+		return () => {
+			socket.off('lobby_details');
+			socket.off('update_lobby');
+		};
+	}, [lobbyId, userToken, gameStarted]);
+
+	useEffect(() => {
+		socket.on('navigate_to_lobby', ({ path }) => {
+			if (path) {
+				router.push(path);
+			}
 		});
 
 		socket.on('update_lobby', ({ members, hostUserToken }) => {
@@ -158,15 +185,6 @@ export default function GamePage() {
 		});
 
 		socket.on('users_loaded_game_page', (usersArray) => setUsersLoadedGamePage(usersArray));
-
-		// // Shows countdown til start of game
-		// socket.on('game_start_countdown', (count) => {
-		// 	setGameStartCountdown(count);
-		// 	setGamePhaseTimer(count);
-		// 	if (count < 1) {
-		// 		setGameStartCountdown(null); // Reset countdown after it finishes
-		// 	}
-		// });
 
 		// Everything handled in the GAME, sent by gameManager
 		socket.on('notify_players', ({ event, data }) => {
@@ -181,10 +199,12 @@ export default function GamePage() {
 					setUsersFinished([]);
 					setGameEnded(false);
 					setGameStarted(true);
+					setVote(new Map());
 					break;
 				case 'round_start':
 					setRoundIndex(data.roundIndex);
 					setRoundMultiplier(data.multiplier);
+					setVote(new Map());
 					break;
 				case 'phase_countdown':
 					console.log(data.key + ', ' + data.time);
@@ -226,12 +246,9 @@ export default function GamePage() {
 			}
 		});
 
-		socket.emit('fetch_lobby_details', { lobbyId });
-
 		return () => {
 			socket.off('users_loaded_game_page');
 			socket.off('game_start_countdown');
-			socket.off('lobby_details');
 			socket.off('update_lobby');
 			socket.off('notify_players');
 		};
@@ -472,20 +489,17 @@ export default function GamePage() {
 
 							{currentPhase === 'preview' && (
 								<PreviewComponent
-									players={players}
-									roundIndex={roundIndex}
-									phaseIndex={phaseIndex}
-									gameData={gameData}
-									roundData={roundData}
-									phaseData={phaseData}
-									setGameData={setGameData}
 									lobbyId={lobbyId}
+									players={players}
+									roundData={roundData}
 									currentUserDisplayed={currentUserDisplayed}
 									currentVideoDisplayed={currentVideoDisplayed}
 									setCurrentUserDisplayed={setCurrentUserDisplayed}
 									setCurrentVideoDisplayed={setCurrentVideoDisplayed}
+									seenVideos={seenVideos}
+									setSeenVideos={setSeenVideos}
 									gamePhaseTimer={gamePhaseTimer}
-									setTimeLeftAtSubmit={setTimeLeftAtSubmit}
+									usersFinished={usersFinished}
 								/>
 							)}
 
@@ -504,6 +518,8 @@ export default function GamePage() {
 									setCurrentVideoDisplayed={setCurrentVideoDisplayed}
 									gamePhaseTimer={gamePhaseTimer}
 									setTimeLeftAtSubmit={setTimeLeftAtSubmit}
+									vote={vote}
+									setVote={setVote}
 								/>
 							)}
 
@@ -570,12 +586,17 @@ export default function GamePage() {
 
 					<PlayersScrollbar
 						players={players}
+						hostUserToken={hostUserToken}
+						gameEnded={gameEnded}
 						currentPhase={currentPhase}
 						gameData={gameData}
+						roundData={roundData}
 						currentUserDisplayed={currentUserDisplayed}
 						setCurrentUserDisplayed={setCurrentUserDisplayed}
 						usersFinished={usersFinished || []}
 						phaseData={phaseData}
+						vote={vote}
+						seenVideos={seenVideos}
 					/>
 				</div>
 			</div>

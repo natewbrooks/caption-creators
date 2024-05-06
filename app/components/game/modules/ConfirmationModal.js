@@ -6,10 +6,10 @@ const ConfirmationModal = ({ onConfirm, onCancel, confirmText, cancelText, messa
 			<div className='h-fit flex flex-col space-y-4 p-4 rounded-md bg-dark outline-2 outline outline-darkAccent font-manga'>
 				<div className='flex flex-col leading-none'>
 					<div className='text-3xl xl:text-4xl text-yellow-300'>{title}</div>
-					<div className='text-2xl text-white/40'>{message}</div>
+					<div className='text-xl text-white/40'>{message.toUpperCase()}</div>
 				</div>
 
-				<div className='flex flex-row w-full justify-evenly space-x-4 items-center'>
+				<div className='flex flex-row w-full justify-evenly space-x-2 items-center'>
 					<div
 						onClick={onCancel}
 						className='bg-dark w-full font-sunny text-2xl text-white outline outline-2 outline-red-300 p-2 rounded-md cursor-pointer md:hover:outline-white active:scale-95'>

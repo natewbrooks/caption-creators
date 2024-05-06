@@ -168,7 +168,7 @@ export default function LeaderboardPage() {
 								type='text'
 								onChange={handleSearchChange}
 								value={searchTerm}
-								className={`font-manga text-3xl rounded-md max-h-[30px] min-w-[80px] max-w-[140px] px-2 w-full bg-darkAccent outline outline-4 outline-dark text-white `}
+								className={`font-manga text-2xl rounded-md max-h-[30px] min-w-[80px] max-w-[140px] px-2 w-full bg-darkAccent outline outline-4 outline-dark text-white `}
 							/>
 						</div>
 					</div>
@@ -203,7 +203,7 @@ export default function LeaderboardPage() {
 									className={`bg-dark rounded-md w-full flex justify-center`}
 									style={{ height: '90%' }}>
 									<h1
-										className={`w-fit h-fit z-20 mt-8 font-sunny text-red-300 text-2xl lg:text-5xl`}>
+										className={`w-fit h-fit z-20 mt-8 font-manga text-red-300 text-2xl lg:text-5xl`}>
 										NO MATCHING USER ENTRIES!
 									</h1>
 								</div>

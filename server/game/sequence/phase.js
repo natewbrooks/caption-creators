@@ -28,17 +28,30 @@ class Phase {
 		if (this.phaseTimer !== null) {
 			clearInterval(this.phaseTimer);
 		}
-		this.phaseTimer = setInterval(() => {
-			this.timeElapsed++;
-			if (this.timeElapsed >= this.duration) {
-				this.stopPhase();
-			} else {
+
+		if (this.duration === -1) {
+			// Count up indefinitely if duration -1
+			this.phaseTimer = setInterval(() => {
+				this.timeElapsed++;
 				this.notifyPlayers('phase_countdown', {
 					key: this.key,
-					time: this.duration - this.timeElapsed,
+					time: this.timeElapsed,
 				});
-			}
-		}, 1000);
+			}, 1000);
+		} else {
+			// Count down
+			this.phaseTimer = setInterval(() => {
+				this.timeElapsed++;
+				if (this.timeElapsed >= this.duration) {
+					this.stopPhase();
+				} else {
+					this.notifyPlayers('phase_countdown', {
+						key: this.key,
+						time: this.duration - this.timeElapsed,
+					});
+				}
+			}, 1000);
+		}
 	}
 
 	stopPhaseTimer() {

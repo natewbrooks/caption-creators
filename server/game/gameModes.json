@@ -4,11 +4,16 @@
 			"name": "Dev",
 			"rounds": [
 				{
-					"multiplier": 1,
+					"multiplier": 4.5,
 					"phases": [
 						{
-							"name": "Prompt Phase",
+							"name": "Round 1 Intro",
 							"duration": 1,
+							"key": "intro"
+						},
+						{
+							"name": "Prompt Phase",
+							"duration": 10,
 							"key": "prompt",
 							"options": {
 								"promptGeneration": "human",
@@ -23,12 +28,12 @@
 						},
 						{
 							"name": "Caption Phase",
-							"duration": 1,
+							"duration": 12,
 							"key": "caption"
 						},
 						{
 							"name": "Preview Phase",
-							"duration": 1,
+							"duration": -1,
 							"key": "preview"
 						},
 						{
@@ -38,7 +43,7 @@
 						},
 						{
 							"name": "Voting Phase",
-							"duration": 1,
+							"duration": 20,
 							"key": "vote",
 							"options": {
 								"captionLink": "Caption Phase"
@@ -46,7 +51,7 @@
 						},
 						{
 							"name": "Round 1 Outro",
-							"duration": 10,
+							"duration": 1,
 							"key": "outro"
 						}
 					]
@@ -86,7 +91,7 @@
 						},
 						{
 							"name": "Preview Phase",
-							"duration": 20,
+							"duration": -1,
 							"key": "preview"
 						},
 						{

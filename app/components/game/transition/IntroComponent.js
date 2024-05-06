@@ -49,11 +49,11 @@ const IntroComponent = ({
 
 	return (
 		<>
-			<div
-				className={`relative flex flex-col w-full h-full justify-between items-center space-y-4 `}>
+			<div className={`relative flex flex-col w-full h-full justify-between items-center `}>
 				<div
 					className={`bg-dark rounded-md p-1  border-2 border-darkAccent justify-between flex h-full w-full flex-col items-center `}>
-					<div className={`w-full h-full flex flex-col  space-y-6 justify-center items-center`}>
+					<div
+						className={`w-full h-full flex flex-col space-y-2 py-4 justify-between items-center`}>
 						<h1
 							data-text={`ROUND ${roundIndex}`}
 							className={`font-sunny z-10 text-yellow-300 text-5xl md:text-6xl`}>
@@ -70,9 +70,9 @@ const IntroComponent = ({
 
 							<div className={`w-full z-10 justify-center items-center flex space-x-1`}>
 								<h1
-									data-text={`SCORE MULTIPLIER`}
+									data-text={`VOTE MULTIPLIER`}
 									className={`font-sunny text-4xl leading-none text-white `}>
-									SCORE MULTIPLIER
+									VOTE MULTIPLIER
 								</h1>
 							</div>
 						</div>

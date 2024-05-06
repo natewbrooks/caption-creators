@@ -2,7 +2,7 @@
 import { FixedSizeList as List } from 'react-window';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useCallback } from 'react';
-import { FaPencil, FaCheck, FaCopy, FaPersonWalking } from 'react-icons/fa6';
+import { FaPencil, FaCheck, FaCopy } from 'react-icons/fa6';
 import { LuUnplug } from 'react-icons/lu';
 import TopBar from '@/app/components/login/topBar';
 import Image from 'next/image';
@@ -12,6 +12,7 @@ import LobbyAvatarSelect from '@/app/components/lobby/LobbyAvatarSelect';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import DropdownNotification from '@/app/components/game/modules/DropdownNotification';
 import { useSocket } from '@/app/contexts/socketContext';
+import HostActionAlert from '@/app/components/game/modules/HostActionAlert';
 
 function PlayerRow({ index, style, data }) {
 	const player = data.players[index];
@@ -151,6 +152,25 @@ export default function LobbyPage() {
 	const [error, setError] = useState('');
 	const { currentUser } = useAuth();
 	const router = useRouter();
+
+	useEffect(() => {
+		// Clear pre-existing intervals
+		const intervalIds = new Set();
+		const originalSetInterval = window.setInterval;
+
+		window.setInterval = function (...args) {
+			const id = originalSetInterval.apply(window, args);
+			intervalIds.add(id);
+			return id;
+		};
+
+		// Clear intervals on page load
+		window.onload = () => {
+			for (const id of intervalIds) {
+				clearInterval(id);
+			}
+		};
+	}, []);
 
 	const fetchAvatars = async (start, end) => {
 		const loadedAvatars = [];
@@ -350,47 +370,30 @@ export default function LobbyPage() {
 				showProfileIfNotLoggedIn={false}
 			/>
 			{hasGameStarted && (
-				<div
-					className={`absolute top-0 bg-dark/80 z-50 w-full h-full flex justify-center items-center`}>
-					<div
-						className={`w-fit h-fit flex justify-center p-12 bg-green-300 outline outline-6 aspect-square outline-dark rounded-full`}>
-						<div className={`flex flex-col text-center space-y-2 items-center justify-center `}>
-							<h1
-								data-text='HOST STARTED GAME'
-								className={`font-sunny text-2xl md:text-3xl text-dark`}>
-								HOST STARTED GAME
-							</h1>
-							<FaPersonWalking
-								size={108}
-								className={`hidden xs:block text-dark`}
-							/>
-							<h1
-								data-text='MOVING TO LOBBY...'
-								className={`font-sunny text-2xl md:text-3xl text-dark`}>
-								MOVING TO PAGE...
-							</h1>
-						</div>
-					</div>
-				</div>
+				<HostActionAlert
+					header={'HOST STARTED GAME'}
+					subtext={'MOVING TO PAGE...'}
+				/>
 			)}
 			<div
 				id='lobby-header '
 				className={`flex flex-col space-y-1 mt-2 mb-2 md:mb-4 leading-none justify-center text-center`}>
 				<div className={`relative`}>
-					<div className={`flex space-x-2 w-full justify-center`}>
+					<div className={`flex xs:flex-row flex-col space-x-2 w-full items-center justify-center`}>
 						<h1
-							data-text={`Lobby ID -`}
-							className='font-sunny  xs:text-5xl 2xxl:text-8xl select-none'>
-							Lobby ID -
+							data-text={`Lobby ID`}
+							className='font-sunny text-[2.35rem] sm:text-[3.4rem] select-none'>
+							Lobby ID
 						</h1>
 						<h1
 							data-text={`${lobbyId}`}
-							className='xs:text-5xl 2xxl:text-8xl font-manga select-text text-yellow-300'>
+							className='text-4xl sm:text-5xl flex font-manga select-text text-yellow-300'>
 							{lobbyId}
 						</h1>
 					</div>
 
-					<div className={`absolute -right-10 bottom-3 xxl:bottom-12  bg-dark p-2 rounded-full`}>
+					<div
+						className={`absolute right-1 xs:-right-8 bottom-2 sm:bottom-4 sm:-right-10 xxl:bottom-12  bg-dark p-2 rounded-full`}>
 						<FaCopy
 							onClick={handleLobbyIdCopy}
 							size={18}
@@ -401,7 +404,7 @@ export default function LobbyPage() {
 				<div className={`flex w-full justify-center space-x-2`}>
 					<h1
 						data-text={`~ ${players.length}/9 PLAYERS ~`}
-						className='font-manga text-2xl sm:text-3xl lg:text-4xl select-none'>
+						className='font-manga text-2xl sm:text-3xl select-none'>
 						<span className={`text-green-300`}>~</span> {players.length}/9 PLAYERS{' '}
 						<span className={`text-green-300`}>~</span>
 					</h1>
