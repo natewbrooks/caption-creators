@@ -26,8 +26,8 @@
     npm run dev
     ```
 
-    Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
+   - Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+   - You can open multiple [http://localhost:3000](http://localhost:3000) tabs to utilize the multiplayer functionality locally.
 <br>
 
 ## Setting up Leaderboard MySQL Database Locally
