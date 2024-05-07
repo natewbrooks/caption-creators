@@ -192,7 +192,8 @@ export default function LoginPage() {
 					)}
 					<div className={`w-full flex flex-col items-center justify-center`}>
 						<span className={`font-manga text-center text-2xl select-none`}>
-							DON'T HAVE AN ACCOUNT?{' '}
+							{`DON'T HAVE AN ACCOUNT?`}
+							{` `}
 							<span
 								onClick={() => router.push('/register')}
 								className={`text-[1.75rem] text-yellow-300 font-sunny cursor-pointer sm:hover:opacity-50 sm:active:scale-95`}>

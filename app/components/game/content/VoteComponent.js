@@ -121,14 +121,14 @@ const VotingComponent = ({
 						{players
 							.find((player) => player.userToken === currentUserDisplayed)
 							?.name.toUpperCase() || 'NONE SELECTED'}
-						's CAPTION
+						{`'s CAPTION`}
 					</h1>
 				</div>
 
 				<VideoEmbed url={currentVideoDisplayed} />
 				<div
 					className={`flex z-20 bg-dark border-2 border-darkAccent rounded-b-md p-1 h-fit w-full`}>
-					<div className='border-2 border-dark focus:outline-none rounded-md font-manga text-white text-3xl text-center bg-darkAccent w-full p-2 md:p-3 placeholder:text-white/50'>
+					<div className='border-2 border-dark focus:outline-none rounded-md font-manga text-white text-2xl text-center bg-darkAccent w-full p-2 md:p-3 placeholder:text-white/50'>
 						{caption ?? 'NO CAPTION SUBMITTED'}
 					</div>
 				</div>

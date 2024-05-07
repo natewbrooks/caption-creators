@@ -7,11 +7,11 @@ const ActionAlertModal = ({ header, subtext, Icon, bgColorClass, onClick }) => {
 				onClick={() => {
 					if (onClick) onClick();
 				}}
-				className={`w-fit h-fit flex justify-center p-12 ${
+				className={`w-fit h-fit flex justify-center aspect-square p-12 ${
 					bgColorClass ? bgColorClass : 'bg-green-300'
 				} ${
 					onClick ? 'sm:hover:outline-white cursor-pointer' : ''
-				} outline outline-6 aspect-square outline-dark rounded-full`}>
+				} outline outline-6 outline-dark rounded-full`}>
 				<div className='flex flex-col text-center space-y-2 items-center justify-center'>
 					<h1
 						data-text={header}

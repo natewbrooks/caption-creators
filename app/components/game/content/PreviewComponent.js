@@ -128,41 +128,37 @@ const PreviewComponent = ({
 	return (
 		<>
 			<div className='relative flex flex-col w-full h-full justify-between items-center'>
-				<div className='flex flex-col sm:flex-row items-center w-full space-x-2 justify-center'>
+				<div className='flex flex-col items-center w-full space-x-2 justify-center'>
 					<h1
 						data-text={`PREVIEWING ${
 							players
 								.find((player) => player.userToken === currentUserDisplayed)
 								?.name.toUpperCase() || 'NONE SELECTED'
 						}'s VIDEO `}
-						className='text-xl md:text-2xl lg:text-3xl font-manga text-yellow-300 text-nowrap'>
+						className='text-xl sm:text-2xl lg:text-3xl font-manga text-yellow-300 text-nowrap'>
 						PREVIEWING{' '}
 						{players
 							.find((player) => player.userToken === currentUserDisplayed)
 							?.name.toUpperCase() || 'NONE SELECTED'}
-						's VIDEO
+						{`'s VIDEO`}
 					</h1>
+					{hasWatchedAllVideos && (
+						<div className={`flex flex-col w-full h-full justify-center items-center`}>
+							<h1
+								data-text={`YOU'VE WATCHED ALL VIDEOS! (${players.length}/${usersFinished.length})`}
+								className='text-2xl font-manga text-green-300 text-nowrap'>
+								{`YOU'VE WATCHED ALL VIDEOS! (${usersFinished.length}/${players.length})`}
+							</h1>
+						</div>
+					)}
 				</div>
 
-				<VideoEmbed
-					url={currentVideoDisplayed}
-					handleVideoEnd={handleVideoEnd}
-				/>
-			</div>
-			<div
-				className={`${
-					hasWatchedAllVideos ? '' : 'hidden'
-				} flex flex-col w-full top-2 relative h-fit justify-center items-center`}>
-				<h1
-					data-text={`YOU'VE WATCHED ALL VIDEOS!`}
-					className='text-2xl font-manga text-green-300 text-nowrap'>
-					YOU'VE WATCHED ALL VIDEOS!
-				</h1>
-				<h1
-					data-text={`WAITING FOR ${players.length - usersFinished.length} MORE TO START VOTE...`}
-					className='text-2xl font-manga text-yellow-300 text-nowrap'>
-					WAITING FOR {players.length - usersFinished.length} MORE TO START VOTE...
-				</h1>
+				<div className={`w-full h-full`}>
+					<VideoEmbed
+						url={currentVideoDisplayed}
+						handleVideoEnd={handleVideoEnd}
+					/>
+				</div>
 			</div>
 		</>
 	);

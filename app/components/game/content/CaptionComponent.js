@@ -42,16 +42,8 @@ const CaptionComponent = ({
 			}
 
 			console.log('VIDEO ASSIGNMENT CAPTION: ' + videoAssignment);
-
-			// const captionPhaseData = roundData.phases.find((phase) => phase.key === 'caption');
-			// const playerData = captionPhaseData.userData.find(
-			// 	(data) => data.userToken === currentUserDisplayed
-			// );
-			// if (playerData) {
-			// 	setCaption(playerData.results.caption);
-			// }
 		}
-	}, [roundIndex, roundData, currentUserDisplayed]);
+	}, [roundIndex, roundData, currentUserDisplayed, setCurrentVideoDisplayed, userToken]);
 
 	const handleCaptionSubmit = () => {
 		if (socket) {
@@ -114,7 +106,7 @@ const CaptionComponent = ({
 								}
 							}}
 							placeholder='Enter caption for this video...'
-							className='border-l-2 border-y-2 border-dark focus:outline-none rounded-l-md font-manga text-white text-3xl text-center bg-darkAccent w-full p-2 md:p-3 placeholder:text-white/50'
+							className='border-l-2 border-y-2 border-dark focus:outline-none rounded-l-md font-manga text-white text-2xl text-center bg-darkAccent w-full p-2 md:p-3 placeholder:text-white/50'
 						/>
 						<div
 							onClick={() => {

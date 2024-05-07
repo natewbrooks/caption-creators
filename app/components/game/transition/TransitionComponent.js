@@ -133,7 +133,7 @@ const TransitionComponent = ({
 												<h1
 													data-text={`YOU'LL GET IT NEXT TIME...`}
 													className={`font-manga text-xl sm:text-2xl text-white`}>
-													YOU'LL GET IT NEXT TIME...
+													{`YOU'LL GET IT NEXT TIME...`}
 												</h1>
 											</div>
 										</div>

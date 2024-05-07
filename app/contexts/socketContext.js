@@ -17,11 +17,14 @@ export const SocketProvider = ({ children }) => {
 			}
 			setUserToken(token);
 
-			const newSocket = io('http://localhost:3000', {
-				// Connect the users websocket to our development server
-				query: { token: token },
-				forceNew: true,
-			});
+			const newSocket = io(
+				process.env.NODE_ENV === 'production' ? process.env.SERVER_URL : 'http://localhost:3000',
+				{
+					// Connect the users websocket to our development server
+					query: { token: token },
+					forceNew: true,
+				}
+			);
 
 			newSocket.on('connect', () => {
 				console.log(`Connected with SOCKET ID: ${newSocket.id}`); // Socket ID can't be persistent through reload, hence why we keep track of userToken.

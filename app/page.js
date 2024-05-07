@@ -5,6 +5,7 @@ import { FaArrowRight, FaTrophy } from 'react-icons/fa6';
 import UserDisplay from './components/game/modules/UserDisplay';
 import { useAuth } from '@/app/contexts/UserAuthContext';
 import { useSocket } from '@/app/contexts/SocketContext';
+import AutoSizer from 'react-virtualized-auto-sizer';
 
 export default function Home() {
 	const [lobbyId, setLobbyId] = useState('');
@@ -55,7 +56,7 @@ export default function Home() {
 		}
 	};
 	return (
-		<main className='w-full h-full flex flex-col items-center space-y-4 md:space-y-2'>
+		<main className='w-full h-fit flex flex-col space-y-4 md:space-y-2'>
 			<div className='flex flex-col justify-center items-center sm:flex-row  w-full sm:justify-between md:mb-4'>
 				<div
 					onClick={() => {
@@ -89,7 +90,7 @@ export default function Home() {
 					/> */}
 				</div>
 				<span
-					className={`hidden sm:block bg-dark outline outline-2  outline-darkAccent max-w-[280px] md:max-w-[340px] lg:max-w-[600px] px-4 py-1 rounded-md font-manga text-md text-[0.75rem] xs:text-[1.25rem] lg:text-[1.55rem] text-yellow-300 text-center whitespace-normal`}>
+					className={`hidden md:block bg-dark outline outline-2  outline-darkAccent max-w-[240px] md:max-w-[520px] lg:max-w-[600px] px-4 py-1 rounded-md font-manga text-md text-[0.75rem] xs:text-[1.25rem] lg:text-[1.55rem] text-yellow-300 text-center whitespace-normal`}>
 					HOW TO PLAY:{' '}
 					<span className={`text-white`}>
 						SUBMIT KEYWORDS TO GENERATE A VIDEO. CAPTION YOUR RANDOMLY ASSIGNED VIDEO. PREVIEW OTHER
@@ -98,41 +99,49 @@ export default function Home() {
 				</span>
 			</div>
 
-			<div className='h-fit w-fit flex flex-col space-y-2 md:pt-4 lg:pt-8 items-center justify-center text-center'>
-				<>
-					<button
-						onClick={handleCreateLobby}
-						className='bg-dark p-4 w-full text-center font-sunny text-4xl sm:text-5xl lg:text-6xl  rounded-md text-white outline outline-2 outline-darkAccent  sm:hover:outline-white sm:active:scale-95'>
-						HOST LOBBY
-					</button>
-					<div className='flex flex-col px-4 w-fit items-center bg-dark outline outline-2 outline-darkAccent rounded-md py-4'>
-						<label className='text-center text-4xl sm:text-5xl lg:text-6xl font-sunny pb-2 '>
-							JOIN LOBBY
-						</label>
-						<div className={`flex space-x-1`}>
-							<input
-								type='text'
-								value={lobbyId}
-								maxLength={4} // Set to the length of sever lobby id (nanoid) length
-								onChange={(e) => setLobbyId(e.target.value.replace(/\s/g, ''))} // NO SPACES ALLOWED
-								onKeyDown={(e) => {
-									if (e.key === 'Enter') {
-										handleJoinLobby();
-									}
-								}}
-								placeholder='Lobby ID'
-								className='outline-none font-manga text-white xs:text-xl sm:text-3xl text-center bg-darkAccent w-full py-1 rounded-md placeholder:text-white/50'
-							/>
+			<AutoSizer>
+				{({ height, width }) => (
+					<div
+						style={{ height, width }}
+						className={`flex justify-center items-center `}>
+						<div className='h-fit w-fit flex flex-col space-y-2 text-center'>
 							<button
-								onClick={handleJoinLobby}
-								className='bg-yellow-300 select-none outline-none px-2 rounded-md font-sunny text-xl text-black outline-2 outline-offset-2 sm:hover:outline-white sm:hover:outline sm:active:scale-95'>
-								<FaArrowRight size={20} />
+								onClick={handleCreateLobby}
+								className='bg-dark p-4 w-full text-center font-sunny text-4xl sm:text-5xl lg:text-6xl rounded-md text-white outline outline-2 outline-darkAccent sm:hover:outline-white sm:active:scale-95'>
+								HOST LOBBY
 							</button>
+							<div className='flex flex-col px-4 w-fit items-center bg-dark outline outline-2 outline-darkAccent rounded-md py-4'>
+								<label className='text-center text-4xl sm:text-5xl lg:text-6xl font-sunny pb-2 '>
+									JOIN LOBBY
+								</label>
+								<div className={`flex space-x-1`}>
+									<input
+										type='text'
+										value={lobbyId}
+										maxLength={4} // Set to the length of sever lobby id (nanoid) length
+										onChange={(e) => setLobbyId(e.target.value.replace(/\s/g, ''))} // NO SPACES ALLOWED
+										onKeyDown={(e) => {
+											if (e.key === 'Enter') {
+												handleJoinLobby();
+											}
+										}}
+										placeholder='Lobby ID'
+										className='outline-none font-manga text-white xs:text-xl sm:text-3xl text-center bg-darkAccent w-full py-1 rounded-md placeholder:text-white/50'
+									/>
+									<button
+										onClick={handleJoinLobby}
+										className='bg-yellow-300 select-none outline-none px-2 rounded-md font-sunny text-xl text-black outline-2 outline-offset-2 sm:hover:outline-white sm:hover:outline sm:active:scale-95'>
+										<FaArrowRight size={20} />
+									</button>
+								</div>
+								{error && (
+									<span className='pt-2 font-manga text-xl text-red-400'>Error - {error}</span>
+								)}
+							</div>
 						</div>
-						{error && <span className='pt-2 font-manga text-xl text-red-400'>Error - {error}</span>}
 					</div>
-				</>
-			</div>
+				)}
+			</AutoSizer>
 		</main>
 	);
 }

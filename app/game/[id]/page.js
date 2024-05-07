@@ -393,7 +393,7 @@ export default function GamePage() {
 							ROUND {roundIndex + 1}
 						</h1>
 					</div>
-					<div className='flex w-full justify-center xs:justify-end items-center'>
+					<div className='flex w-full justify-center xs:justify-end whitespace-nowrap text-nowrap items-center'>
 						<div className={`w-fit p-1 mr-1 rounded-full bg-dark -translate-y-[0.15rem]`}>
 							<FaClock
 								size={14}

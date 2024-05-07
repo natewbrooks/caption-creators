@@ -428,9 +428,11 @@ class GameManager {
 			case 'prompt':
 				console.log(userToken + ' USER KEYWORD: ' + data.prompt);
 				let generatedVideo = data.videoURL;
-				if (!generatedVideo) {
+				console.log('GENERATED VIDEO FIRST: ' + generatedVideo);
+				if (generatedVideo.trim() === '') {
 					// TODO: If there was not a video provided by the client then have the server try
 					generatedVideo = this.fetchYouTubeVideo(data.prompt);
+					console.log('GIVING HARDCODED VIDEO NO SUBMISSION: ', generatedVideo);
 				}
 
 				playerData.results.prompt = data.prompt;
@@ -499,6 +501,16 @@ class GameManager {
 			'https://www.youtube.com/shorts/PF_eNg2DRHU',
 			'https://www.youtube.com/shorts/u6e_YSVby3E',
 			'https://www.youtube.com/shorts/oDx2t4UsaxU',
+			'https://www.youtube.com/shorts/zp64uAFLsDs',
+			'https://www.youtube.com/shorts/J_DejYaIlo8',
+			'https://www.youtube.com/shorts/sxmTTS4qros',
+			'https://www.youtube.com/shorts/HiDGfFOzfnk',
+			'https://www.youtube.com/shorts/LOhsmlzWVNk',
+			'https://www.youtube.com/shorts/IGaTcA3Y-CY',
+			'https://www.youtube.com/shorts/tSE--hsBe-4',
+			'https://www.youtube.com/shorts/63IX34q4Us0',
+			'https://www.youtube.com/shorts/nzFabfxNCpE',
+			'https://www.youtube.com/shorts/tEdVIAk9_3w',
 		];
 		const selected = shortURLS[Math.floor(Math.random() * shortURLS.length)];
 		console.log('SELECTED VIDEO: ' + selected);
@@ -544,6 +556,15 @@ class GameManager {
 		) {
 			console.log('THERES STILL SOMEONE SEARCHING FOR A VIDEO');
 		}
+
+		// ASSIGN RANDOM HARDCODED VIDEO IF A PLAYER DIDNT HAVE ONE ASSIGNED
+		this.roundData.videoAssignments = this.roundData.videoAssignments.map((assignment) => {
+			// Check if video is empty or undefined and fetch a new one
+			if (!assignment.video || assignment.video.trim() === '') {
+				assignment.video = this.fetchYouTubeVideo();
+			}
+			return assignment;
+		});
 
 		// If its a transition phase key then don't reset usersFinishedCurrentPhaseArray so those phases can utilize its data
 		console.log('NEW PHASE NAME: ' + this.currentPhaseKey);

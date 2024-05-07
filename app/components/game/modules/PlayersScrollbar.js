@@ -130,8 +130,35 @@ export default function PlayersScrollbar({
 		setTouchMoveX(0);
 	};
 
+	const shouldShowCheckmark = (playerUserToken) => {
+		// Check if the player has finished
+		const playerHasFinished = usersFinished.includes(playerUserToken);
+		// Check if the client has finished
+		const clientHasFinished = usersFinished.includes(userToken);
+
+		// Conditions for showing the checkmark
+		if (playerHasFinished && currentPhase !== 'preview') {
+			return true;
+		}
+		if (playerHasFinished && currentPhase === 'preview' && clientHasFinished) {
+			return true;
+		}
+		return false;
+	};
+
+	const shouldShowEye = (playerUserToken) => {
+		const videoAssignment = roundData.videoAssignments?.find(
+			(assignment) => assignment.userToken === playerUserToken
+		);
+		const clientHasFinished = usersFinished.includes(userToken);
+
+		return (
+			currentPhase === 'preview' && seenVideos.has(videoAssignment?.video) && !clientHasFinished
+		);
+	};
+
 	return (
-		<div className={`relative flex flex-col justify-center items-center h-fit w-full z-20`}>
+		<div className={`relative flex flex-col justify-center items-center h-fit w-full mt-1 z-20`}>
 			{/* Arrow pointing to the active element */}
 			{(currentPhase === 'vote' || currentPhase === 'preview') && (
 				<div
@@ -166,6 +193,7 @@ export default function PlayersScrollbar({
 					);
 					const hasClientSeenPlayersVideo =
 						seenVideos.has(videoAssignment?.video) && currentPhase === 'preview';
+					const isClientFinished = usersFinished.find((player) => player.userToken === userToken);
 
 					return (
 						<div
@@ -177,7 +205,7 @@ export default function PlayersScrollbar({
 									: ''
 							}  transition-colors duration-300 ease-in-out transform inline-flex flex-none flex-col justify-center items-center pt-2 px-6 md:px-8`}
 							onClick={() => {
-								if (currentPhase === 'vote' || (currentPhase === 'preview' && hasFinished)) {
+								if (currentPhase === 'vote' || (currentPhase === 'preview' && isClientFinished)) {
 									setCurrentUserDisplayed(player.userToken);
 									updateIndicatorPosition();
 								}
@@ -187,15 +215,15 @@ export default function PlayersScrollbar({
 									<div className={`relative`}>
 										<Image
 											src={player.avatar}
-											className={`border-2 rounded-full transition-all ease-in-out delay-100 duration-500 ${
+											className={`outline outline-2 rounded-full transition-all ease-in-out delay-100 duration-500 ${
 												currentPhase === 'vote' ? 'cursor-pointer' : `cursor-default`
 											}  ${
 												currentUserDisplayed === player.userToken &&
 												(currentPhase === 'vote' || currentPhase === 'preview')
-													? 'border-yellow-300'
-													: `border-dark`
+													? 'outline-yellow-300'
+													: ``
 											} ${
-												hasFinished
+												shouldShowCheckmark(player.userToken)
 													? 'opacity-40 outline-green-300 border-green-300'
 													: hasClientSeenPlayersVideo
 													? 'opacity-40'
@@ -205,7 +233,7 @@ export default function PlayersScrollbar({
 											width={48}
 											height={48}
 										/>
-										{hasClientSeenPlayersVideo && (
+										{shouldShowEye(player.userToken) && (
 											<div
 												className={`absolute top-[0.65rem] right-[.65rem] bg-dark outline-2 outline  p-1 rounded-full`}>
 												<FaEye
@@ -218,7 +246,7 @@ export default function PlayersScrollbar({
 												/>
 											</div>
 										)}
-										{hasFinished && (
+										{shouldShowCheckmark(player.userToken) && (
 											<FaCheck
 												size={18}
 												className={`absolute top-4 right-4 text-green-300`}
@@ -239,14 +267,14 @@ export default function PlayersScrollbar({
 													? 'border-yellow-300'
 													: ' '
 											} ${
-												hasFinished
+												shouldShowCheckmark(player.userToken)
 													? 'opacity-40 outline-green-300 border-green-300'
 													: 'opacity-100'
 											}  ${
 												hasClientSeenPlayersVideo && 'opacity-40'
 											}   border-2 rounded-full transition-all ease-in-out delay-100 duration-500`}
 										/>
-										{hasClientSeenPlayersVideo && !hasFinished && (
+										{shouldShowEye(player.userToken) && (
 											<div
 												className={`absolute top-3 right-3 bg-dark outline-2 outline  p-1 rounded-full`}>
 												<FaEye
@@ -259,7 +287,7 @@ export default function PlayersScrollbar({
 												/>
 											</div>
 										)}
-										{hasFinished && (
+										{shouldShowCheckmark(player.userToken) && (
 											<FaCheck
 												size={18}
 												className={`absolute top-4 right-4 text-green-300`}
@@ -269,18 +297,18 @@ export default function PlayersScrollbar({
 								)}
 								<h1 className='font-manga text-xl md:text-2xl'>{player.name}</h1>
 								{isMe && (
-									<h1 className='absolute -top-[3px] z-50 left-[3px] font-manga text-yellow-300 text-xs sm:text-lg'>
+									<h1 className='absolute -top-[2px] z-50 left-[4px] font-manga text-yellow-300 text-xs sm:text-lg'>
 										YOU
 									</h1>
 								)}
 								{isHost && !isMe && gameEnded && (
-									<h1 className='absolute -top-[3px] z-50 left-[3px] font-manga text-green-300 text-xs sm:text-lg'>
+									<h1 className='absolute -top-[2px] z-50 left-[4px] font-manga text-green-300 text-xs sm:text-lg'>
 										HOST
 									</h1>
 								)}
 
 								{currentPhase === 'vote' && (
-									<h1 className='absolute -top-[3px] z-50 right-[3px] font-manga text-lg'>
+									<h1 className='absolute -top-[2px] z-50 right-[4px] font-manga text-lg'>
 										x{votesFor}
 									</h1>
 								)}

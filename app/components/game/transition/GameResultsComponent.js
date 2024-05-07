@@ -403,7 +403,7 @@ const GameResultsComponent = ({
 						<div className={`flex flex-col`}>
 							<h1
 								data-text={`EXIT PARTY`}
-								className={`font-manga text-white py-1 `}>
+								className={`font-manga text-white pb-1 pt-2 `}>
 								WAITING FOR HOST ACTION...
 							</h1>
 							<div
