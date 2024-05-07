@@ -141,12 +141,6 @@ const VotingComponent = ({
 							className={`text-3xl xl:text-4xl rounded-md bg-dark py-2 border-red-300 border-2 leading-none font-sunny text-white flex h-full w-full items-center justify-center md:hover:border-white active:scale-95 cursor-pointer`}>
 							-1 VOTE
 						</div>
-						{/* <div className={`flex flex-col w-full justify-center items-center py-2`}>
-							<h1
-								className={`text-xl md:text-2xl xxl:text-3xl font-manga text-white text-nowrap px-1 w-fit`}>
-								x{vote[currentUserDisplayed] || 0} votes{' '}
-							</h1>
-						</div> */}
 						<div
 							onClick={() => addVote()}
 							className={`text-3xl xl:text-4xl py-2 rounded-md bg-dark border-green-300 border-2 leading-none font-sunny  text-white flex h-full w-full items-center justify-center md:hover:border-white active:scale-95 cursor-pointer`}>

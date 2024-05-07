@@ -85,7 +85,7 @@ export const UserAuthProvider = ({ children }) => {
 			// Wait for the user to verify their email
 			const verifiedUser = await waitForEmailVerification(user);
 
-			// Make a POST request to store user details in the database
+			// Make a request to add user details to the database
 			const response = await fetch('/api/users/', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
@@ -99,8 +99,10 @@ export const UserAuthProvider = ({ children }) => {
 		} catch (error) {
 			console.error('Registration error:', error);
 			// Delete user if email verification didn't work
-			signOut(user);
-			deleteUser(user);
+			if (user) {
+				signOut(user);
+				deleteUser(user);
+			}
 			throw error;
 		}
 	};
@@ -125,7 +127,6 @@ export const UserAuthProvider = ({ children }) => {
 		}
 	};
 
-	// Change this to update the user and leaderboard databases with the logged in users userToken and the newUsername
 	const changeUsername = async (newUsername) => {
 		if (!currentUser) {
 			throw new Error('No user is signed in');
@@ -150,7 +151,7 @@ export const UserAuthProvider = ({ children }) => {
 			// If the update is successful, update the user's profile on the client side
 			await updateProfile(currentUser, { displayName: newUsername }); // Assuming `updateProfile` handles client-side profile update
 			setCurrentUser({ ...currentUser, displayName: newUsername, username: newUsername }); // Update both displayName and username in state
-			await refreshUser(); // Optionally refresh user data if needed
+			await refreshUser(); // Refresh user data
 
 			console.log('Username update successful:', data.message);
 		} catch (error) {

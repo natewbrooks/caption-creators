@@ -31,8 +31,6 @@ const CaptionComponent = ({
 	const { socket, userToken } = useSocket();
 
 	useEffect(() => {
-		console.log('ROUND DATA CAPTION: ' + JSON.stringify(roundData));
-
 		if (roundData) {
 			const videoAssignment = roundData.videoAssignments.find(
 				(assignment) => assignment.userToken === userToken
@@ -40,8 +38,6 @@ const CaptionComponent = ({
 			if (videoAssignment) {
 				setCurrentVideoDisplayed(videoAssignment.video);
 			}
-
-			console.log('VIDEO ASSIGNMENT CAPTION: ' + videoAssignment);
 		}
 	}, [roundIndex, roundData, currentUserDisplayed, setCurrentVideoDisplayed, userToken]);
 
@@ -57,7 +53,6 @@ const CaptionComponent = ({
 			setConfirmedCaption(true);
 			setShowConfirmCaption(false);
 			setTimeLeftAtSubmit(gamePhaseTimer);
-			console.log('TIME LEFT: ' + gamePhaseTimer);
 		} else {
 			console.error('Socket not available');
 		}

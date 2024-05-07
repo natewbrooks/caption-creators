@@ -30,7 +30,7 @@ const IntroComponent = ({
 		'bg-yellow-300',
 		'bg-pink-300',
 	];
-	// Choose a random color from the array
+	// Choose a random color from the array idky why just cool
 	const randomBgColor = bgColors[Math.floor(Math.random() * bgColors.length)];
 
 	useEffect(() => {

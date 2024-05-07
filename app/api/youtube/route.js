@@ -1,9 +1,5 @@
 import { google } from 'googleapis';
-import NodeCache from 'node-cache';
 import https from 'https';
-
-// Memory cache with a TTL of 1 hour
-const cache = new NodeCache({ stdTTL: 3600 });
 
 const agent = new https.Agent({
 	keepAlive: true,
@@ -12,6 +8,8 @@ const agent = new https.Agent({
 	keepAliveMsecs: 300000, // 5 minutes keep-alive
 });
 
+// Helper function
+// Attempts to find a YouTube Short (<= 60s)
 async function searchForShortVideo(prompt) {
 	const youtube = google.youtube({
 		version: 'v3',
@@ -36,12 +34,14 @@ async function searchForShortVideo(prompt) {
 		throw new Error('No videos found for the prompt');
 	}
 
+	// List of video the video id's returned based off the search
 	const videoIds = response.data.items.map((item) => item.id.videoId).join(',');
 	const detailsResponse = await youtube.videos.list({
 		id: videoIds,
 		part: 'contentDetails,snippet',
 	});
 
+	// Get rid of the items that are > 60s
 	const filteredItems = detailsResponse.data.items.filter((item) => {
 		const duration = item.contentDetails.duration;
 		const match = duration.match(/PT(?:(\d+)M)?(\d+)S/);
@@ -56,6 +56,7 @@ async function searchForShortVideo(prompt) {
 		return filteredItems[randomIndex];
 	}
 
+	// Send a random index of the videos under 60s
 	const randomIndex = Math.floor(Math.random() * filteredItems.length);
 	const selectedVideo = filteredItems[randomIndex];
 	return {
@@ -64,21 +65,11 @@ async function searchForShortVideo(prompt) {
 	};
 }
 
+// Request to fetch a YouTube video based off the provided prompt
 export async function POST(req) {
 	try {
 		const { prompt } = await req.json();
-		const cachedVideo = cache.get(prompt);
-
-		if (cachedVideo) {
-			console.log('Returning cached result for prompt:', prompt);
-			return new Response(JSON.stringify(cachedVideo), {
-				status: 200,
-				headers: { 'Content-Type': 'application/json' },
-			});
-		}
-
 		const result = await searchForShortVideo(prompt);
-		cache.set(prompt, result);
 
 		return new Response(JSON.stringify(result), {
 			status: 200,

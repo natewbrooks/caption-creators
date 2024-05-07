@@ -1,12 +1,12 @@
 import { query } from '../../../server/database';
 import { v4 as uuidv4 } from 'uuid';
 
+// Request to add a new user
 export async function POST(req) {
 	try {
-		// Parse the request body
+		// Destructure the request body
 		const { username, email } = await req.json();
 
-		// Check for missing fields
 		if (!username || !email) {
 			return new Response(JSON.stringify({ error: 'Username and email are required' }), {
 				status: 400,
@@ -61,6 +61,7 @@ export async function POST(req) {
 	}
 }
 
+// Query to get the userToken of a persons username or email (both are unique to each player)
 export async function GET(req) {
 	const { username, email } = await req.json();
 
@@ -72,16 +73,16 @@ export async function GET(req) {
 		});
 	}
 
-	// Construct the query based on what is provided
+	// Construct the query based on whether email OR username is provided
 	let queryStr = `SELECT userToken FROM users WHERE `;
 	let queryParams = [];
 
-	if (username) {
-		queryStr += `username = ?`;
-		queryParams.push(username);
-	} else if (email) {
+	if (email) {
 		queryStr += `email = ?`;
 		queryParams.push(email);
+	} else if (username) {
+		queryStr += `username = ?`;
+		queryParams.push(username);
 	}
 
 	// Execute the query
@@ -105,6 +106,7 @@ export async function GET(req) {
 	);
 }
 
+// Request to update a users username
 export async function PUT(req) {
 	const { currentUsername, newUsername } = await req.json(); // Assume the request includes the current username and the new desired username
 

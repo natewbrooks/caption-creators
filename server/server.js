@@ -575,7 +575,7 @@ async function updateLeaderboardScore(email, score) {
 	console.log('(SERVER) EMAIL: ', email, ' SCORE: ', score);
 
 	return fetch('http://localhost:3000/api/leaderboard', {
-		method: 'POST',
+		method: 'PUT',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({ email, score }),
 	})

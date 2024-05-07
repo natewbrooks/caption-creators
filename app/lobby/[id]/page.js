@@ -272,7 +272,7 @@ export default function LobbyPage() {
 	const handlePlayerNameSubmit = useCallback(() => {
 		if (playerName.trim()) {
 			const newName = playerName.trim();
-			setPlayerName(newName); // set state only once per submit to avoid triggering re-renders
+			setPlayerName(newName); // Set state only once per submit to avoid triggering re-renders
 
 			const updatedPlayers = players.map((player) => {
 				if (player.userToken === userToken) {

@@ -195,7 +195,6 @@ class GameManager {
 			console.log('VOTE PHASE: ' + JSON.stringify(votePhase.userData));
 
 			// Count votes for player excluding self votes
-			// Count votes for player excluding self votes
 			let votesForPlayer = 0;
 			let selfVotesForPlayer = 0;
 
@@ -371,7 +370,7 @@ class GameManager {
 						winningPlayerScore = points;
 					}
 
-					// add score to leaderboard database if they have an account
+					// Add score to leaderboard database if they have an account
 					const player = this.players.find((player) => player.userToken === userToken);
 					const email = player?.email || null;
 
@@ -488,6 +487,7 @@ class GameManager {
 		console.log('currentPhaseData: ' + JSON.stringify(this.phaseData));
 	}
 
+	// Fetches hardcoded video for now, should be used to handle if the user didn't submit a prompt in timee
 	fetchYouTubeVideo(keyword) {
 		// if (keyword === '') {
 		// 	keyword = this.getAIKeyword();

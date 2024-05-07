@@ -13,7 +13,6 @@ function LobbyAvatarSelect({ avatars, takenAvatars, userToken, players, handleAv
 			</h1>
 			<div style={{ height: 'calc(100% - 64px)' }}>
 				{' '}
-				{/* Adjust this value to account for the header */}
 				<AutoSizer>
 					{({ height, width }) => {
 						return (

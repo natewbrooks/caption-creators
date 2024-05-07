@@ -27,12 +27,13 @@ export default function GamePage() {
 					name: playerName,
 					email: email,
 					isHost: true,
-					userToken: hostUserToken,
-					avatar: null,
+					userToken: uuidv4(),	
+					avatar: '/avatars/x.png',  				
 				},
 			],
 	*/
 
+	const [hostUserToken, setHostUserToken] = useState('');
 	const [playerName, setPlayerName] = useState(''); // Clients game name
 	const router = useRouter();
 	const { socket, userToken } = useSocket(); // Clients websocket and userToken
@@ -44,23 +45,24 @@ export default function GamePage() {
 	const [phaseData, setPhaseData] = useState([]); // Keeps track of current phase data
 	const [roundScoreData, setRoundScoreData] = useState({}); // Keeps track of current round's score data when outro key is detected
 
-	const [gameStartCountdown, setGameStartCountdown] = useState(null);
-	const [gamePhaseTimer, setGamePhaseTimer] = useState(0); // Keeps track of the current phase's
-	const [timeLeftAtSubmit, setTimeLeftAtSubmit] = useState(0);
-	const [currentPhase, setCurrentPhase] = useState(''); // Keeps track of the current phase
-	const [phaseIndex, setPhaseIndex] = useState(0); // Keep track of current phase INDEX (reconstructed on client)
 	const [roundIndex, setRoundIndex] = useState(0); // Keep track of current round INDEX (reconstructed on client)
-	const [usersFinished, setUsersFinished] = useState([]); // Keeps track of the userTokens that are finished current phase
-	const [roundMultiplier, setRoundMultiplier] = useState(1); // Keeps track of current round multiplier
+	const [phaseIndex, setPhaseIndex] = useState(0); // Keep track of current phase INDEX (reconstructed on client)
+
 	const [gameStarted, setGameStarted] = useState(false);
 	const [gameEnded, setGameEnded] = useState(false);
-	const [hostUserToken, setHostUserToken] = useState('');
-	const [usersLoadedGamePage, setUsersLoadedGamePage] = useState([]);
 
+	const [gamePhaseTimer, setGamePhaseTimer] = useState(0); // Keeps track of the current phase's
+	const [gameStartCountdown, setGameStartCountdown] = useState(null);
+	const [roundMultiplier, setRoundMultiplier] = useState(1); // Keeps track of current round multiplier
+	const [currentPhase, setCurrentPhase] = useState(''); // Keeps track of the current phase
+	const [usersFinished, setUsersFinished] = useState([]); // Keeps track of the userTokens that are finished current phase
+	const [usersLoadedGamePage, setUsersLoadedGamePage] = useState([]); // Keeps track of the players with the game page loaded (for starting game in sync)
+
+	const [timeLeftAtSubmit, setTimeLeftAtSubmit] = useState(0);
 	const [currentUserDisplayed, setCurrentUserDisplayed] = useState(null); // The userToken of the player the client is currently looking at in the voting component
-	const [currentVideoDisplayed, setCurrentVideoDisplayed] = useState(null);
-	const [seenVideos, setSeenVideos] = useState(new Set()); // Keeps track of the video URLS that have been seen by the client in preview phase
-	const [vote, setVote] = useState(new Map()); //Keeps track of the client's vote hashmap
+	const [currentVideoDisplayed, setCurrentVideoDisplayed] = useState(null); // The videoURL of the current user's video
+	const [seenVideos, setSeenVideos] = useState(new Set()); // Keeps track of the UNIQUE video URLS that have been seen by the client in preview phase
+	const [vote, setVote] = useState(new Map()); // Keeps track of the client's vote hashmap
 
 	// const handleCaptionSubmit = (caption) => {
 	//
@@ -188,7 +190,7 @@ export default function GamePage() {
 
 		socket.on('users_loaded_game_page', (usersArray) => setUsersLoadedGamePage(usersArray));
 
-		// Everything handled in the GAME, sent by gameManager
+		// gameManager's method of updating the clients with current gameData
 		socket.on('notify_players', ({ event, data }) => {
 			switch (event) {
 				case 'game_start':
@@ -306,51 +308,6 @@ export default function GamePage() {
 					showProfileIfNotLoggedIn={false}
 				/>
 			</div>
-
-			{/* {usersLoadedGamePage.length === players.length || gameStarted ? (
-				gameStartCountdown > 0 && (
-					<div
-						className={`absolute top-0 bg-dark/80 z-50 w-full h-full flex justify-center items-center`}>
-						<div
-							className={`w-fit h-fit flex justify-center p-12 bg-green-300 outline outline-6 outline-dark rounded-full`}>
-							<div className={`flex flex-col items-center justify-center `}>
-								<h1
-									data-text='GAME STARTS IN...'
-									className={`font-sunny text-3xl text-dark`}>
-									GAME STARTS IN...
-								</h1>
-								<h1
-									data-text={`${gameStartCountdown}`}
-									id='startTimer'
-									className={` translate-y-4 text-9xl font-manga z-20 ${
-										gameStartCountdown >= 4
-											? 'text-white'
-											: gameStartCountdown <= 3 && gameStartCountdown >= 2
-											? 'text-yellow-300'
-											: 'text-red-300'
-									}`}>
-									{gameStartCountdown || 'GO!'}
-								</h1>
-							</div>
-						</div>
-					</div>
-				)
-			) : (
-				<div
-					className={`absolute top-0 bg-dark/80 z-50 w-full h-full flex justify-center items-center`}>
-					<div
-						className={`w-fit h-fit flex justify-center p-12 bg-green-300 aspect-square max-w-[400px] outline outline-6 outline-dark rounded-full`}>
-						<div className={`flex flex-col items-center justify-center `}>
-							<h1
-								data-text='GAME STARTS IN...'
-								className={`font-sunny text-3xl text-dark`}>
-								WAITING FOR {usersLoadedGamePage?.length || 0} / {players?.length || 0} PLAYERS TO
-								LOAD PAGE
-							</h1>
-						</div>
-					</div>
-				</div>
-			)} */}
 
 			{(!usersLoadedGamePage.length === players.length || (!gameStarted && !gameEnded)) &&
 				(players.length > 0 ? (

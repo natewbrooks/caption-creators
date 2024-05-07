@@ -80,10 +80,6 @@ export default function LeaderboardPage() {
 					</div>
 					<span className='text-white/10 scale-[175%]'>|</span>
 					<div className='flex items-center space-x-2 text-2xl md:text-3xl'>
-						{/* <FaUserCircle
-							size={24}
-							className={`text-white`}
-						/> */}
 						<span> {sortedUsers[index].username}</span>
 					</div>
 				</div>

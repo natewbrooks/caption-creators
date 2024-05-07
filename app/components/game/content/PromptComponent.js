@@ -78,6 +78,7 @@ const PromptComponent = ({
 		setSubmitted(true);
 
 		if (socket) {
+			// This is how the user sends frontend data to lobbies gameManager
 			socket.emit('game_action', {
 				lobbyId: lobbyId,
 				userToken: userToken,
@@ -86,7 +87,6 @@ const PromptComponent = ({
 				data: { prompt: keyword, videoURL: videoURL || '' },
 			});
 			setTimeLeftAtSubmit(gamePhaseTimer);
-			console.log('TIME LEFT: ' + gamePhaseTimer);
 		} else {
 			console.error('Socket not available or not connected.');
 		}

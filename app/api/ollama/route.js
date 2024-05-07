@@ -1,11 +1,10 @@
 import ollama from 'ollama';
 
+// NOT USED
+
 export async function POST(req) {
 	try {
-		console.log('API Route Hit');
 		const { prompt } = await req.json();
-		console.log('Prompt:', prompt);
-
 		const systemMessage = {
 			role: 'system',
 			content: `Your task is to provide a single, concise search term for YouTube Shorts that is catchy, popular, and funny. Do not include explanations, introductions, or multiple terms.`,
@@ -16,7 +15,8 @@ export async function POST(req) {
 			content: `Generate a concise search term for the prompt: "${prompt}" . ONLY PRINT ONE STRING OF SEARCH TERMS.`,
 		};
 
-		// Make a request to Ollama using the chat method
+		// Make a request to Ollama using the chat method given the model
+		// Need to locally pull the model, (e.g) `ollama pull llama2`
 		const response = await ollama.chat({
 			model: 'llama2',
 			messages: [systemMessage, userMessage],

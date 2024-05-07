@@ -321,7 +321,7 @@ const GameResultsComponent = ({
 										<div className={`h-fit`}>
 											<List
 												height={finalScores.length * 80}
-												width={width} // Use full width provided by AutoSizer
+												width={width}
 												itemCount={finalScores.length}
 												itemSize={80}
 												itemData={{ players: finalScores }}>
