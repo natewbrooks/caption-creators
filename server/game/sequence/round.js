@@ -29,7 +29,7 @@ class Round {
 
 	initPhases() {
 		for (let index = 0; index < this.roundConfig.phases.length; index++) {
-			const phaseConfig = this.roundConfig.phases[index];
+			const phaseConfig = this.gameData.rounds[this.roundIndex].phases[index];
 			this.phases.push(
 				new Phase(
 					this.gameData,

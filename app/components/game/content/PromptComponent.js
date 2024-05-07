@@ -1,4 +1,4 @@
-import { FaCheck, FaHourglass } from 'react-icons/fa';
+import { FaCheck, FaHourglassStart } from 'react-icons/fa';
 import { useState, useEffect } from 'react';
 import { IoDice } from 'react-icons/io5';
 import ConfirmationModal from '../modules/ConfirmationModal';
@@ -43,6 +43,7 @@ const PromptComponent = ({
 	// Let the server know you are actively fetching video and then get the video
 	const fetchVideoForKeyword = async (keyword) => {
 		setIsFetchingVideo(true); // Set fetching video state
+		setShowConfirmKeyword(false);
 		socket.emit('player_fetching_video', { lobbyId, userToken, prompt }); // Emit signal to server
 
 		try {
@@ -116,7 +117,7 @@ const PromptComponent = ({
 					header={`FETCHING A VIDEO`}
 					subtext={`"${keyword.toUpperCase()}"`}
 					bgColorClass={`bg-yellow-300`}
-					Icon={FaHourglass}
+					Icon={FaHourglassStart}
 				/>
 			)}
 

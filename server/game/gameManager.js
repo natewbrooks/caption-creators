@@ -27,6 +27,7 @@ class GameManager {
 		this.currentPhaseIndex = 0;
 		this.usersFinishedCurrentPhase = [];
 		this.transitionPhaseKeys = ['transition', 'intro', 'outro'];
+		this.previewsDuration = 0;
 
 		this.gameMode = gameMode;
 		this.gameModeConfig = this.initGameConfig(gameMode);
@@ -76,16 +77,24 @@ class GameManager {
 		}
 
 		this.gameModeConfig.rounds.forEach((roundConfig, roundIndex) => {
-			const phaseData = roundConfig.phases.map((phaseConfig) => ({
-				name: phaseConfig.name,
-				key: phaseConfig.key,
-				duration: phaseConfig.duration,
-				options: phaseConfig.options,
-				userData: this.players.map((player) => ({
-					userToken: player.userToken,
-					results: {},
-				})),
-			}));
+			const phaseData = roundConfig.phases.map((phaseConfig) => {
+				const phaseDuration = phaseConfig.duration;
+				let totalPreviewDuration;
+				if (phaseConfig.key === 'preview') {
+					totalPreviewDuration = phaseDuration * this.players.length;
+				}
+
+				return {
+					name: phaseConfig.name,
+					key: phaseConfig.key,
+					duration: phaseConfig.key === 'preview' ? totalPreviewDuration : phaseDuration,
+					options: phaseConfig.options,
+					userData: this.players.map((player) => ({
+						userToken: player.userToken,
+						results: {},
+					})),
+				};
+			});
 
 			const roundData = {
 				round: roundIndex + 1,

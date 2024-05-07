@@ -33,7 +33,7 @@
 						},
 						{
 							"name": "Preview Phase",
-							"duration": -1,
+							"duration": 60,
 							"key": "preview"
 						},
 						{
@@ -91,7 +91,7 @@
 						},
 						{
 							"name": "Preview Phase",
-							"duration": -1,
+							"duration": 60,
 							"key": "preview"
 						},
 						{
@@ -144,7 +144,7 @@
 						},
 						{
 							"name": "Preview Phase",
-							"duration": -1,
+							"duration": 60,
 							"key": "preview"
 						},
 						{
@@ -197,7 +197,7 @@
 						},
 						{
 							"name": "Preview Phase",
-							"duration": -1,
+							"duration": 60,
 							"key": "preview"
 						},
 						{

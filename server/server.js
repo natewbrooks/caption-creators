@@ -1,7 +1,7 @@
 const { createServer } = require('http');
 const { Server } = require('socket.io');
-const next = require('next');
 const { customAlphabet } = require('nanoid');
+const next = require('next');
 const { join } = require('path');
 const fs = require('fs');
 const path = require('path');
@@ -34,6 +34,7 @@ app.prepare().then(() => {
 
 		socket.on('create_lobby', (data) => createLobby(socket, data, io));
 		socket.on('join_lobby', (data) => joinLobby(socket, data, io));
+		socket.on('leave_lobby', () => leaveLobby(socket, io));
 		socket.on('return_to_lobby', (data) => bringPartyToLobby(socket, data, io));
 		socket.on('update_player_name', (data) =>
 			updatePlayerName(data.lobbyId, data.userToken, data.socket, data.playerName, io)
@@ -41,182 +42,137 @@ app.prepare().then(() => {
 		socket.on('fetch_lobby_details', (data) => fetchLobbyDetails(socket, data, io));
 		socket.on('user_fetching_video', (data) => userFetchingVideo(data));
 		socket.on('avatar_selected', (data) => avatarSelected(socket, data, io));
-		socket.on('leave_lobby', () => leaveLobby(socket, io));
+
+		socket.on('game_page_loaded', (data) => handleGamePageLoaded(socket, data, io));
+		// Create new GameManager object for new game and hash it with lobbyID as key
+		socket.on('start_game', (data) => startGame(data, io));
 		socket.on('leave_game', () => leaveGame(socket, io));
-
-		socket.on('reload', (userToken) => {
-			// On reload add the player to disconnect queue to make them eligible for disconnect
-			disconnectQueue.push(userToken);
+		// Generalized socket connection with standardized data format to delegate to lobbyID's active GameManager
+		socket.on('game_action', (data) => {
+			handleGameAction(socket, data);
 		});
 
-		socket.on('disconnect', () => {
-			// Get the disconnecting user's userToken before the socketId changes
-			const disconnectingUser = findUserToken(socket.id);
-			// If there was a page reload, the disconnecting user would have been added to the disconnect queue.
-			if (disconnectingUser && disconnectQueue.includes(disconnectingUser)) {
-				console.log('Start timeout for session');
-				// Emit to all clients in the lobby that the disconnect timer has started for this user
-				let lobbyId = findLobbyId(disconnectingUser);
-				let game = activeGames[findLobbyId(disconnectingUser)];
-				if (lobbyId) {
-					io.to(lobbyId).emit('disconnectTimerStarted', {
-						userToken: disconnectingUser,
-						duration: 10,
-					});
-				}
+		// On reload add the player to disconnect queue to make them eligible for disconnect
+		socket.on('reload', (userToken) => disconnectQueue.push(userToken));
 
-				setTimeout(() => {
-					// If the user has reconnected before the timeout finishes, then it won't trigger a disconnect
-					if (!disconnectQueue.includes(disconnectingUser)) {
-						console.log(disconnectingUser + ' user session restored!');
-					} else {
-						leaveLobby(socket, io);
-						if (lobbyId) {
-							io.to(lobbyId).emit('disconnectTimerEnded', disconnectingUser);
-						}
-						if (game) {
-							leaveGame(socket, io);
-						}
-					}
-				}, 10000); // Adjust the timeout duration as needed
-			} else {
-				// If the player closes the tab, then we want to immediately disconnect
-				leaveLobby(socket, io);
-			}
-		});
-
+		socket.on('disconnect', () => disconnect(socket, io));
 		// If the connected player is in the disconnect queue, remove them from the queue because they have restored their session.
-		socket.on('restore_session', (userToken) => {
-			if (disconnectQueue.includes(userToken)) {
-				disconnectQueue.splice(disconnectQueue.indexOf(userToken), 1);
-
-				const lobbyId = findLobbyId(userToken);
-				if (lobbyId) {
-					// Update the user's socket ID in the lobby to handle the new connection
-					updateUserSocketId(lobbyId, userToken, socket.id, io);
-
-					// This ensures the user's socket is subscribed to the lobby's room again
-					socket.join(lobbyId);
-					console.log(
-						`User ${userToken} reconnected and joined lobby ${lobbyId} with new socket ID ${socket.id}`
-					);
-					if (lobbyId) {
-						io.to(lobbyId).emit('disconnectTimerEnded', userToken);
-					}
-
-					// Send an update to all members of the lobby about the reconnection
-					updateLobby(lobbyId, io);
-				} else {
-					console.log(`Lobby not found for userToken ${userToken}. Cannot restore session.`);
-				}
-			}
-		});
+		socket.on('restore_session', (userToken) => restoreSession(socket, userToken, io));
 
 		// RELATED TO INDIVIDUAL LOBBIES GAMEMANAGER
-
-		// Create new GameManager object for new game and hash it with lobbyID as key
-		socket.on('start_game', ({ lobbyId, userToken }) => {
-			const lobby = lobbies[lobbyId];
-			if (lobby && lobby.hostUserToken === userToken) {
-				if (!activeGames[lobbyId]) {
-					// Send players to game page
-					io.to(lobbyId).emit('navigate_to_game', {
-						path: `/game/${lobbyId}`,
-					});
-				} else {
-					// If there is a winner (meaning the game is over) allow restart
-					if (!activeGames[lobbyId].gameActive) {
-						activeGames[lobbyId].startNewGame();
-						activeGames[lobbyId].hostUserToken = userToken;
-					} else {
-						// If the user was participating in the game, reconnect them
-						if (
-							activeGames[lobbyId].roundData[0]?.userData.find(
-								(user) => user.userToken === userToken
-							)
-						) {
-							io.lobbyId.to(lobbyId).emit('navigate_to_game', {
-								path: `/game/${lobbyId}`,
-							});
-
-							updateLobby(lobbyId, io);
-						}
-					}
-				}
-			} else {
-				io.to(lobbyId).emit('start_game_error', 'Only the host can start the game.');
-			}
-		});
-
-		socket.on('game_page_loaded', ({ lobbyId, userToken }) => {
-			const lobby = lobbies[lobbyId];
-			const game = activeGames[lobbyId];
-			// If lobby exists and game doesn't already exist
-			if (lobby && !game) {
-				const user = lobby.members.find((member) => member.userToken === userToken);
-				io.to(lobbyId).emit('users_loaded_game_page', lobby.gamePageLoaded);
-
-				// Send signal to /lobby/${lobbyId} to move pages if a player missed the first signal
-				io.to(lobbyId).emit('navigate_to_game', {
-					path: `/game/${lobbyId}`,
-				});
-
-				if (!user || lobby.gamePageLoaded.includes(userToken)) {
-					io.to(lobbyId).emit(
-						'game_page_loaded_error',
-						'Provided user is not in lobby: ' + lobbyId
-					);
-					return;
-				}
-
-				lobby.gamePageLoaded.push(userToken);
-				// If all players have loaded the game page
-				if (lobby.gamePageLoaded.length === lobby.members.length) {
-					// Start a countdown before initializing the game
-					// let countdown = 3;
-					// const countdownInterval = setInterval(() => {
-					// 	io.to(lobbyId).emit('game_start_countdown', countdown);
-					// 	countdown--;
-					// 	if (countdown < 0) {
-					// 		clearInterval(countdownInterval);
-					const gameManager = new GameManager({
-						lobbyId: lobbyId,
-						io: io,
-						players: lobby.members,
-						hostUserToken: lobby.hostUserToken,
-						gameMode: 'Dev',
-						updateLeaderboardScore: updateLeaderboardScore,
-					});
-					activeGames[lobbyId] = gameManager;
-					gameManager.startNewGame();
-					// 	}
-					// }, 1000);
-				}
-			} else {
-				socket.emit('game_page_loaded_error', 'Lobby does not exist');
-				return;
-			}
-		});
-
-		// Generalized socket connection with standardized data format to delegate to lobbyID's active GameManager
-		socket.on('game_action', ({ lobbyId, key, userToken, isFinished, data }) => {
-			const gameManager = activeGames[lobbyId];
-			if (gameManager) {
-				try {
-					console.log('GAME ACTION DATA (SERVER): ' + JSON.stringify(data));
-					gameManager.handlePlayerAction(key, userToken, isFinished, data);
-				} catch (error) {
-					console.error('Error handling action:', error);
-					socket.emit('error', { message: 'Error processing action' });
-				}
-			} else {
-				socket.emit('error', { message: 'Game session not found.' });
-			}
-		});
 	});
 
 	server.listen(port, () => console.log(`> Ready on http://localhost:${port}`));
 });
+
+function handleGamePageLoaded(socket, { lobbyId, userToken }, io) {
+	const lobby = lobbies[lobbyId];
+	const game = activeGames[lobbyId];
+	// If lobby exists and game doesn't already exist
+	if (lobby && !game) {
+		const user = lobby.members.find((member) => member.userToken === userToken);
+		io.to(lobbyId).emit('users_loaded_game_page', lobby.gamePageLoaded);
+
+		// Send signal to /lobby/${lobbyId} to move pages if a player missed the first signal
+		io.to(lobbyId).emit('navigate_to_game', {
+			path: `/game/${lobbyId}`,
+		});
+
+		if (!user || lobby.gamePageLoaded.includes(userToken)) {
+			io.to(lobbyId).emit('game_page_loaded_error', 'Provided user is not in lobby: ' + lobbyId);
+			return;
+		}
+
+		lobby.gamePageLoaded.push(userToken);
+		// If all players have loaded the game page
+		if (lobby.gamePageLoaded.length === lobby.members.length) {
+			// Start a countdown before initializing the game
+			// let countdown = 3;
+			// const countdownInterval = setInterval(() => {
+			// 	io.to(lobbyId).emit('game_start_countdown', countdown);
+			// 	countdown--;
+			// 	if (countdown < 0) {
+			// 		clearInterval(countdownInterval);
+			const gameManager = new GameManager({
+				lobbyId: lobbyId,
+				io: io,
+				players: lobby.members,
+				hostUserToken: lobby.hostUserToken,
+				gameMode: 'Standard',
+				updateLeaderboardScore: updateLeaderboardScore,
+			});
+			activeGames[lobbyId] = gameManager;
+			gameManager.startNewGame();
+			// 	}
+			// }, 1000);
+		}
+	} else {
+		socket.emit('game_page_loaded_error', 'Lobby does not exist');
+		return;
+	}
+}
+
+function restoreSession(socket, userToken, IO) {
+	if (disconnectQueue.includes(userToken)) {
+		disconnectQueue.splice(disconnectQueue.indexOf(userToken), 1);
+
+		const lobbyId = findLobbyId(userToken);
+		if (lobbyId) {
+			// Update the user's socket ID in the lobby to handle the new connection
+			updateUserSocketId(lobbyId, userToken, socket.id, io);
+
+			// This ensures the user's socket is subscribed to the lobby's room again
+			socket.join(lobbyId);
+			console.log(
+				`User ${userToken} reconnected and joined lobby ${lobbyId} with new socket ID ${socket.id}`
+			);
+			if (lobbyId) {
+				io.to(lobbyId).emit('disconnectTimerEnded', userToken);
+			}
+
+			// Send an update to all members of the lobby about the reconnection
+			updateLobby(lobbyId, io);
+		} else {
+			console.log(`Lobby not found for userToken ${userToken}. Cannot restore session.`);
+		}
+	}
+}
+
+function disconnect(socket, io) {
+	// Get the disconnecting user's userToken before the socketId changes
+	const disconnectingUser = findUserToken(socket.id);
+	// If there was a page reload, the disconnecting user would have been added to the disconnect queue.
+	if (disconnectingUser && disconnectQueue.includes(disconnectingUser)) {
+		console.log('Start timeout for session');
+		// Emit to all clients in the lobby that the disconnect timer has started for this user
+		let lobbyId = findLobbyId(disconnectingUser);
+		let game = activeGames[findLobbyId(disconnectingUser)];
+		if (lobbyId) {
+			io.to(lobbyId).emit('disconnectTimerStarted', {
+				userToken: disconnectingUser,
+				duration: 10,
+			});
+		}
+
+		setTimeout(() => {
+			// If the user has reconnected before the timeout finishes, then it won't trigger a disconnect
+			if (!disconnectQueue.includes(disconnectingUser)) {
+				console.log(disconnectingUser + ' user session restored!');
+			} else {
+				leaveLobby(socket, io);
+				if (lobbyId) {
+					io.to(lobbyId).emit('disconnectTimerEnded', disconnectingUser);
+				}
+				if (game) {
+					leaveGame(socket, io);
+				}
+			}
+		}, 10000); // Adjust the timeout duration as needed
+	} else {
+		// If the player closes the tab, then we want to immediately disconnect
+		leaveLobby(socket, io);
+	}
+}
 
 // Searches for a player in a lobby using their user token and returns the player object or null if not found.
 function findPlayerInLobby(lobbyId, userToken) {
@@ -431,6 +387,37 @@ function leaveLobby(socket, io) {
 	});
 }
 
+function startGame({ lobbyId, userToken }, io) {
+	const lobby = lobbies[lobbyId];
+	if (lobby && lobby.hostUserToken === userToken) {
+		if (!activeGames[lobbyId]) {
+			// Send players to game page
+			io.to(lobbyId).emit('navigate_to_game', {
+				path: `/game/${lobbyId}`,
+			});
+		} else {
+			// If there is a winner (meaning the game is over) allow restart
+			if (!activeGames[lobbyId].gameActive) {
+				activeGames[lobbyId].startNewGame();
+				activeGames[lobbyId].hostUserToken = userToken;
+			} else {
+				// If the user was participating in the game, reconnect them
+				if (
+					activeGames[lobbyId].roundData[0]?.userData.find((user) => user.userToken === userToken)
+				) {
+					io.lobbyId.to(lobbyId).emit('navigate_to_game', {
+						path: `/game/${lobbyId}`,
+					});
+
+					updateLobby(lobbyId, io);
+				}
+			}
+		}
+	} else {
+		io.to(lobbyId).emit('start_game_error', 'Only the host can start the game.');
+	}
+}
+
 // Fetches and sends the details of a specific lobby to a requesting client.
 function fetchLobbyDetails(socket, { lobbyId }, io) {
 	const lobby = lobbies[lobbyId];
@@ -445,6 +432,21 @@ function fetchLobbyDetails(socket, { lobbyId }, io) {
 		avatars: lobby.avatars,
 		takenAvatars: lobby.takenAvatars,
 	});
+}
+
+function handleGameAction(socket, { lobbyId, key, userToken, isFinished, data }) {
+	const gameManager = activeGames[lobbyId];
+	if (gameManager) {
+		try {
+			console.log('GAME ACTION DATA (SERVER): ' + JSON.stringify(data));
+			gameManager.handlePlayerAction(key, userToken, isFinished, data);
+		} catch (error) {
+			console.error('Error handling action:', error);
+			socket.emit('error', { message: 'Error processing action' });
+		}
+	} else {
+		socket.emit('error', { message: 'Game session not found.' });
+	}
 }
 
 function getRandomAvatars(count, callback) {
