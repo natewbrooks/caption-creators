@@ -30,7 +30,7 @@
 
 <br>
 
-## Setting up Leaderboard Database Locally
+## Setting up Leaderboard MySQL Database Locally
 
 1. **Download and Install MySQL**
     - Download MySQL from the official site: [MySQL Downloads](https://dev.mysql.com/downloads/mysql/).
@@ -69,3 +69,30 @@ CREATE USER 'leaderboard_user'@'localhost' IDENTIFIED BY 'pass@123';
 GRANT SELECT, INSERT, UPDATE, DELETE ON leaderboard.* TO 'leaderboard_user'@'localhost';
 FLUSH PRIVILEGES;
 ```
+
+<br>
+
+## Setting Up API Key Environment Variables
+
+Enables use of OpenAI chat generation and YouTube searches
+
+1. **Create the `.env.local` File**
+   - Navigate to your project's root directory.
+   - Create a new file named `.env.local`.
+
+2. **Add the Environment Variables**
+   - Open the `.env.local` file in a text editor.
+   - Add the following environment variables:
+
+    ```plaintext
+    # API keys
+    OPENAI_API_KEY="YOUR-OPENAI-API-KEY"
+    YOUTUBE_API_KEY="YOUR-YOUTUBE-API-KEY"
+
+    # Server configuration
+    SERVER_URL="http://3.223.225.252"
+    ```
+
+3. **Save and Verify**
+   - Save the `.env.local` file.
+   - Ensure that the variables are correctly loaded by calling them; generating or submitting a prompt call the OpenAI and YouTube API's respectively.
