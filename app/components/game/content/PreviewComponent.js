@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import VideoEmbed from '../modules/VideoEmbed';
-import { useSocket } from '@/app/contexts/socketContext';
+import { useSocket } from '@/app/contexts/SocketContext';
 
 const PreviewComponent = ({
 	lobbyId,
@@ -148,21 +148,21 @@ const PreviewComponent = ({
 					url={currentVideoDisplayed}
 					handleVideoEnd={handleVideoEnd}
 				/>
-				<div
-					className={`${
-						hasWatchedAllVideos ? '' : 'hidden'
-					} flex flex-col w-full top-2 relative h-fit justify-center items-center`}>
-					<h1
-						data-text={`YOU'VE WATCHED ALL VIDEOS!`}
-						className='text-xl md:text-2xl font-manga text-yellow-300 text-nowrap'>
-						YOU'VE WATCHED ALL VIDEOS!
-					</h1>
-					<h1
-						data-text={`WAITING FOR ${players.length - usersFinished.length} MORE TO START VOTE...`}
-						className='text-xl md:text-2xl font-manga text-yellow-300 text-nowrap'>
-						WAITING FOR {players.length - usersFinished.length} MORE TO START VOTE...
-					</h1>
-				</div>
+			</div>
+			<div
+				className={`${
+					hasWatchedAllVideos ? '' : 'hidden'
+				} flex flex-col w-full top-2 relative h-fit justify-center items-center`}>
+				<h1
+					data-text={`YOU'VE WATCHED ALL VIDEOS!`}
+					className='text-2xl font-manga text-green-300 text-nowrap'>
+					YOU'VE WATCHED ALL VIDEOS!
+				</h1>
+				<h1
+					data-text={`WAITING FOR ${players.length - usersFinished.length} MORE TO START VOTE...`}
+					className='text-2xl font-manga text-yellow-300 text-nowrap'>
+					WAITING FOR {players.length - usersFinished.length} MORE TO START VOTE...
+				</h1>
 			</div>
 		</>
 	);

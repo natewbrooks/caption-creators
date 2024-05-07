@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { FaArrowRight, FaCheck, FaClock } from 'react-icons/fa6';
 import VideoEmbed from '../modules/VideoEmbed';
-import { useSocket } from '@/app/contexts/socketContext';
+import { useSocket } from '@/app/contexts/SocketContext';
 import TimerInline from '../modules/TimerInline';
 import AutoSizer from 'react-virtualized-auto-sizer';
 

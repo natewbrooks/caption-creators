@@ -1,4 +1,4 @@
-import { useAuth } from '../../../contexts/userAuthContext';
+import { useAuth } from '@/app/contexts/UserAuthContext';
 import { useRouter } from 'next/navigation';
 import BackButton from './BackButton';
 import UserDisplay from './UserDisplay';

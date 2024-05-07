@@ -2,39 +2,45 @@ import { query } from '../../../server/database';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(req) {
-	const { username, email } = await req.json();
-
-	if (!username || !email) {
-		return new Response(JSON.stringify({ error: 'Username and email are required' }), {
-			status: 400,
-			headers: { 'Content-Type': 'application/json' },
-		});
-	}
-
-	// Check if the username already exists
-	const userExists = await query(`SELECT 1 FROM users WHERE username = ?`, [username]);
-	if (userExists.length > 0) {
-		return new Response(JSON.stringify({ error: 'ERROR: Username already in use' }), {
-			status: 409,
-			headers: { 'Content-Type': 'application/json' },
-		});
-	}
-
-	// Check if the email already exists
-	const emailExists = await query(`SELECT 1 FROM users WHERE email = ?`, [email]);
-	if (emailExists.length > 0) {
-		return new Response(JSON.stringify({ error: 'ERROR: Email already in use' }), {
-			status: 409,
-			headers: { 'Content-Type': 'application/json' },
-		});
-	}
-
-	const userToken = uuidv4();
 	try {
+		// Parse the request body
+		const { username, email } = await req.json();
+
+		// Check for missing fields
+		if (!username || !email) {
+			return new Response(JSON.stringify({ error: 'Username and email are required' }), {
+				status: 400,
+				headers: { 'Content-Type': 'application/json' },
+			});
+		}
+
+		// Check if the username already exists
+		const userExists = await query(`SELECT 1 FROM users WHERE username = ?`, [username]);
+		if (userExists.length > 0) {
+			return new Response(JSON.stringify({ error: 'ERROR: Username already in use' }), {
+				status: 409,
+				headers: { 'Content-Type': 'application/json' },
+			});
+		}
+
+		// Check if the email already exists
+		const emailExists = await query(`SELECT 1 FROM users WHERE email = ?`, [email]);
+		if (emailExists.length > 0) {
+			return new Response(JSON.stringify({ error: 'ERROR: Email already in use' }), {
+				status: 409,
+				headers: { 'Content-Type': 'application/json' },
+			});
+		}
+
+		// Create a new user
+		const userToken = uuidv4();
 		const result = await query(
 			`INSERT INTO users (username, email, score, userToken) VALUES (?, ?, 0, ?)`,
 			[username, email, userToken]
 		);
+
+		console.log('USER CREATED SUCCESSFULLY');
+		// Return success response
 		return new Response(
 			JSON.stringify({
 				message: 'User created successfully',

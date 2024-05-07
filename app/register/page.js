@@ -1,12 +1,12 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../contexts/userAuthContext.js';
-import BackButton from '../components/BackButton.js';
+import { useAuth } from '@/app/contexts/UserAuthContext.js';
+import BackButton from '../components/game/modules/BackButton.js';
 import { FaEye, FaEyeSlash } from 'react-icons/fa6';
 
 export default function RegisterPage() {
-	const { register, currentUser } = useAuth(); // Destructure the register function from context
+	const { register, currentUser, refreshUser } = useAuth(); // Destructure the register function from context
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
 	const [username, setUsername] = useState(''); // Assuming you handle username separately
@@ -16,30 +16,36 @@ export default function RegisterPage() {
 	const [emailVerified, setEmailVerified] = useState(false);
 	const [passwordShown, setPasswordShown] = useState(true);
 
-	useEffect(() => {
-		if (verifyEmailPrompt) {
-			const interval = setInterval(async () => {
-				await currentUser.reload(); // Force reload of the user object
-				if (currentUser.emailVerified) {
-					clearInterval(interval);
-					setEmailVerified(true);
-					setTimeout(() => {
-						router.push('/'); // Redirect to home page after 2 seconds of confirming email is verified
-					}, 2000);
-				}
-			}, 4000); // Check every 4 seconds
+	// useEffect(() => {
+	// 	if (verifyEmailPrompt && currentUser) {
+	// 		console.log('CURRENT USER: ' + JSON.stringify(currentUser));
+	// 		const interval = setInterval(async () => {
+	// 			await currentUser.reload(); // Force reload of the user object
+	// 			if (currentUser.emailVerified) {
+	// 				clearInterval(interval);
+	// 				setEmailVerified(true);
+	// 				setTimeout(() => {
+	// 					router.push('/'); // Redirect to home page after 2 seconds of confirming email is verified
+	// 				}, 2000);
+	// 			}
+	// 		}, 4000); // Check every 4 seconds
 
-			return () => clearInterval(interval);
-		}
-	}, [currentUser, router, verifyEmailPrompt]);
+	// 		return () => clearInterval(interval);
+	// 	}
+	// }, [currentUser, router, verifyEmailPrompt]);
 
 	const handleRegister = async (event) => {
 		event.preventDefault();
 		setError('');
 
 		try {
-			await register(username, email, password);
 			setVerifyEmailPrompt(true); // Prompt the user to verify their email
+			await register(username, email, password);
+			setVerifyEmailPrompt(false);
+			setEmailVerified(true);
+			setTimeout(() => {
+				router.push('/'); // Redirect to home page after 2 seconds of confirming email is verified
+			}, 2000);
 		} catch (error) {
 			setError(error.message);
 		}
@@ -57,7 +63,7 @@ export default function RegisterPage() {
 					className={`w-fit md:min-w-[400px] max-w-[800px] h-fit bg-dark p-4 rounded-md outline outline-2 outline-darkAccent`}>
 					{verifyEmailPrompt ? (
 						<>
-							<h1 className={`text-7xl text-center font-sunny px-4`}>ACCOUNT REGISTERED</h1>
+							<h1 className={`text-6xl text-center font-sunny px-4`}>ACCOUNT REGISTERED</h1>
 							{emailVerified ? (
 								<>
 									<h2 className={`pt-2 text-2xl text-center text-white font-manga`}>
@@ -78,9 +84,13 @@ export default function RegisterPage() {
 						</>
 					) : (
 						<>
-							<h1 className={`text-7xl text-center font-sunny px-4`}>REGISTER ACCOUNT</h1>
+							<h1 className={`text-6xl text-center font-sunny px-4`}>REGISTER ACCOUNT</h1>
 							<form
-								onSubmit={handleRegister}
+								onSubmit={(e) => {
+									if (username && password && email) {
+										handleRegister(e);
+									}
+								}}
 								className={`flex flex-col space-y-6 justify-center items-center py-4`}>
 								<div className={`mb-2 flex flex-col space-y-2 justify-center items-center`}>
 									<div className={`flex flex-col text-3xl`}>
@@ -140,8 +150,19 @@ export default function RegisterPage() {
 								</div>
 								<button
 									type='submit'
-									className={`bg-dark p-4 w-full text-center font-sunny text-3xl md:text-4xl cursor-pointer outline-green-300 outline outline-2 rounded-md text-white  sm:hover:outline-white sm:active:scale-95`}>
-									SUBMIT
+									className={`z-10 p-1 text-nowrap w-full items-center flex justify-center rounded-md bg-dark outline ${
+										!username || !password || !email
+											? 'outline-red-300'
+											: 'outline-green-300 cursor-pointer sm:hover:outline-white sm:active:scale-95 '
+									} outline-2`}>
+									<div
+										className={`p-2 text-2xl leading-none w-full h-fit justify-center items-center flex flex-col`}>
+										<h1
+											data-text={`SUBMIT`}
+											className={`font-manga text-white `}>
+											SUBMIT
+										</h1>
+									</div>
 								</button>
 
 								{error && <p className={`text-red-300 font-manga text-xl`}>{error}</p>}

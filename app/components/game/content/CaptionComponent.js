@@ -6,7 +6,7 @@ import { FaArrowRight } from 'react-icons/fa6';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import ConfirmationModal from '../modules/ConfirmationModal';
 import VideoEmbed from '../modules/VideoEmbed';
-import { useSocket } from '@/app/contexts/socketContext';
+import { useSocket } from '@/app/contexts/SocketContext';
 
 const CaptionComponent = ({
 	players,
@@ -96,7 +96,7 @@ const CaptionComponent = ({
 					<div className='relative top-2 w-full flex justify-center'>
 						<h1
 							data-text='WAITING FOR OTHERS TO CAPTION...'
-							className={`w-fit font-manga text-2xl text-yellow-300`}>
+							className={`w-fit font-manga text-2xl text-green-300`}>
 							WAITING FOR OTHERS TO CAPTION...
 						</h1>
 					</div>

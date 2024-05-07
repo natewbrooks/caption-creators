@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { FaArrowRight } from 'react-icons/fa6';
 import VideoEmbed from '../modules/VideoEmbed';
-import { useSocket } from '@/app/contexts/socketContext';
+import { useSocket } from '@/app/contexts/SocketContext';
 import RoundTimeline from '../modules/RoundTimeline';
 
 const IntroComponent = ({
@@ -55,9 +55,9 @@ const IntroComponent = ({
 					<div
 						className={`w-full h-full flex flex-col space-y-2 py-4 justify-between items-center`}>
 						<h1
-							data-text={`ROUND ${roundIndex}`}
+							data-text={`ROUND ${roundIndex + 1} OVERVIEW`}
 							className={`font-sunny z-10 text-yellow-300 text-5xl md:text-6xl`}>
-							ROUND {roundIndex + 1} MULTIPLIER
+							ROUND {roundIndex + 1} OVERVIEW
 						</h1>
 						<div
 							className={`p-2 ${randomBgColor} aspect-square rounded-full w-fit h-fit flex justify-center items-center flex-col`}>

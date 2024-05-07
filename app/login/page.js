@@ -1,8 +1,8 @@
 'use client';
 import React, { useState } from 'react';
-import { useAuth } from '../contexts/userAuthContext.js';
+import { useAuth } from '@/app/contexts/UserAuthContext.js';
 import { useRouter } from 'next/navigation'; // Correct the import statement
-import BackButton from '../components/BackButton.js';
+import BackButton from '../components/game/modules/BackButton.js';
 import { FaEye, FaEyeSlash } from 'react-icons/fa6';
 
 export default function LoginPage() {
@@ -50,10 +50,10 @@ export default function LoginPage() {
 					{forgotPassword ? (
 						resetEmailSent ? (
 							<>
-								<h1 className={`text-7xl text-center font-sunny pb-2`}>
+								<h1 className={`text-6xl text-center font-sunny pb-2`}>
 									PASSWORD RESET EMAIL SENT
 								</h1>
-								<h2 className={`py-2 text-3xl text-center text-white font-manga`}>
+								<h2 className={`py-2 text-2xl text-center text-white font-manga`}>
 									To complete your password reset, click the link in the email sent to{' '}
 									<span className={`text-green-300`}>{email}</span>.
 								</h2>
@@ -65,9 +65,13 @@ export default function LoginPage() {
 							</>
 						) : (
 							<>
-								<h1 className={`text-7xl text-center font-sunny`}>FORGOT PASSWORD</h1>
+								<h1 className={`text-6xl text-center font-sunny`}>FORGOT PASSWORD</h1>
 								<form
-									onSubmit={handlePasswordReset}
+									onSubmit={(e) => {
+										if (email) {
+											handlePasswordReset(e);
+										}
+									}}
 									className={`flex flex-col space-y-4 justify-center items-center py-2`}>
 									<div className={`flex flex-col space-y-2 justify-center items-center`}>
 										<div className={`flex flex-col text-3xl`}>
@@ -87,8 +91,19 @@ export default function LoginPage() {
 									</span>
 									<button
 										type='submit'
-										className={`bg-dark p-4 w-full text-center font-sunny text-3xl md:text-4xl cursor-pointer outline-green-300 outline outline-2 rounded-md text-white  sm:hover:outline-white sm:active:scale-95`}>
-										SEND RESET EMAIL
+										className={`z-10 p-1 cursor-default text-nowrap w-full items-center flex justify-center rounded-md bg-dark outline ${
+											!email
+												? 'outline-red-300'
+												: 'outline-green-300 cursor-pointer sm:hover:outline-white sm:active:scale-95 '
+										} outline-2`}>
+										<div
+											className={`p-2 text-2xl leading-none w-full h-fit justify-center items-center flex flex-col`}>
+											<h1
+												data-text={`SEND RESET EMAIL`}
+												className={`font-manga text-white `}>
+												SEND RESET EMAIL
+											</h1>
+										</div>
 									</button>
 
 									{error && <p className={`text-red-300 font-manga text-xl`}>{error}</p>}
@@ -97,9 +112,13 @@ export default function LoginPage() {
 						)
 					) : (
 						<>
-							<h1 className={`text-7xl text-center font-sunny `}>LOGIN</h1>
+							<h1 className={`text-6xl text-center font-sunny `}>LOGIN</h1>
 							<form
-								onSubmit={handleLogin}
+								onSubmit={(e) => {
+									if (email && password) {
+										handleLogin(e);
+									}
+								}}
 								className={`flex flex-col space-y-6 justify-center items-center py-4`}>
 								<div className={`flex flex-col space-y-4 justify-center items-center`}>
 									<div className={`flex flex-col text-3xl space-y-2`}>
@@ -141,7 +160,10 @@ export default function LoginPage() {
 											</div>
 										</div>
 										<span
-											onClick={() => setForgotPassword(true)}
+											onClick={() => {
+												setForgotPassword(true);
+												setError('');
+											}}
 											className={`font-sunny cursor-pointer sm:hover:opacity-50 sm:active:scale-95 text-2xl text-end pt-1 text-white/40`}>
 											FORGOT PASSWORD?
 										</span>
@@ -149,8 +171,19 @@ export default function LoginPage() {
 								</div>
 								<button
 									type='submit'
-									className={`bg-dark p-4 w-full text-center font-sunny text-3xl md:text-4xl cursor-pointer outline-green-300 outline outline-2 rounded-md text-white  sm:hover:outline-white sm:active:scale-95`}>
-									SUBMIT
+									className={`z-10 p-1 text-nowrap w-full items-center flex justify-center rounded-md bg-dark outline ${
+										!password || !email
+											? 'outline-red-300'
+											: 'outline-green-300 cursor-pointer sm:hover:outline-white sm:active:scale-95 '
+									} outline-2`}>
+									<div
+										className={`p-2 text-2xl leading-none w-full h-fit justify-center items-center flex flex-col`}>
+										<h1
+											data-text={`SUBMIT`}
+											className={`font-manga text-white `}>
+											SUBMIT
+										</h1>
+									</div>
 								</button>
 
 								{error && <p className={`text-red-300 font-manga text-xl`}>{error}</p>}

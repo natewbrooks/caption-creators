@@ -13,6 +13,7 @@ import {
 	sendPasswordResetEmail,
 	EmailAuthProvider,
 	reauthenticateWithCredential,
+	deleteUser,
 } from 'firebase/auth';
 import app from '../../server/firebase/auth.js';
 
@@ -56,35 +57,50 @@ export const UserAuthProvider = ({ children }) => {
 		}
 	};
 
+	const waitForEmailVerification = async (user, interval = 2000) => {
+		return new Promise((resolve, reject) => {
+			const intervalId = setInterval(async () => {
+				try {
+					await user.reload();
+					if (user.emailVerified) {
+						clearInterval(intervalId);
+						resolve(user);
+					}
+				} catch (error) {
+					clearInterval(intervalId);
+					reject(error);
+				}
+			}, interval);
+		});
+	};
+
 	const register = async (username, email, password) => {
 		try {
 			const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-			await updateProfile(userCredential.user, { displayName: username });
-			await sendEmailVerification(userCredential.user);
-			await signOut(auth);
+			const user = userCredential.user;
+			await updateProfile(user, { displayName: username });
+			await sendEmailVerification(user);
+			console.log('Verification email sent successfully');
 
-			// Listen for email verification before proceeding
-			onAuthStateChanged(auth, async (user) => {
-				if (user && user.emailVerified) {
-					// Email is verified, add user details to the database
-					const response = await fetch('/api/users/', {
-						method: 'POST',
-						headers: {
-							'Content-Type': 'application/json',
-						},
-						body: JSON.stringify({ username, email }),
-					});
+			// Wait for the user to verify their email
+			const verifiedUser = await waitForEmailVerification(user);
 
-					const data = await response.json();
-					if (data.error) {
-						throw new Error(data.error);
-					}
-					setCurrentUser(user);
-					console.log('User registered and verified:', user);
-				}
+			// Make a POST request to store user details in the database
+			const response = await fetch('/api/users/', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ username, email }),
 			});
+
+			const data = await response.json();
+			if (data.error) {
+				throw new Error(data.error);
+			}
 		} catch (error) {
 			console.error('Registration error:', error);
+			// Delete user if email verification didn't work
+			signOut(user);
+			deleteUser(user);
 			throw error;
 		}
 	};

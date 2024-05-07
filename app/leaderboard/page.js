@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { useAuth } from '../contexts/userAuthContext.js';
+import { useAuth } from '@/app/contexts/UserAuthContext';
 import { useRouter } from 'next/navigation';
 import { FaSearch, FaUserCircle } from 'react-icons/fa';
 import { IoFilter } from 'react-icons/io5';
@@ -105,7 +105,7 @@ export default function LeaderboardPage() {
 					) : sortedUsers[index].rank === 3 ? (
 						<FaMedal
 							size={32}
-							className='text-yellow-700 -translate-y-1 mr-2'
+							className='text-yellow-600 -translate-y-1 mr-2'
 						/>
 					) : null}
 				</div>

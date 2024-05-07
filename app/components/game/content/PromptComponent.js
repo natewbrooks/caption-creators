@@ -2,7 +2,7 @@ import { FaCheck, FaHourglass } from 'react-icons/fa';
 import { useState, useEffect } from 'react';
 import { IoDice } from 'react-icons/io5';
 import ConfirmationModal from '../modules/ConfirmationModal';
-import { useSocket } from '@/app/contexts/socketContext';
+import { useSocket } from '@/app/contexts/SocketContext';
 import ActionAlertModal from '../modules/ActionAlertModal';
 
 const PromptComponent = ({
@@ -217,7 +217,7 @@ const PromptComponent = ({
 					<h1
 						data-text='WAITING FOR OTHERS TO FINISH...
 '
-						className={`w-fit font-sunny text-2xl text-yellow-300`}>
+						className={`w-fit font-manga text-2xl text-green-300`}>
 						WAITING FOR OTHERS TO FINISH...
 					</h1>
 				</div>

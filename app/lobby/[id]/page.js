@@ -6,11 +6,11 @@ import { FaPencil, FaCheck, FaCopy } from 'react-icons/fa6';
 import { LuUnplug } from 'react-icons/lu';
 import TopBar from '@/app/components/game/modules/TopBar';
 import Image from 'next/image';
-import { useAuth } from '@/app/contexts/userAuthContext';
+import { useAuth } from '@/app/contexts/UserAuthContext';
 import LobbyInfoSelectModal from '@/app/components/lobby/LobbyInfoSelectModal';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import DropdownNotification from '@/app/components/game/modules/DropdownNotification';
-import { useSocket } from '@/app/contexts/socketContext';
+import { useSocket } from '@/app/contexts/SocketContext';
 import ActionAlertModal from '@/app/components/game/modules/ActionAlertModal';
 import { FaWalking } from 'react-icons/fa';
 
@@ -169,7 +169,7 @@ export default function LobbyPage() {
 					setTakenAvatars(takenAvatars);
 					setAvatars(avatars);
 
-					let playerAvatar = members.find((player) => player.userToken === userToken).avatar;
+					let playerAvatar = members.find((player) => player.userToken === userToken)?.avatar || '';
 					if (playerAvatar) {
 						setCurrentAvatar(playerAvatar);
 					}
@@ -423,26 +423,26 @@ export default function LobbyPage() {
 							{userToken === hostUserToken ? (
 								<div
 									onClick={() => {
-										if (players.length >= 1) {
+										if (players.length >= 2) {
 											handleGameStart();
 										}
 									}}
-									className={`bg-dark flex w-full justify-center text-center p-2 md:p-4 font-sunny text-3xl xl:text-4xl ${
+									className={`bg-dark flex w-full select-none justify-center text-center p-2 md:p-4 font-sunny text-3xl xl:text-4xl ${
 										players.length >= 2
 											? 'cursor-pointer outline-green-300 sm:hover:outline-white sm:active:scale-95'
-											: 'outline-red-300'
+											: 'outline-red-300 cursor-not-allowed'
 									} outline outline-2 rounded-md text-white `}>
 									{players.length >= 2 ? 'START GAME' : 'NEED 2+ PLAYERS TO START GAME'}
 								</div>
 							) : (
 								players.length >= 2 && (
 									<div
-										className={`bg-dark flex w-full justify-center text-center p-2 md:p-4 font-sunny text-3xl xl:text-4xl ${
+										className={`bg-dark  cursor-not-allowed select-none flex w-full justify-center text-center p-2 md:p-4 font-sunny text-3xl xl:text-4xl ${
 											players.length >= 2 ? 'outline-yellow-300' : 'outline-red-300'
 										} outline outline-2 rounded-md text-white`}>
 										{players.length >= 2
 											? 'WAITING FOR HOST TO START GAME'
-											: 'NEED 2+ PLAYERS TO START GAME'}
+											: '2+ PLAYERS TO START GAME'}
 									</div>
 								)
 							)}

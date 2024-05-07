@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
-import { FaArrowRight, FaClock, FaMedal, FaTrophy } from 'react-icons/fa6';
-import { FaCrown, FaHourglass, FaUserCircle } from 'react-icons/fa';
+import { FaArrowRight, FaClock, FaMedal, FaTrophy, FaCrown } from 'react-icons/fa6';
+import { FaHourglass, FaUserCircle } from 'react-icons/fa';
 import VideoEmbed from '../modules/VideoEmbed';
-import { useSocket } from '@/app/contexts/socketContext';
+import { useSocket } from '@/app/contexts/SocketContext';
 import TimerInline from '../modules/TimerInline';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import Image from 'next/image';
@@ -23,7 +23,7 @@ const PlayerListRow = ({ index, style, data }) => {
 			style={{ style }}
 			className={`${index % 2 === 1 ? 'bg-dark' : 'bg-darkAccent'} rounded-md overflow-hidden`}>
 			<div className={`px-4 py-2 flex flex-row justify-between items-center w-full`}>
-				<div className='w-fit h-full flex space-x-2 justify-center items-center'>
+				<div className='w-fit h-full flex space-x-3 justify-center items-center'>
 					{player.avatar ? (
 						<div className={`relative`}>
 							<Image
@@ -161,8 +161,9 @@ const GameResultsComponent = ({
 								className={`font-sunny text-5xl md:text-6xl z-10 text-purple-300`}>
 								GAME ENDED
 							</h1>
-							<div className={`w-full flex justify-between flex-col xs:flex-row  space-x-2`}>
-								<div className={`flex flex-row space-x-2 w-[100px] justify-start `}>
+							<div
+								className={`w-full flex justify-center items-center xs:justify-between flex-col xs:flex-row `}>
+								<div className={`flex flex-row space-x-2 w-fit justify-start `}>
 									<FaCrown
 										size={18}
 										className={`text-yellow-300 translate-y-[0.15rem]`}
@@ -171,7 +172,7 @@ const GameResultsComponent = ({
 										{finalScores[0]?.name.toUpperCase()}
 									</h1>
 								</div>
-								<div className={`w-[100px] flex flex-row space-x-1 justify-end `}>
+								<div className={`w-fit flex flex-row space-x-1 justify-end `}>
 									<div className={`flex font-manga text-xl items-center space-x-2`}>
 										<FaClock
 											size={15}

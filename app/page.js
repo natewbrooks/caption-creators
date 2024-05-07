@@ -3,8 +3,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { FaArrowRight, FaTrophy } from 'react-icons/fa6';
 import UserDisplay from './components/game/modules/UserDisplay';
-import { useAuth } from './contexts/userAuthContext';
-import { useSocket } from './contexts/socketContext';
+import { useAuth } from '@/app/contexts/UserAuthContext';
+import { useSocket } from '@/app/contexts/SocketContext';
 
 export default function Home() {
 	const [lobbyId, setLobbyId] = useState('');

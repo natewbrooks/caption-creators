@@ -3,9 +3,9 @@ import Image from 'next/image';
 import { FaUserCircle, FaCheck, FaEye } from 'react-icons/fa';
 import { useState, useEffect, useRef } from 'react';
 import { TiArrowSortedDown } from 'react-icons/ti';
-import { useSocket } from '@/app/contexts/socketContext';
+import { useSocket } from '@/app/contexts/SocketContext';
 
-const PlayersScrollbar = ({
+export default function PlayersScrollbar({
 	players,
 	hostUserToken,
 	gameEnded,
@@ -19,7 +19,7 @@ const PlayersScrollbar = ({
 	phaseData,
 	seenVideos,
 	vote,
-}) => {
+}) {
 	const scrollContainerRef = useRef(null); // Used in the PlayersScrollbar at the bottom
 	const [activeElementPosition, setActiveElementPosition] = useState(0);
 	const [animateArrow, setAnimateArrow] = useState(false);
@@ -55,6 +55,21 @@ const PlayersScrollbar = ({
 	}, [currentUserDisplayed, currentPhase]);
 
 	// Make the scrollTo function center the element
+	// const scrollToActiveUser = () => {
+	// 	const activeElement = document.getElementById(`player-${currentUserDisplayed}`);
+	// 	if (activeElement && scrollContainerRef.current) {
+	// 		scrollContainerRef.current.scrollTo({
+	// 			left:
+	// 				activeElement.offsetLeft -
+	// 				scrollContainerRef.current.offsetLeft -
+	// 				scrollContainerRef.current.clientWidth / 2 +
+	// 				activeElement.clientWidth / 2,
+	// 			behavior: 'smooth',
+	// 		});
+	// 		updateIndicatorPosition();
+	// 	}
+	// };
+
 	const scrollToActiveUser = () => {
 		const activeElement = document.getElementById(`player-${currentUserDisplayed}`);
 		if (activeElement && scrollContainerRef.current) {
@@ -64,7 +79,7 @@ const PlayersScrollbar = ({
 					scrollContainerRef.current.offsetLeft -
 					scrollContainerRef.current.clientWidth / 2 +
 					activeElement.clientWidth / 2,
-				behavior: 'smooth',
+				behavior: 'smooth', // Smooth scrolling
 			});
 			updateIndicatorPosition();
 		}
@@ -72,8 +87,9 @@ const PlayersScrollbar = ({
 
 	const handleWheel = (e) => {
 		if (scrollContainerRef.current) {
-			scrollContainerRef.current.scrollLeft -= e.deltaY;
-			e.preventDefault(); // Prevent the default vertical scroll
+			const scrollAmount = e.deltaY * 0.3; // Multiplier for sensitivity
+			scrollContainerRef.current.scrollLeft -= scrollAmount;
+			e.preventDefault(); // Prevent vertical scrolling
 		}
 	};
 
@@ -82,15 +98,11 @@ const PlayersScrollbar = ({
 		if (container) {
 			container.addEventListener('wheel', handleWheel);
 			container.addEventListener('touchstart', handleTouchStart, { passive: true });
-			container.addEventListener('touchmove', handleTouchMove, { passive: false });
-			container.addEventListener('touchend', handleTouchEnd, { passive: true });
 		}
 		return () => {
 			if (container) {
 				container.removeEventListener('wheel', handleWheel);
 				container.removeEventListener('touchstart', handleTouchStart);
-				container.removeEventListener('touchmove', handleTouchMove);
-				container.removeEventListener('touchend', handleTouchEnd);
 			}
 		};
 	}, [touchMoveX]);
@@ -103,13 +115,19 @@ const PlayersScrollbar = ({
 	const handleTouchMove = (e) => {
 		const touchX = e.touches[0].clientX;
 		const moveX = touchStartX - touchX;
-		setTouchMoveX(moveX);
+
+		// Add smoothing by gradually applying the move
+		const scrollAmount = moveX * 0.3; // Multiplier for sensitivity
+		setTouchMoveX(scrollAmount);
 	};
 
 	const handleTouchEnd = () => {
 		if (scrollContainerRef.current) {
 			scrollContainerRef.current.scrollLeft += touchMoveX;
 		}
+		// Reset touch values
+		setTouchStartX(0);
+		setTouchMoveX(0);
 	};
 
 	return (
@@ -159,7 +177,7 @@ const PlayersScrollbar = ({
 									: ''
 							}  transition-colors duration-300 ease-in-out transform inline-flex flex-none flex-col justify-center items-center pt-2 px-6 md:px-8`}
 							onClick={() => {
-								if (currentPhase === 'vote') {
+								if (currentPhase === 'vote' || (currentPhase === 'preview' && hasFinished)) {
 									setCurrentUserDisplayed(player.userToken);
 									updateIndicatorPosition();
 								}
@@ -170,6 +188,8 @@ const PlayersScrollbar = ({
 										<Image
 											src={player.avatar}
 											className={`border-2 rounded-full transition-all ease-in-out delay-100 duration-500 ${
+												currentPhase === 'vote' ? 'cursor-pointer' : `cursor-default`
+											}  ${
 												currentUserDisplayed === player.userToken &&
 												(currentPhase === 'vote' || currentPhase === 'preview')
 													? 'border-yellow-300'
@@ -185,7 +205,7 @@ const PlayersScrollbar = ({
 											width={48}
 											height={48}
 										/>
-										{hasClientSeenPlayersVideo && !hasFinished && (
+										{hasClientSeenPlayersVideo && (
 											<div
 												className={`absolute top-[0.65rem] right-[.65rem] bg-dark outline-2 outline  p-1 rounded-full`}>
 												<FaEye
@@ -233,8 +253,8 @@ const PlayersScrollbar = ({
 													size={18}
 													className={`${
 														index % 2 === 0
-															? 'text-dark outline-dark'
-															: 'text-darkAccent outline-darkAccent'
+															? 'text-white outline-dark'
+															: 'text-white outline-darkAccent'
 													}`}
 												/>
 											</div>
@@ -289,6 +309,4 @@ const PlayersScrollbar = ({
 			</div> */}
 		</div>
 	);
-};
-
-export default PlayersScrollbar;
+}

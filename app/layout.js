@@ -2,8 +2,8 @@
 import { useEffect, useState } from 'react';
 import './globals.css';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
-import { UserAuthProvider } from './contexts/userAuthContext';
-import { SocketProvider } from './contexts/socketContext';
+import { UserAuthProvider } from '@/app/contexts/UserAuthContext';
+import { SocketProvider } from '@/app/contexts/SocketContext';
 
 // export const metadata = {
 // 	title: 'Caption Creators',

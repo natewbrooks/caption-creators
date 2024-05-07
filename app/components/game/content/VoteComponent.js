@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { FaArrowRight } from 'react-icons/fa6';
 import VideoEmbed from '../modules/VideoEmbed';
-import { useSocket } from '@/app/contexts/socketContext';
+import { useSocket } from '@/app/contexts/SocketContext';
 
 const VotingComponent = ({
 	players,
@@ -39,7 +39,6 @@ const VotingComponent = ({
 
 	useEffect(() => {
 		handleSubmit();
-
 		if (totalVotes === votesUsed) {
 			console.log('USER ' + userToken + ' SUBMITTED VOTE!! ' + Array.from(vote));
 		}

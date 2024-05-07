@@ -1,4 +1,4 @@
-import { useAuth } from '../../../contexts/userAuthContext';
+import { useAuth } from '@/app/contexts/UserAuthContext';
 import { FaUserCircle } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';

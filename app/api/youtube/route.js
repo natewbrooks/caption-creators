@@ -15,7 +15,7 @@ const agent = new https.Agent({
 async function searchForShortVideo(prompt) {
 	const youtube = google.youtube({
 		version: 'v3',
-		auth: 'AIzaSyBOHrzZElMNSrPGJEFYsvViQofMKqyc-48',
+		auth: process.env.YOUTUBE_API_KEY,
 		http: {
 			agent,
 		},

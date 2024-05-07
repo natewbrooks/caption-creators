@@ -1,5 +1,5 @@
 'use client';
-import { useAuth } from '../contexts/userAuthContext';
+import { useAuth } from '@/app/contexts/UserAuthContext';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import BackButton from '../components/game/modules/BackButton';
@@ -99,7 +99,7 @@ export default function ProfilePage() {
 							</h1>
 						</div>
 
-						<div className='relative max-w-[800px] mt-4 space-y-2 bg-dark outline-2 outline outline-darkAccent rounded-md flex flex-col w-full h-fit text-white p-2'>
+						<div className='relative max-w-[800px] mt-4 space-y-2 bg-dark outline-2 outline outline-darkAccent rounded-t-md flex flex-col w-full h-fit text-white p-2'>
 							{promptReauthenticate ? (
 								forgotPassword ? (
 									resetEmailSent ? (
@@ -114,7 +114,7 @@ export default function ProfilePage() {
 												<FaXmark size={20} />
 											</div>
 											<div className={``}>
-												<h1 className='w-full justify-center text-2xl font-sunny text-center text-yellow-300 leading-none'>
+												<h1 className='w-full justify-center text-3xl font-sunny text-center text-yellow-300 leading-none'>
 													PASSWORD RESET EMAIL SENT
 												</h1>
 												<h2 className={`text-2xl text-center text-white font-manga`}>
@@ -146,7 +146,7 @@ export default function ProfilePage() {
 												<FaXmark size={20} />
 											</div>
 											<div className={``}>
-												<h1 className='w-full justify-center text-3xl font-sunny text-center text-yellow-300 leading-none'>
+												<h1 className='w-full justify-center text-3xl font-sunny text-center text-red-300 leading-none'>
 													FORGOT PASSWORD
 												</h1>
 												<h1 className={`text-2xl text-center text-white font-manga`}>
@@ -320,23 +320,18 @@ export default function ProfilePage() {
 								</>
 							)}
 						</div>
-						{error && (
-							<div className='bg-dark py-1 px-2 outline outline-2 outline-darkAccent rounded-md text-red-300 text-lg md:text-xl mt-4 font-manga'>
-								ERROR: {error}
-							</div>
-						)}
 
 						{promptReauthenticate ? (
 							''
 						) : (
-							<div className='text-center select-none max-w-[800px] w-full flex space-x-3 mt-4 justify-center sm:justify-end'>
+							<div className='bg-dark outline outline-2 outline-darkAccent p-2 text-center select-none max-w-[800px] w-full flex space-x-2 justify-between '>
 								<div
 									onClick={handleUpdateProfile}
-									className='w-fit flex justify-center items-center'>
+									className='w-full flex justify-center items-center'>
 									<div
-										className={`leading-none bg-dark p-2 w-full flex space-x-2 items-center justify-center text-center font-sunny text-2xl rounded-md ${
+										className={`leading-none bg-dark p-2 w-full h-full flex space-x-2 items-center justify-center text-center font-sunny text-2xl rounded-md ${
 											editingProfile
-												? 'outline-green-300 text-green-300'
+												? 'outline-green-300 text-white'
 												: 'text-white outline-yellow-300'
 										}  cursor-pointer outline outline-2  sm:hover:outline-white sm:active:scale-95`}>
 										{editingProfile ? 'CONFIRM CHANGES' : 'EDIT PROFILE'}
@@ -347,12 +342,17 @@ export default function ProfilePage() {
 										logout();
 										router.push('/');
 									}}
-									className='w-fit flex justify-center items-center'>
+									className='w-full h-full flex justify-center items-center'>
 									<div
-										className={`leading-none bg-dark p-2 w-full flex space-x-2 items-center justify-center text-center font-sunny text-2xl rounded-md text-white cursor-pointer outline outline-2 outline-red-300  sm:hover:outline-white sm:active:scale-95`}>
+										className={`leading-none bg-dark p-2 w-full h-full flex space-x-2 items-center justify-center text-center font-sunny text-2xl rounded-md text-white cursor-pointer outline outline-2 outline-red-300  sm:hover:outline-white sm:active:scale-95`}>
 										SIGN OUT
 									</div>
 								</div>
+							</div>
+						)}
+						{error && (
+							<div className='bg-dark py-1 px-2 outline outline-2 outline-darkAccent rounded-md text-red-300 text-lg md:text-xl mt-4 font-manga'>
+								ERROR: {error}
 							</div>
 						)}
 					</div>

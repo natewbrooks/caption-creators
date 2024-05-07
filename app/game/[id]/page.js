@@ -9,7 +9,7 @@ import { FaClock, FaHourglassStart } from 'react-icons/fa6';
 import { BiSolidTrafficCone } from 'react-icons/bi';
 import VotingComponent from '@/app/components/game/content/VoteComponent';
 import PlayersScrollbar from '@/app/components/game/modules/PlayersScrollbar';
-import { useSocket } from '@/app/contexts/socketContext';
+import { useSocket } from '@/app/contexts/SocketContext';
 import TransitionComponent from '@/app/components/game/transition/TransitionComponent';
 import IntroComponent from '@/app/components/game/transition/IntroComponent';
 import OutroComponent from '@/app/components/game/transition/OutroComponent';
@@ -354,22 +354,12 @@ export default function GamePage() {
 
 			{(!usersLoadedGamePage.length === players.length || (!gameStarted && !gameEnded)) &&
 				(players.length > 0 ? (
-					<div
-						className={`absolute top-0 bg-dark/80 z-50 w-full h-full flex justify-center items-center`}>
-						<div
-							className={`w-fit h-fit flex justify-center p-12 bg-green-300 aspect-square max-w-[300px] outline outline-6 outline-dark rounded-full`}>
-							<div className={`flex flex-col space-y-2 items-center justify-center `}>
-								<h1 className={`font-sunny text-3xl text-dark`}>
-									WAITING FOR {usersLoadedGamePage.length - players.length} MORE
-								</h1>
-								<FaHourglassStart
-									size={108}
-									className={`text-dark`}
-								/>
-								<h1 className={`font-sunny text-3xl text-dark`}>TO LOAD THIS PAGE</h1>
-							</div>
-						</div>
-					</div>
+					<ActionAlertModal
+						header={`WAITING FOR ${players.length - usersLoadedGamePage.length}`}
+						subtext={`MORE TO LOAD PAGE`}
+						Icon={FaHourglassStart}
+						bgColorClass={`bg-yellow-300`}
+					/>
 				) : (
 					<ActionAlertModal
 						header={`GAME NOT FOUND`}

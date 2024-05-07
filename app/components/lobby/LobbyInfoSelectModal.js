@@ -72,9 +72,11 @@ function LobbyInfoSelectModal({
 			)}
 			<button
 				type='submit'
-				className={`bg-dark z-20 p-2 md:p-4 w-full text-center font-sunny text-3xl xl:text-4xl  cursor-pointer ${
-					currentAvatar ? 'outline-green-300' : 'outline-red-300'
-				} outline outline-2 rounded-md text-white outline-darkAccent sm:hover:outline-white sm:active:scale-95`}>
+				className={`bg-dark z-20 p-2 md:p-4 w-full text-center font-sunny text-3xl xl:text-4xl ${
+					currentAvatar
+						? 'outline-green-300 sm:hover:outline-white sm:active:scale-95 cursor-pointer'
+						: 'outline-red-300'
+				} outline outline-2 rounded-md text-white outline-darkAccent `}>
 				ENTER LOBBY
 			</button>
 		</form>

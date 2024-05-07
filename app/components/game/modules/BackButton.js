@@ -1,7 +1,7 @@
 import { useRouter } from 'next/navigation';
 import { FaArrowLeft } from 'react-icons/fa6';
-import { useAuth } from '../../../contexts/userAuthContext';
-import { useSocket } from '../../../contexts/socketContext';
+import { useAuth } from '@/app/contexts/UserAuthContext';
+import { useSocket } from '@/app/contexts/SocketContext';
 
 const BackButton = ({ goHome, text = 'RETURN' }) => {
 	const router = useRouter();
