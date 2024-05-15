@@ -13,6 +13,7 @@ import DropdownNotification from '@/app/components/game/modules/DropdownNotifica
 import { useSocket } from '@/app/contexts/SocketContext';
 import ActionAlertModal from '@/app/components/game/modules/ActionAlertModal';
 import { FaWalking } from 'react-icons/fa';
+import gameModesData from '@/server/game/gameModes.json';
 
 function PlayerRow({ index, style, data }) {
 	const player = data.players[index];
@@ -131,6 +132,7 @@ export default function LobbyPage() {
 	const [showLinkCopied, setShowLinkCopied] = useState(false);
 	const [disconnectingUsers, setDisconnectingUsers] = useState({});
 	const [hostUserToken, setHostUserToken] = useState(null);
+	const [selectedMode, setSelectedMode] = useState('Standard');
 	const [avatars, setAvatars] = useState([]);
 	const [takenAvatars, setTakenAvatars] = useState({});
 	const [currentAvatar, setCurrentAvatar] = useState('');
@@ -139,6 +141,18 @@ export default function LobbyPage() {
 	const [error, setError] = useState('');
 	const { currentUser } = useAuth();
 	const router = useRouter();
+
+	useEffect(() => {
+		const fetchGameModes = async () => {
+			try {
+				console.log(JSON.stringify(gameModes));
+				setSelectedMode(gameModes[0].name); // Set default selection to the name of the first mode
+			} catch (error) {
+				console.error('Failed to fetch game modes:', error);
+			}
+		};
+		fetchGameModes();
+	}, []);
 
 	useEffect(() => {
 		// Clear pre-existing intervals
@@ -160,35 +174,39 @@ export default function LobbyPage() {
 	}, []);
 
 	useEffect(() => {
-		const fetchData = async () => {
-			if (lobbyId && socket) {
-				socket.emit('fetch_lobby_details', { lobbyId });
-				socket.on('lobby_details', ({ members, hostUserToken, avatars, takenAvatars }) => {
-					setPlayers(members);
-					setHostUserToken(hostUserToken);
-					setTakenAvatars(takenAvatars);
-					setAvatars(avatars);
+		if (lobbyId && socket) {
+			socket.emit('fetch_lobby_details', { lobbyId });
+			socket.on('lobby_details', ({ members, hostUserToken, gameMode, avatars, takenAvatars }) => {
+				setPlayers(members);
+				setHostUserToken(hostUserToken);
+				setSelectedMode(gameMode); // Set the game mode
+				setTakenAvatars(takenAvatars);
+				setAvatars(avatars);
 
-					let playerAvatar = members.find((player) => player.userToken === userToken)?.avatar || '';
-					if (playerAvatar) {
-						setCurrentAvatar(playerAvatar);
-					}
-				});
+				let playerAvatar = members.find((player) => player.userToken === userToken)?.avatar || '';
+				if (playerAvatar) {
+					setCurrentAvatar(playerAvatar);
+				}
+			});
 
-				socket.on('update_lobby', ({ members, hostUserToken, takenAvatars }) => {
-					setPlayers(members);
-					setHostUserToken(hostUserToken);
-					setTakenAvatars(takenAvatars);
-				});
-			}
-		};
-		fetchData();
+			socket.on('update_lobby', ({ members, hostUserToken, gameMode, takenAvatars }) => {
+				setPlayers(members);
+				setHostUserToken(hostUserToken);
+				setSelectedMode(gameMode); // Update the game mode
+				setTakenAvatars(takenAvatars);
+			});
+
+			socket.on('lobby_joined', ({ lobbyId, gameMode }) => {
+				setSelectedMode(gameMode); // Set the game mode when a new player joins
+			});
+		}
 
 		return () => {
 			socket.off('lobby_details');
 			socket.off('update_lobby');
+			socket.off('lobby_joined');
 		};
-	}, [lobbyId, userToken, setTakenAvatars]);
+	}, [lobbyId, userToken, setTakenAvatars, socket]);
 
 	useEffect(() => {
 		if (lobbyId && socket) {
@@ -305,6 +323,19 @@ export default function LobbyPage() {
 		);
 	};
 
+	const handleGameModeSelect = (newGameMode) => {
+		setSelectedMode(newGameMode); // Update local state immediately for responsiveness
+		if (hostUserToken === userToken) {
+			socket.emit('set_game_mode', { lobbyId, gameMode: newGameMode }, (response) => {
+				// Handle acknowledgment or error
+				if (!response.success) {
+					console.error('Failed to set game mode:', response.message);
+					setSelectedMode(gameModesData.gameModes[0].name); // Revert to original or default if error
+				}
+			});
+		}
+	};
+
 	const handleAvatarSelect = (avatarSrc) => {
 		if (takenAvatars[avatarSrc] && takenAvatars[avatarSrc] !== userToken) {
 			alert('This avatar is already taken. Please choose another.');
@@ -377,11 +408,54 @@ export default function LobbyPage() {
 						/>
 					</div>
 				</div>
-				<div className={`flex w-full justify-center space-x-2`}>
+				<div className={`flex w-full justify-center space-x-2 whitespace-nowrap`}>
 					<h1
-						data-text={`~ ${players.length}/9 PLAYERS ~`}
+						data-text={`~`}
 						className='font-manga text-2xl sm:text-3xl select-none'>
-						<span className={`text-green-300`}>~</span> {players.length}/9 PLAYERS{' '}
+						<span className={`text-green-300`}>~</span>
+					</h1>
+					<h1
+						data-text={`${players.length}/9 PLAYERS`}
+						className='font-manga text-2xl sm:text-3xl select-none'>
+						{players.length}/9 PLAYERS{' '}
+					</h1>
+					<h1
+						data-text={`•`}
+						className='font-manga text-2xl sm:text-3xl select-none'>
+						<span className={`text-green-300`}>•</span>
+					</h1>
+					<div className={`w-fit flex justify-center items-center`}>
+						<h1
+							data-text={`${selectedMode.toUpperCase()}`}
+							className='w-fit flex items-center font-manga text-2xl sm:text-3xl select-none'>
+							{hostUserToken === userToken ? (
+								<select
+									className='bg-transparent pr-1 py-1 -left-1 top-0 relative placeholder:text-dark text-white outline-none cursor-pointer'
+									value={selectedMode}
+									onChange={(e) => {
+										handleGameModeSelect(e.target.value);
+									}}>
+									{gameModesData.gameModes ? (
+										gameModesData.gameModes.map((mode, index) => (
+											<option
+												key={index}
+												value={mode.name}
+												className={`bg-dark text-white`}>
+												{mode.name.toUpperCase()}
+											</option>
+										))
+									) : (
+										<option>Loading modes...</option>
+									)}
+								</select>
+							) : (
+								<span>{selectedMode.toUpperCase()}</span>
+							)}
+						</h1>
+					</div>
+					<h1
+						data-text={`~`}
+						className='font-manga text-2xl sm:text-3xl select-none'>
 						<span className={`text-green-300`}>~</span>
 					</h1>
 				</div>

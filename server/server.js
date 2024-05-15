@@ -39,6 +39,7 @@ app.prepare().then(() => {
 		socket.on('update_player_name', (data) =>
 			updatePlayerName(data.lobbyId, data.userToken, data.socket, data.playerName, io)
 		);
+		socket.on('set_game_mode', (data) => setGameMode(socket, data, io));
 		socket.on('fetch_lobby_details', (data) => fetchLobbyDetails(socket, data, io));
 		socket.on('user_fetching_video', (data) => userFetchingVideo(data));
 		socket.on('avatar_selected', (data) => avatarSelected(socket, data, io));
@@ -58,8 +59,6 @@ app.prepare().then(() => {
 		socket.on('disconnect', () => disconnect(socket, io));
 		// If the connected player is in the disconnect queue, remove them from the queue because they have restored their session.
 		socket.on('restore_session', (userToken) => restoreSession(socket, userToken, io));
-
-		// RELATED TO INDIVIDUAL LOBBIES GAMEMANAGER
 	});
 
 	server.listen(port, () => console.log(`> Ready on http://localhost:${port}`));
@@ -98,7 +97,7 @@ function handleGamePageLoaded(socket, { lobbyId, userToken }, io) {
 				io: io,
 				players: lobby.members,
 				hostUserToken: lobby.hostUserToken,
-				gameMode: 'Standard',
+				gameMode: lobby.gameMode,
 				updateLeaderboardScore: updateLeaderboardScore,
 			});
 			activeGames[lobbyId] = gameManager;
@@ -223,6 +222,7 @@ function createLobby(socket, { hostUserToken, playerName, email }, io) {
 
 		lobbies[lobbyId] = {
 			hostUserToken: hostUserToken, // Store the host's user token.
+			gameMode: 'Standard',
 			gamePageLoaded: [], // Store array of players who have successfully loaded game page
 			members: [
 				{
@@ -281,7 +281,7 @@ function joinLobby(socket, { lobbyId, playerName, userToken, email }, io) {
 
 	socket.join(lobbyId); // Add the player's socket to the lobby room.
 	updateLobby(lobbyId, io); // Update all clients with the new lobby details.
-	socket.emit('lobby_joined', { lobbyId }); // Notify the player that they have joined the lobby.
+	socket.emit('lobby_joined', { lobbyId, gameMode: lobby.gameMode }); // Notify the player that they have joined the lobby.
 	console.log('User connected to lobby: ' + lobbyId);
 }
 
@@ -329,6 +329,7 @@ function updateLobby(lobbyId, io) {
 	io.to(lobbyId).emit('update_lobby', {
 		members: lobby.members,
 		hostUserToken: lobby.hostUserToken,
+		gameMode: lobby.gameMode,
 		takenAvatars: lobby.takenAvatars,
 	});
 
@@ -429,9 +430,21 @@ function fetchLobbyDetails(socket, { lobbyId }, io) {
 	socket.emit('lobby_details', {
 		members: lobby.members,
 		hostUserToken: lobby.hostUserToken,
+		gameMode: lobby.gameMode,
 		avatars: lobby.avatars,
 		takenAvatars: lobby.takenAvatars,
 	});
+}
+
+function setGameMode(socket, { lobbyId, gameMode }, io) {
+	const lobby = lobbies[lobbyId];
+	if (lobby && findUserToken(socket.id) === lobby.hostUserToken) {
+		// Ensure only the host can change the mode
+		lobby.gameMode = gameMode;
+		updateLobby(lobbyId, io);
+	} else {
+		socket.emit('error_setting_game_mode', 'Only the host can change the game mode.');
+	}
 }
 
 function handleGameAction(socket, { lobbyId, key, userToken, isFinished, data }) {
